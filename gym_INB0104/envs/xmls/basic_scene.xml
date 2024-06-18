@@ -1,0 +1,66 @@
+<mujoco model="basic_scene">
+
+  <include file="franka_emika_panda/panda_hand.xml"/>
+  <option timestep=".002" noslip_iterations="5" noslip_tolerance="0"/>
+  <statistic center="0.3 0 0.4" extent="1"/>
+
+  <visual>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <quality shadowsize="8192"/>
+    <global azimuth="120" elevation="-20"/>
+     <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+  </visual>
+
+  <option>
+    <flag multiccd="enable"/>
+  </option>
+
+  <asset>
+    <!-- <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/> -->
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="50" height="50"/>
+    <material name="groundplane" texture="groundplane" texuniform="true"  reflectance="0.2"/>
+    <texture name="table" file="textures/table.png" type="2d"/>
+    <texture name="plywood" file="textures/plywood.png" type="2d"/>
+    <material name="plywood" texture="plywood" specular="1" shininess="1"/>
+    <texture name="brick_wall" file="textures/brick_wall.png" type="2d"/>
+    <material name="brick_wall" texture="brick_wall" texuniform="true" specular="1" shininess="1" texrepeat="2 2"/>
+    <texture name="aluminium" file="textures/aluminium.png" type="2d"/>
+    <material name="aluminium" texture="aluminium" texuniform="true" specular="1" shininess="1"/>
+  </asset>  
+
+  <worldbody>
+    <body name="light0" pos="0.3 0 1.6">
+      <site name="light0" pos="0 0 0" size="0.02" rgba="1 1 1 1"/>
+      <light mode="fixed" pos="0 0 0" diffuse="0.1 0.1 0.1" ambient="0.1 0.1 0.1"/>
+    </body>
+    <geom name="floor" size="0 0 0.05" pos="0 0 -1.06" type="plane" rgba="0.556 0.522 0.461 1"/>
+    <body name="roof_right" pos="0.3 0.09 1.5">
+      <geom name="roof_right" type="box" size="0.25 0.52 0.004" material="plywood"/> 
+    </body>
+    <body name="roof_left" pos="0.3 -0.96 1.5">
+      <geom name="roof_left" type="box" size="0.35 0.52 0.004" material="plywood"/> 
+    </body>
+    <body name="back_wall" pos="-0.5 0 0.5" euler="0 1.57 1.57">
+      <geom name="back_wall" type="plane" size="1.75 1.5 0.02" material="brick_wall"/> 
+    </body>
+    <body name="side_wall" pos="1.2 -1.54 0.5" euler="-1.57 0 3.1416">
+      <geom name="side_wall" type="plane" size="1.75 1.5 0.02" material="brick_wall"/> 
+    </body>
+    <!-- <body name="back_curtain" pos="-0.4 0 0.55" euler="0 1.57 3.1416">
+      <geom name="back_curtain" type="plane" size="0.9 0.6 0.02" rgba="0.2 0.2 0.2 1"/> 
+    </body>
+    <body name="left_curtain" pos="0.2 -0.6 0.75" euler="-1.57 0 3.1416">
+      <geom name="left_curtain" type="plane" size="0.6 0.7 0.02" rgba="0.2 0.2 0.2 1"/> 
+    </body>
+    <body name="right_curtain" pos="0.2 0.6 0.55" euler="1.57 0 3.1416">
+      <geom name="right_curtain" type="plane" size="0.6 0.9 0.02" rgba="0.2 0.2 0.2 1"/> 
+    </body> -->
+    <body pos='-0.185 -0.43 -1.06' euler='0 0 0'>
+        <include file="big_workbench.xml"/>
+    </body>
+    <!-- <body pos='-0.1575 -1.58 -0.92' euler='0 0 0'>
+        <include file="workbench_2.xml"/>
+    </body> -->
+  </worldbody>
+
+</mujoco>

@@ -1,0 +1,28 @@
+<mujoco model="INB0104">
+  
+  <include file="basic_scene.xml"/>
+  <include file="actuators/velocity.xml"/>
+  <include file="frame_chain.xml"/>
+  <option integrator="implicitfast"/>
+
+  <asset>
+    <mesh file="cuboid.stl"/>
+  </asset>  
+
+  <worldbody>
+    <!-- Camera --> 
+    <body name = "cam0" pos='1.25 0 1.37' euler='0 1.2 1.57'>
+      <camera name='front_camera' mode="fixed" fovy="57"/> 
+    </body>
+
+    
+
+  </worldbody>
+
+  <keyframe>
+    <!-- <key name="home" qpos="0 0 0 -1.57079 0 1.57079 -0.7853 0.04 0.04" ctrl="0 0 0 -1.57079 0 1.57079 -0.7853 255"/> -->
+    <!-- <key name="home" qpos="0 0 0 -1.57079 0 1.57079 -0.7853 0.04 0.04 0 0 0 0 0 0 0" ctrl="0 0 0 -1.57079 0 1.57079 -0.7853 255"/> -->
+    <key name="home" qpos="0.00 0.41 0.00 -1.85 0.00 2.26 0.79 0.04 0.04 0.5 0 0.95 0 0 0 0" ctrl="0 0 0 -1.57079 0 1.57079 -0.7853 255"/>
+  </keyframe>
+
+</mujoco>
