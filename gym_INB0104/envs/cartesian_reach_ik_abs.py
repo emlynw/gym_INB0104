@@ -30,7 +30,7 @@ class cartesian_reach_ik_abs(MujocoEnv, utils.EzPickle):
         self,
         image_obs=True,
         control_dt=0.1,
-        physics_dt=0.002,
+        physics_dt=0.005,
         width=480,
         height=480,
         render_mode="rgb_array",
@@ -181,12 +181,12 @@ class cartesian_reach_ik_abs(MujocoEnv, utils.EzPickle):
         self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + brick_color_noise
 
         # Move object
-        self.object_x_noise = np.random.uniform(low=-0.15, high=0.1)
-        self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
-        self.object_theta_noise = np.random.uniform(low=-0.5, high=0.5)
-        self.data.qpos[9] = self.default_obj_pos[0] + self.object_x_noise
-        self.data.qpos[10] = self.default_obj_pos[1] + self.object_y_noise
-        self.data.qpos[12] = self.default_obs_quat[0] + self.object_theta_noise
+        # self.object_x_noise = np.random.uniform(low=-0.15, high=0.1)
+        # self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
+        # self.object_theta_noise = np.random.uniform(low=-0.5, high=0.5)
+        # self.data.qpos[9] = self.default_obj_pos[0] + self.object_x_noise
+        # self.data.qpos[10] = self.default_obj_pos[1] + self.object_y_noise
+        # self.data.qpos[12] = self.default_obs_quat[0] + self.object_theta_noise
 
 
     def reset_model(self):
