@@ -17,7 +17,6 @@ def main():
         terminated = False
         truncated = False
         obs, info = env.reset()
-        print(obs['images']['wrist'].shape)
         if render_mode == "rgb_array":
             pixels = obs["images"]["front"]
             cv2.resize(pixels, (224, 224))
@@ -34,12 +33,11 @@ def main():
                 action = np.array([0.53, 0.0, 0.3, -1.0])
             
             obs, reward, terminated, truncated, info = env.step(action)
-            print(f"gripper_position: {obs['state']['panda/tcp_pos']}")
-            print(f"gripper velocity: {obs['state']['panda/tcp_vel']}")
-            print(f"gripper width: {obs['state']['panda/gripper_pos']}")
+
             if render_mode == "rgb_array":
                 pixels = obs["images"]["front"]
                 cv2.resize(pixels, (224, 224))
+                # write reward on the image
                 cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), (720, 720)))
                 cv2.waitKey(waitkey)
             i+=1
