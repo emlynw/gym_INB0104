@@ -17,7 +17,7 @@ DEFAULT_CAMERA_CONFIG = {
     "distance": 4.0,
     }
 
-class cartesian_reach_ik_abs(MujocoEnv, utils.EzPickle):
+class push_ik_abs(MujocoEnv, utils.EzPickle):
     metadata = { 
         "render_modes": [ 
             "human",
@@ -78,7 +78,7 @@ class cartesian_reach_ik_abs(MujocoEnv, utils.EzPickle):
         )
             
         p = Path(__file__).parent
-        env_dir = os.path.join(p, "xmls/cartesian_reach_ik.xml")
+        env_dir = os.path.join(p, "xmls/push.xml")
         self._n_substeps = int(control_dt / physics_dt)
         self.frame_skip = 1
 
@@ -147,7 +147,7 @@ class cartesian_reach_ik_abs(MujocoEnv, utils.EzPickle):
         self.init_brick_rgba = self.model.mat_rgba[self.model.mat('brick_wall').id].copy()
         self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('table').id]
 
-        self.object_center_site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "object_center_site")
+        self.init_goal_pos = self.model.site_pos[self.model.site('goal_area').id].copy()
 
     def domain_randomization(self):
         # Move robot
@@ -181,12 +181,17 @@ class cartesian_reach_ik_abs(MujocoEnv, utils.EzPickle):
         self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + brick_color_noise
 
         # Move object
-        # self.object_x_noise = np.random.uniform(low=-0.15, high=0.1)
-        # self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
-        # self.object_theta_noise = np.random.uniform(low=-0.5, high=0.5)
-        # self.data.qpos[9] = self.default_obj_pos[0] + self.object_x_noise
-        # self.data.qpos[10] = self.default_obj_pos[1] + self.object_y_noise
-        # self.data.qpos[12] = self.default_obs_quat[0] + self.object_theta_noise
+        self.object_x_noise = np.random.uniform(low=-0.15, high=0.1)
+        self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
+        self.object_theta_noise = np.random.uniform(low=-0.5, high=0.5)
+        self.data.qpos[9] = self.default_obj_pos[0] + self.object_x_noise
+        self.data.qpos[10] = self.default_obj_pos[1] + self.object_y_noise
+        self.data.qpos[12] = self.default_obs_quat[0] + self.object_theta_noise
+
+        # Move goal
+        self.goal_x_noise = np.random.uniform(low=-0.1, high=0.1)
+        self.goal_y_noise = np.random.uniform(low=-0.1, high=0.1)
+        self.model.site_pos[self.model.site('goal_area').id] = self.init_goal_pos + [self.goal_x_noise, self.goal_y_noise, 0]
 
 
     def reset_model(self):

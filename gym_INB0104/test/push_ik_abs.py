@@ -6,7 +6,7 @@ import numpy as np
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/cartesian_reach_ik_abs", render_mode=render_mode)
+    env = gym.make("gym_INB0104/push_ik_abs", render_mode=render_mode)
     env = TimeLimit(env, max_episode_steps=200)    
     camera_id = 1
     waitkey = 1

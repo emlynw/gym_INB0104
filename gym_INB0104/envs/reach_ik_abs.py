@@ -17,7 +17,7 @@ DEFAULT_CAMERA_CONFIG = {
     "distance": 4.0,
     }
 
-class cartesian_reach_ik(MujocoEnv, utils.EzPickle):
+class reach_ik_abs(MujocoEnv, utils.EzPickle):
     metadata = { 
         "render_modes": [ 
             "human",
@@ -30,7 +30,7 @@ class cartesian_reach_ik(MujocoEnv, utils.EzPickle):
         self,
         image_obs=True,
         control_dt=0.1,
-        physics_dt=0.002,
+        physics_dt=0.005,
         width=480,
         height=480,
         render_mode="rgb_array",
@@ -78,7 +78,7 @@ class cartesian_reach_ik(MujocoEnv, utils.EzPickle):
         )
             
         p = Path(__file__).parent
-        env_dir = os.path.join(p, "xmls/cartesian_reach_ik.xml")
+        env_dir = os.path.join(p, "xmls/reach.xml")
         self._n_substeps = int(control_dt / physics_dt)
         self.frame_skip = 1
 
@@ -95,8 +95,8 @@ class cartesian_reach_ik(MujocoEnv, utils.EzPickle):
         self.model.opt.timestep = physics_dt
         self.camera_id = (0, 1)
         self.action_space = Box(
-            np.array([-1.0, -1.0, -1.0, -1.0]),
-            np.array([1.0, 1.0, 1.0, 1.0]),
+            np.array([0.2, -0.3, 0, -1.0]),
+            np.array([0.6, 0.3, 0.5, 1.0]),
             dtype=np.float32,
         )
         self._viewer = MujocoRenderer(
@@ -233,10 +233,8 @@ class cartesian_reach_ik(MujocoEnv, utils.EzPickle):
         action = np.clip(action, self.action_space.low, self.action_space.high)
 
         x, y, z, grasp = action
-        pos = self.data.sensor("pinch_pos").data
-        # pos = self.data.mocap_pos[0].copy()
-        dpos = np.asarray([x, y, z]) * self.action_scale[0]
-        npos = np.clip(pos + dpos, *self._CARTESIAN_BOUNDS)
+        npos = np.asarray([x, y, z])
+        npos = np.clip(npos, *self._CARTESIAN_BOUNDS)
         self.data.mocap_pos[0] = npos
         if self.data.time - self.prev_time < 0.5:
             grasp = self.prev_grasp
