@@ -337,7 +337,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         
         # Check if the block is collinear with the gripper fingers
         cross_product = np.cross(gripper_vector, block_vector)
-        atol = 0.004  # 1 millimeter tolerance
+        atol = 0.003  # 1 millimeter tolerance
         rtol = 1e-5  # Standard relative tolerance
         collinear = np.allclose(cross_product, 0, atol=atol, rtol=rtol)
         
@@ -368,7 +368,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         else:
             alignment_reward = 0.0
 
-        reward = 0.3*r_close + alignment_reward + 2.0*r_lift
+        reward = r_close + alignment_reward + 8.0*r_lift
         info = dict(reward_close=r_close, alignment_reward=alignment_reward, reward_lift=r_lift, success=success)
 
         return reward, info
