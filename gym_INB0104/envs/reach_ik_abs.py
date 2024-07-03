@@ -30,7 +30,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         self,
         image_obs=True,
         control_dt=0.1,
-        physics_dt=0.005,
+        physics_dt=0.002,
         width=480,
         height=480,
         render_mode="rgb_array",
