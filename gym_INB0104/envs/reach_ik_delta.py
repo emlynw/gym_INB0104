@@ -50,7 +50,7 @@ class reach_ik_delta(MujocoEnv, utils.EzPickle):
                 {
                     "state": Dict(
                         {
-                            "panda/tcp_pos": Box(np.array([0.2, -0.3, 0]), np.array([0.6, 0.3, 0.5]), shape=(3,), dtype=np.float32),
+                            "panda/tcp_pos": Box(np.array([0.28, -0.5, 0.01]), np.array([0.75, 0.5, 0.55]), shape=(3,), dtype=np.float32),
                             "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
                             "panda/gripper_pos": Box(0.0, 0.08, shape=(1,), dtype=np.float32),
                         }
@@ -111,7 +111,7 @@ class reach_ik_delta(MujocoEnv, utils.EzPickle):
         self._PANDA_HOME = np.asarray((-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 1.56444, 0.772088))
         self._GRIPPER_HOME = np.asarray([0.04, 0.04])
         self._PANDA_XYZ = np.asarray([0.3, 0, 0.5])
-        self._CARTESIAN_BOUNDS = np.asarray([[0.2, -0.3, 0], [0.6, 0.3, 0.5]])
+        self._CARTESIAN_BOUNDS = np.asarray([[0.28, -0.5, 0.01], [0.75, 0.5, 0.55]])
         self.default_obj_pos = np.array([0.5, 0])
         self.default_obs_quat = np.array([1, 0, 0, 0])
         self._panda_dof_ids = np.asarray(
