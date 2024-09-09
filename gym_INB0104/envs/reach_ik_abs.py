@@ -8,7 +8,6 @@ from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
 from gymnasium.spaces import Box, Dict
 import mujoco
 from gym_INB0104.controllers import opspace_4 as opspace
-from typing import Optional, Any, SupportsFloat
 from pathlib import Path
 
 
@@ -52,7 +51,8 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
                         {
                             "panda/tcp_pos": Box(np.array([0.28, -0.5, 0.01]), np.array([0.75, 0.5, 0.55]), shape=(3,), dtype=np.float32),
                             "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
-                            "panda/gripper_pos": Box(0.0, 0.08, shape=(1,), dtype=np.float32),
+                            "panda/gripper_pos": Box(-1.0, 1.0, shape=(1,), dtype=np.float32),
+                            "panda/gripper_blocked": Box(0.0, 1.0, shape=(1,), dtype=np.float32),
                         }
                     ),
                     "images": Dict(
@@ -71,6 +71,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
                         "panda/tcp_pos": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
                         "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
                         "panda/gripper_pos": Box(-np.inf, np.inf, shape=(1,), dtype=np.float32),
+                        "panda/gripper_blocked": Box(0.0, 1.0, shape=(1,), dtype=np.float32),
                         "block_pos": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
                     }
                 ),
@@ -136,7 +137,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
 
         mujoco.mj_step(self.model, self.data)
         self.initial_qvel = np.copy(self.data.qvel)
-        self.prev_time = 0.0
+        self.prev_grasp_time = 0.0
         self.prev_grasp = -1.0
 
         # Store initial values for randomization
@@ -220,7 +221,9 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         
         self._z_init = self.data.sensor("block_pos").data[2]
         self._z_success = self._z_init + 0.2
-        self.prev_time = 0.0
+        self.prev_grasp_time = 0.0
+        self.prev_gripper_state = 0 # 0 for open, 1 for closed
+        self.gripper_blocked = False
         
         return self._get_obs()
 
@@ -234,18 +237,20 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         npos = np.asarray([x, y, z])
         npos = np.clip(npos, *self._CARTESIAN_BOUNDS)
         self.data.mocap_pos[0] = npos
-        if self.data.time - self.prev_time < 0.5:
+        if self.data.time - self.prev_grasp_time < 0.5:
             grasp = self.prev_grasp
+            self.gripper_blocked = True
         else:
-            grasp = grasp
-            self.prev_time = self.data.time
+            self.gripper_blocked = False
+            if grasp > 0:
+                g = 0 # Closed
+                self.gripper_state = 1
+            else:
+                g = 255 # Open
+                self.gripper_state = 0
+            self.data.ctrl[self._gripper_ctrl_id] = g
+            self.prev_grasp_time = self.data.time
             self.prev_grasp = grasp
-        
-        if grasp > 0:
-            g = 0
-        else:
-            g = 255
-        self.data.ctrl[self._gripper_ctrl_id] = g
 
         for _ in range(self._n_substeps):
             tau = opspace(
@@ -268,6 +273,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
 
         # Reward
         reward, info = self._get_reward(action)
+        self.prev_gripper_state = self.gripper_state
 
         return obs, reward, False, False, info 
     
@@ -289,11 +295,13 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         tcp_vel = self.data.sensor("pinch_vel").data
         obs["state"]["panda/tcp_vel"] = tcp_vel.astype(np.float32)
 
-        gripper_pos = 2*np.array(self.data.qpos[8], dtype=np.float32)
+        gripper_pos = 25*2*np.array(self.data.qpos[8], dtype=np.float32)-1 # *2 because the gripper is 0.08 wide, and the range is 0-0.04 *12.5 to scale to 1
+        gripper_blocked = np.float32(self.gripper_blocked)
         low = self.observation_space["state"]["panda/gripper_pos"].low
         high = self.observation_space["state"]["panda/gripper_pos"].high
         gripper_pos = np.clip(gripper_pos, low, high)
         obs["state"]["panda/gripper_pos"] = gripper_pos
+        obs["state"]["panda/gripper_blocked"] = gripper_blocked
 
         if self.image_obs:
             obs["images"] = {}
@@ -304,72 +312,74 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
 
         if self.render_mode == "human":
             self._viewer.render(self.render_mode)
-
         return obs
         
-    # def _get_reward(self, action):
-    #     block_pos = self.data.sensor("block_pos").data
-    #     tcp_pos = self.data.sensor("pinch_pos").data
-    #     dist = np.linalg.norm(block_pos - tcp_pos)
-    #     r_close = np.exp(-20 * dist)
-    #     if block_pos[2] > self._z_init + 0.15:
-    #         success = True
-    #     else:
-    #         success = False
-    #     r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
-    #     r_lift = np.clip(r_lift, 0.0, 1.0)
-    #     reward = 0.3 * r_close + 2.0 * r_lift
-    #     info = dict(reward_close=r_close, reward_lift=r_lift, success=success)
-    #     return reward, info
-
     def _get_reward(self, action):
         block_pos = self.data.sensor("block_pos").data
-        
-        # Access the positions of the finger tips using their body names
-        left_finger_pos = self.data.xpos[self.model.body('left_finger').id]
-        right_finger_pos = self.data.xpos[self.model.body('right_finger').id]
-
-        # Vector from left_finger_pos to right_finger_pos
-        gripper_vector = right_finger_pos - left_finger_pos
-        
-        # Vector from left_finger_pos to block_pos
-        block_vector = block_pos - left_finger_pos
-        
-        # Check if the block is collinear with the gripper fingers
-        cross_product = np.cross(gripper_vector, block_vector)
-        atol = 0.003  # 1 millimeter tolerance
-        rtol = 1e-5  # Standard relative tolerance
-        collinear = np.allclose(cross_product, 0, atol=atol, rtol=rtol)
-        
-        if collinear:
-            # Check if the block lies between the gripper fingers
-            dot_product = np.dot(block_vector, gripper_vector)
-            gripper_length_squared = np.dot(gripper_vector, gripper_vector)
-            within_bounds = 0 <= dot_product <= gripper_length_squared
-        else:
-            within_bounds = False
-
-        # Distance between block and midpoint of grippers
-        gripper_midpoint = (left_finger_pos + right_finger_pos) / 2
-        dist = np.linalg.norm(block_pos - gripper_midpoint)
+        tcp_pos = self.data.sensor("pinch_pos").data
+        dist = np.linalg.norm(block_pos - tcp_pos)
         r_close = np.exp(-20 * dist)
-
-        # Reward for lifting the block
         if block_pos[2] > self._z_init + 0.15:
             success = True
         else:
             success = False
         r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
         r_lift = np.clip(r_lift, 0.0, 1.0)
-
-        # Adjust the reward based on alignment with gripper fingers
-        if within_bounds:
-            alignment_reward = 1.0
-        else:
-            alignment_reward = 0.0
-
-        reward = r_close + alignment_reward + 8.0*r_lift
-        info = dict(reward_close=r_close, alignment_reward=alignment_reward, reward_lift=r_lift, success=success)
-
+        reward = 0.3 * r_close + 2.0 * r_lift
+        if self.gripper_state != self.prev_gripper_state:
+            print("gripper penalty")
+            reward -= 0.1
+        info = dict(reward_close=r_close, reward_lift=r_lift, success=success)
         return reward, info
+
+    # def _get_reward(self, action):
+    #     block_pos = self.data.sensor("block_pos").data
+        
+    #     # Access the positions of the finger tips using their body names
+    #     left_finger_pos = self.data.xpos[self.model.body('left_finger').id]
+    #     right_finger_pos = self.data.xpos[self.model.body('right_finger').id]
+
+    #     # Vector from left_finger_pos to right_finger_pos
+    #     gripper_vector = right_finger_pos - left_finger_pos
+        
+    #     # Vector from left_finger_pos to block_pos
+    #     block_vector = block_pos - left_finger_pos
+        
+    #     # Check if the block is collinear with the gripper fingers
+    #     cross_product = np.cross(gripper_vector, block_vector)
+    #     atol = 0.003  # 1 millimeter tolerance
+    #     rtol = 1e-5  # Standard relative tolerance
+    #     collinear = np.allclose(cross_product, 0, atol=atol, rtol=rtol)
+        
+    #     if collinear:
+    #         # Check if the block lies between the gripper fingers
+    #         dot_product = np.dot(block_vector, gripper_vector)
+    #         gripper_length_squared = np.dot(gripper_vector, gripper_vector)
+    #         within_bounds = 0 <= dot_product <= gripper_length_squared
+    #     else:
+    #         within_bounds = False
+
+    #     # Distance between block and midpoint of grippers
+    #     gripper_midpoint = (left_finger_pos + right_finger_pos) / 2
+    #     dist = np.linalg.norm(block_pos - gripper_midpoint)
+    #     r_close = np.exp(-20 * dist)
+
+    #     # Reward for lifting the block
+    #     if block_pos[2] > self._z_init + 0.15:
+    #         success = True
+    #     else:
+    #         success = False
+    #     r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
+    #     r_lift = np.clip(r_lift, 0.0, 1.0)
+
+    #     # Adjust the reward based on alignment with gripper fingers
+    #     if within_bounds:
+    #         alignment_reward = 1.0
+    #     else:
+    #         alignment_reward = 0.0
+
+    #     reward = r_close + alignment_reward + 8.0*r_lift
+    #     info = dict(reward_close=r_close, alignment_reward=alignment_reward, reward_lift=r_lift, success=success)
+
+    #     return reward, info
 

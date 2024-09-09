@@ -23,17 +23,24 @@ def main():
             cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), (720, 720)))
             cv2.waitKey(waitkey)
         while not terminated and not truncated:
+            # if i < 50:
+            #     action = np.array([0.53, 0.0, 0.02, -1.0])
+            # elif i < 100:
+            #     action = np.array([0.53, 0.0, 0.02, 1.0])
+            # elif i < 150:
+            #     action = np.array([0.53, 0.0, 0.3, 1.0])
+            # elif i < 200:
+            #     action = np.array([0.53, 0.0, 0.3, -1.0])
             if i < 50:
-                action = np.array([0.53, 0.0, 0.02, -1.0])
+                action = np.array([0., 0.0, 0.1, -1.0])
             elif i < 100:
-                action = np.array([0.53, 0.0, 0.02, 1.0])
+                action = np.array([0., 0.0, 0.1, 1.0])
             elif i < 150:
-                action = np.array([0.53, 0.0, 0.3, 1.0])
+                action = np.array([0., 0.0, 0.1, -1.0])
             elif i < 200:
-                action = np.array([0.53, 0.0, 0.3, -1.0])
+                action = np.array([0., 0.0, 0.1, -1.0])
             
             obs, reward, terminated, truncated, info = env.step(action)
-            print(f"alignment reward: {info['alignment_reward']}")
 
             if render_mode == "rgb_array":
                 pixels = obs["images"]["front"]
