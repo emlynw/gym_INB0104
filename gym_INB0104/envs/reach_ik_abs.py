@@ -237,6 +237,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         npos = np.asarray([x, y, z])
         npos = np.clip(npos, *self._CARTESIAN_BOUNDS)
         self.data.mocap_pos[0] = npos
+
         if self.data.time - self.prev_grasp_time < 0.5:
             grasp = self.prev_grasp
             self.gripper_blocked = True
@@ -327,7 +328,6 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         r_lift = np.clip(r_lift, 0.0, 1.0)
         reward = 0.3 * r_close + 2.0 * r_lift
         if self.gripper_state != self.prev_gripper_state:
-            print("gripper penalty")
             reward -= 0.1
         info = dict(reward_close=r_close, reward_lift=r_lift, success=success)
         return reward, info
