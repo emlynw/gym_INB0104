@@ -297,7 +297,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         obs["state"]["panda/tcp_vel"] = tcp_vel.astype(np.float32)
 
         gripper_pos = 25*2*np.array(self.data.qpos[8], dtype=np.float32)-1 # *2 because the gripper is 0.08 wide, and the range is 0-0.04 *12.5 to scale to 1
-        gripper_blocked = np.float32(self.gripper_blocked)
+        gripper_blocked = np.array(np.float32(self.gripper_blocked))
         low = self.observation_space["state"]["panda/gripper_pos"].low
         high = self.observation_space["state"]["panda/gripper_pos"].high
         gripper_pos = np.clip(gripper_pos, low, high)
@@ -326,7 +326,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
             success = False
         r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
         r_lift = np.clip(r_lift, 0.0, 1.0)
-        reward = 0.3 * r_close + 2.0 * r_lift
+        reward = 0.3 * r_close + 0.7 * r_lift
         if self.gripper_state != self.prev_gripper_state:
             reward -= 0.1
         info = dict(reward_close=r_close, reward_lift=r_lift, success=success)
