@@ -160,7 +160,7 @@ class cartesian_reach(MujocoEnv, utils.EzPickle):
             self.render()
 
         # Reward
-        ee_pos = self.get_body_com("ee_center_body").copy()
+        ee_pos = self.get_body_com("pinch").copy()
         target_pos = self.data.site_xpos[self.object_center_site_id].copy()
         dist_1 = np.linalg.norm(ee_pos - target_pos)
         ctrl = np.square(action[0:3]).sum()
@@ -180,7 +180,7 @@ class cartesian_reach(MujocoEnv, utils.EzPickle):
         self.set_mocap_pose(new_pos, self.grasp_site_pose)
 
     def _get_obs(self):
-        pos = self.get_body_com("ee_center_body").copy() - self.initial_mocap_position.copy()
+        pos = self.get_body_com("pinch").copy() - self.initial_mocap_position.copy()
         gripper_width = self.get_fingers_width()
         if self.use_distance:
             target_pos = self.get_body_com("target_object")

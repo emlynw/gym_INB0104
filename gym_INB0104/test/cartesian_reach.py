@@ -22,13 +22,13 @@ def main():
         while not terminated and not truncated:
             # action = np.zeros(len(env.action_space.sample()))
             if i < 50:
-                action = np.array([0.1, -0.1, 0.1, 0])
+                action = np.array([0.1, -0.1, -0.1, 0])
             elif i >= 50 and i < 100:
-                action = np.array([0.5, 0.1, 0.1, 0])
+                action = np.array([0.5, 0.1, -0.1, 0])
             elif i >= 100 and i < 150:
-                action = np.array([0.5, 0.1, 0.1, 0])
+                action = np.array([0.5, 0.1, -0.1, 0])
             elif i >= 150 and i < 200:
-                action = np.array([0.5, -0.1, 0.1, 0])
+                action = np.array([0.5, -0.1, -0.1, 0])
             obs, reward, terminated, truncated, info = env.step(action)
             pixels = env.render()
             # cv2.putText(
