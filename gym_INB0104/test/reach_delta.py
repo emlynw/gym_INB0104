@@ -24,7 +24,7 @@ def main():
             cv2.waitKey(waitkey)
         while not terminated and not truncated:
             if i < 50:
-                action = np.array([0.5, -0.5, 0.0, -1.0])
+                action = np.array([0.0, -0.5, 0.0, -1.0])
             elif i < 100:
                 action = np.array([0.0, 0.0, -0.5, 1.0])
             elif i < 150:

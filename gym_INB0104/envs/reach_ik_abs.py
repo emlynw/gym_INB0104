@@ -1,14 +1,15 @@
 # https://github.com/rail-berkeley/serl/blob/e2065d673131af6699aa899a78159859bd17c135/franka_sim/franka_sim/envs/panda_pick_gym_env.py
 import numpy as np
 import os
+import mujoco
 
 from gymnasium import utils
 from gymnasium.envs.mujoco import MujocoEnv
 from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
 from gymnasium.spaces import Box, Dict
-import mujoco
 from gym_INB0104.controllers import opspace_4 as opspace
 from pathlib import Path
+from scipy.spatial.transform import Rotation
 
 
 DEFAULT_CAMERA_CONFIG = {
@@ -28,6 +29,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
     def __init__(
         self,
         image_obs=True,
+        randomize_domain=True,
         control_dt=0.1,
         physics_dt=0.002,
         width=480,
@@ -42,45 +44,37 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         )
 
         self.image_obs = image_obs
+        self.randomize_domain = randomize_domain
         self.render_mode = render_mode
+        self.width = width
+        self.height = height
 
-        if self.image_obs:
-            self.observation_space = Dict(
-                {
-                    "state": Dict(
-                        {
-                            "panda/tcp_pos": Box(np.array([0.28, -0.5, 0.01]), np.array([0.75, 0.5, 0.55]), shape=(3,), dtype=np.float32),
-                            "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
-                            "panda/gripper_pos": Box(-1.0, 1.0, shape=(1,), dtype=np.float32),
-                            "panda/gripper_blocked": Box(0.0, 1.0, shape=(1,), dtype=np.float32),
-                        }
-                    ),
-                    "images": Dict(
-                        {
-                            "front": Box(low=0, high=255, shape=(height, width, 3), dtype=np.uint8),
-                            "wrist": Box(low=0, high=255, shape=(height, width, 3), dtype=np.uint8,),
-                        }
-                    ),
-                }
-            )
-        else:
-            self.observation_space = Dict(
+        state_space = Dict(
             {
-                "state": Dict(
-                    {
-                        "panda/tcp_pos": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
-                        "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
-                        "panda/gripper_pos": Box(-np.inf, np.inf, shape=(1,), dtype=np.float32),
-                        "panda/gripper_blocked": Box(0.0, 1.0, shape=(1,), dtype=np.float32),
-                        "block_pos": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
-                    }
-                ),
+                "panda/tcp_pos": Box(np.array([0.28, -0.5, 0.01]), np.array([0.75, 0.5, 0.55]), shape=(3,), dtype=np.float32),
+                "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
+                "panda/gripper_pos": Box(0.0, 0.08, shape=(1,), dtype=np.float32),
+                "panda/gripper_blocked": Box(0.0, 1.0, shape=(1,), dtype=np.float32),
+                "panda/tcp_orientation": Box(-1, 1, shape=(4,), dtype=np.float32),  # Quaternion
             }
         )
-            
+
+        if not self.image_obs:
+            state_space["block_pos"] = Box(-np.inf, np.inf, shape=(3,), dtype=np.float32)
+
+        self.observation_space = Dict({"state": state_space})
+
+        if self.image_obs:
+            self.observation_space["images"] = Dict(
+                {
+                    "wrist": Box(0, 255, shape=(self.height, self.width, 3), dtype=np.uint8),
+                    "front": Box(0, 255, shape=(self.height, self.width, 3), dtype=np.uint8),
+                }
+            )
+
         p = Path(__file__).parent
         env_dir = os.path.join(p, "xmls/reach_ik.xml")
-        self._n_substeps = int(control_dt / physics_dt)
+        self._n_substeps = int(float(control_dt) / float(physics_dt))
         self.frame_skip = 1
 
         MujocoEnv.__init__(
@@ -96,8 +90,8 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         self.model.opt.timestep = physics_dt
         self.camera_id = (0, 1)
         self.action_space = Box(
-            np.array([0.28, -0.5, 0.01, -1.0]),
-            np.array([0.75, 0.5, 0.55, 1.0]),
+            np.array([-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]),  # x, y, z, roll, pitch, yaw, grasp
+            np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
             dtype=np.float32,
         )
         self._viewer = MujocoRenderer(
@@ -109,23 +103,25 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
 
     def setup(self):
         # self._PANDA_HOME = np.asarray((0, -0.785, 0, -2.35, 0, 1.57, np.pi / 4))
-        self._PANDA_HOME = np.asarray((-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 1.56444, 0.772088))
-        self._GRIPPER_HOME = np.asarray([0.04, 0.04])
-        self._PANDA_XYZ = np.asarray([0.3, 0, 0.5])
-        self._CARTESIAN_BOUNDS = np.asarray([[0.28, -0.5, 0.01], [0.75, 0.5, 0.55]])
+        self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 1.56444, 0.772088], dtype=np.float32)
+        self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
+        self._PANDA_XYZ = np.array([0.3, 0, 0.5], dtype=np.float32)
+        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.01], [0.75, 0.35, 0.55]], dtype=np.float32)
+        self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/4, -np.pi/2], [np.pi/4, np.pi/4, np.pi/2]], dtype=np.float32)
+        self.action_low = np.array([0.28, -0.5, 0.01, -np.pi/4, -np.pi/4, -np.pi/2, -1.0])
+        self.action_high = np.array([0.75, 0.5, 0.55, np.pi/4, np.pi/4, np.pi/2, 1.0])
         self.default_obj_pos = np.array([0.5, 0])
         self.default_obs_quat = np.array([1, 0, 0, 0])
-        self._panda_dof_ids = np.asarray(
+        self._panda_dof_ids = np.array(
             [self.model.joint(f"joint{i}").id for i in range(1, 8)]
         )
-        self._panda_ctrl_ids = np.asarray(
+        self._panda_ctrl_ids = np.array(
             [self.model.actuator(f"actuator{i}").id for i in range(1, 8)]
         )
         self._gripper_ctrl_id = self.model.actuator("fingers_actuator").id
         self._pinch_site_id = self.model.site("pinch").id
         self._block_z = self.model.geom("block").size[2]
-        self.action_scale: np.ndarray = np.asarray([0.1, 1])
-        
+
         # Arm and gripper to home position
         self.data.qpos[self._panda_dof_ids] = self._PANDA_HOME
         self.data.qpos[7:9] = self._GRIPPER_HOME
@@ -133,7 +129,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         
         # Reset mocap body to home position
         tcp_pos = self.data.sensor("pinch_pos").data
-        self.data.mocap_pos[0] = tcp_pos
+        self.data.mocap_pos[0] = tcp_pos.copy()
 
         mujoco.mj_step(self.model, self.data)
         self.initial_qvel = np.copy(self.data.qvel)
@@ -148,6 +144,10 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         self.init_brick_rgba = self.model.mat_rgba[self.model.mat('brick_wall').id].copy()
         self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('table').id]
 
+        # Add this line to set the initial orientation
+        self.initial_orientation = self.data.sensor("pinch_quat").data.copy()
+        self.initial_rotation = Rotation.from_quat(self.initial_orientation)
+
     def domain_randomization(self):
         # Move robot
         ee_noise_x = np.random.uniform(low=0.0, high=0.12)
@@ -155,7 +155,6 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         ee_noise_z = np.random.uniform(low=-0.4, high=0.1)
         ee_noise = np.array([ee_noise_x, ee_noise_y, ee_noise_z])
         self.data.mocap_pos[0] = self._PANDA_XYZ + ee_noise
-
         # Add noise to camera position and orientation
         cam_pos_noise = np.random.uniform(low=[-0.05,-0.05,-0.02], high=[0.05,0.05,0.02], size=3)
         cam_quat_noise = np.random.uniform(low=-0.02, high=0.02, size=4)
@@ -178,7 +177,6 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         brick_color_noise = np.random.uniform(low=-0.1, high=0.1, size=1)
         self.model.mat_rgba[self.model.mat('brick_wall').id] = self.init_brick_rgba
         self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + brick_color_noise
-
         # Move object
         self.object_x_noise = np.random.uniform(low=-0.15, high=0.1)
         self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
@@ -196,11 +194,12 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
 
         # Reset mocap body to home position.
         tcp_pos = self.data.sensor("pinch_pos").data
-        self.data.mocap_pos[0] = tcp_pos
+        self.data.mocap_pos[0] = tcp_pos.copy()
 
-        self.domain_randomization()
+        if self.randomize_domain:
+            self.domain_randomization()
         
-        self.data.qvel[:] = np.copy(self.initial_qvel)
+        self.data.qvel[:] = self.initial_qvel
         if self.model.na != 0:
             self.data.act[:] = None
         
@@ -225,35 +224,53 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         self.prev_gripper_state = 0 # 0 for open, 1 for closed
         self.gripper_blocked = False
         
+        # Reset the initial orientation
+        self.initial_orientation = self.data.sensor("pinch_quat").data.copy()
+        self.initial_rotation = Rotation.from_quat(self.initial_orientation)
+
         return self._get_obs()
 
     def step(self, action):
-        # Action
         if np.array(action).shape != self.action_space.shape:
             raise ValueError("Action dimension mismatch")
+        print(f"input action: {action}")
         action = np.clip(action, self.action_space.low, self.action_space.high)
 
-        x, y, z, grasp = action
-        npos = np.asarray([x, y, z])
-        npos = np.clip(npos, *self._CARTESIAN_BOUNDS)
+        low, high = self.action_low, self.action_high
+        action_range = high - low
+        action = (action_range/2.0)*(action+1.0) + low
+        print(f"absolute action: {action}")
+
+
+        x, y, z, roll, pitch, yaw, grasp = action
+        npos = np.array([x, y, z])
+        nrot = np.array([roll, pitch, yaw])
+
+        # Apply position change
         self.data.mocap_pos[0] = npos
 
+        # Orientation changes, ZYX because of mujoco quaternions?
+        # Convert the action rotation to a Rotation object
+        action_rotation = Rotation.from_euler('zyx', nrot)
+        final_rotation = self.initial_rotation * action_rotation
+        # Set the final orientation
+        self.data.mocap_quat[0] = final_rotation.as_quat()
+        # Handle grasping
         if self.data.time - self.prev_grasp_time < 0.5:
             grasp = self.prev_grasp
             self.gripper_blocked = True
         else:
             self.gripper_blocked = False
             if grasp > 0:
-                g = 0 # Closed
+                g = 0  # Closed
                 self.gripper_state = 1
             else:
-                g = 255 # Open
+                g = 255  # Open
                 self.gripper_state = 0
             self.data.ctrl[self._gripper_ctrl_id] = g
             self.prev_grasp_time = self.data.time
             self.prev_grasp = grasp
-
-        for _ in range(self._n_substeps):
+        for k in range(self._n_substeps):
             tau = opspace(
                 model=self.model,
                 data=self.data,
@@ -273,7 +290,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
             self.render()
 
         # Reward
-        reward, info = self._get_reward(action)
+        reward, info = self._compute_reward(action)
         self.prev_gripper_state = self.gripper_state
 
         return obs, reward, False, False, info 
@@ -287,35 +304,31 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         return rendered_frames
 
     def _get_obs(self):
-        obs = {}
-        obs["state"] = {}
+        obs = {"state": {}}
 
-        tcp_pos = self.data.sensor("pinch_pos").data
-        obs["state"]["panda/tcp_pos"] = tcp_pos.astype(np.float32)
+        # Populate state observations
+        obs["state"]["panda/tcp_pos"] = self.data.sensor("pinch_pos").data.astype(np.float32)
+        obs["state"]["panda/tcp_orientation"] = self.data.sensor("pinch_quat").data.astype(np.float32)
+        obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
+        obs["state"]["panda/gripper_pos"] = (25*2*np.array([self.data.qpos[8]], dtype=np.float32)-1).clip(
+            self.observation_space["state"]["panda/gripper_pos"].low,
+            self.observation_space["state"]["panda/gripper_pos"].high
+        )
+        obs["state"]["panda/gripper_blocked"] = np.array([self.gripper_blocked], dtype=np.float32)
 
-        tcp_vel = self.data.sensor("pinch_vel").data
-        obs["state"]["panda/tcp_vel"] = tcp_vel.astype(np.float32)
-
-        gripper_pos = 25*2*np.array(self.data.qpos[8], dtype=np.float32)-1 # *2 because the gripper is 0.08 wide, and the range is 0-0.04 *12.5 to scale to 1
-        gripper_blocked = np.array(np.float32(self.gripper_blocked))
-        low = self.observation_space["state"]["panda/gripper_pos"].low
-        high = self.observation_space["state"]["panda/gripper_pos"].high
-        gripper_pos = np.clip(gripper_pos, low, high)
-        obs["state"]["panda/gripper_pos"] = gripper_pos
-        obs["state"]["panda/gripper_blocked"] = gripper_blocked
+        if not self.image_obs:
+            obs["state"]["block_pos"] = self.data.sensor("block_pos").data.astype(np.float32)
 
         if self.image_obs:
             obs["images"] = {}
             obs["images"]["wrist"], obs["images"]["front"] = self.render()
-        else:
-            block_pos = self.data.sensor("block_pos").data.astype(np.float32)
-            obs["state"]["block_pos"] = block_pos
 
         if self.render_mode == "human":
             self._viewer.render(self.render_mode)
+
         return obs
         
-    def _get_reward(self, action):
+    def _compute_reward(self, action):
         block_pos = self.data.sensor("block_pos").data
         tcp_pos = self.data.sensor("pinch_pos").data
         dist = np.linalg.norm(block_pos - tcp_pos)
@@ -327,59 +340,29 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
         r_lift = np.clip(r_lift, 0.0, 1.0)
         reward = 0.3 * r_close + 0.7 * r_lift
-        if self.gripper_state != self.prev_gripper_state:
+        if self.gripper_blocked and self.gripper_state != self.prev_gripper_state:
             reward -= 0.1
+
+        # Check if gripper pads are in contact with the object
+        right_pad_contact = False
+        left_pad_contact = False
+        for i in range(self.data.ncon):
+            geom1_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom1)
+            geom2_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom2)
+            geom_names = geom1_name + geom2_name
+            if "block" in geom_names:
+                if "right_pad" in geom_names:
+                    right_pad_contact = True
+                if "left_pad" in geom_names:
+                    left_pad_contact = True
+            if right_pad_contact and left_pad_contact:
+                break            
+                
+        if right_pad_contact and left_pad_contact:
+            reward += 0.2
+            
+        if block_pos[2] >= self._z_success:
+            reward = 10
+        
         info = dict(reward_close=r_close, reward_lift=r_lift, success=success)
         return reward, info
-
-    # def _get_reward(self, action):
-    #     block_pos = self.data.sensor("block_pos").data
-        
-    #     # Access the positions of the finger tips using their body names
-    #     left_finger_pos = self.data.xpos[self.model.body('left_finger').id]
-    #     right_finger_pos = self.data.xpos[self.model.body('right_finger').id]
-
-    #     # Vector from left_finger_pos to right_finger_pos
-    #     gripper_vector = right_finger_pos - left_finger_pos
-        
-    #     # Vector from left_finger_pos to block_pos
-    #     block_vector = block_pos - left_finger_pos
-        
-    #     # Check if the block is collinear with the gripper fingers
-    #     cross_product = np.cross(gripper_vector, block_vector)
-    #     atol = 0.003  # 1 millimeter tolerance
-    #     rtol = 1e-5  # Standard relative tolerance
-    #     collinear = np.allclose(cross_product, 0, atol=atol, rtol=rtol)
-        
-    #     if collinear:
-    #         # Check if the block lies between the gripper fingers
-    #         dot_product = np.dot(block_vector, gripper_vector)
-    #         gripper_length_squared = np.dot(gripper_vector, gripper_vector)
-    #         within_bounds = 0 <= dot_product <= gripper_length_squared
-    #     else:
-    #         within_bounds = False
-
-    #     # Distance between block and midpoint of grippers
-    #     gripper_midpoint = (left_finger_pos + right_finger_pos) / 2
-    #     dist = np.linalg.norm(block_pos - gripper_midpoint)
-    #     r_close = np.exp(-20 * dist)
-
-    #     # Reward for lifting the block
-    #     if block_pos[2] > self._z_init + 0.15:
-    #         success = True
-    #     else:
-    #         success = False
-    #     r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
-    #     r_lift = np.clip(r_lift, 0.0, 1.0)
-
-    #     # Adjust the reward based on alignment with gripper fingers
-    #     if within_bounds:
-    #         alignment_reward = 1.0
-    #     else:
-    #         alignment_reward = 0.0
-
-    #     reward = r_close + alignment_reward + 8.0*r_lift
-    #     info = dict(reward_close=r_close, alignment_reward=alignment_reward, reward_lift=r_lift, success=success)
-
-    #     return reward, info
-

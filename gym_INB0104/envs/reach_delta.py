@@ -24,7 +24,6 @@ class reach_delta(MujocoEnv, utils.EzPickle):
             "rgb_array", 
             "depth_array"
         ], 
-        "render_fps": 10
     }
     
     def __init__(
@@ -95,6 +94,7 @@ class reach_delta(MujocoEnv, utils.EzPickle):
             camera_id=0, 
             **kwargs,
         )
+        self.model.opt.timestep = physics_dt
         self.camera_id = (0, 1)
         self.action_space = Box(
             np.array([-1.0, -1.0, -1.0, -1.0]),
@@ -124,7 +124,7 @@ class reach_delta(MujocoEnv, utils.EzPickle):
         self._gripper_ctrl_id = self.model.actuator("fingers_actuator").id
         self._pinch_site_id = self.model.site("pinch").id
         self._block_z = self.model.geom("block").size[2]
-        self.action_scale: np.ndarray = np.asarray([0.5, 1])
+        self.action_scale: np.ndarray = np.asarray([0.1, 1])
 
         # Arm and gripper to home position
         self.data.qpos[self._panda_dof_ids] = self._PANDA_HOME
@@ -224,12 +224,12 @@ class reach_delta(MujocoEnv, utils.EzPickle):
             raise ValueError("Action dimension mismatch")
         action = np.clip(action, self.action_space.low, self.action_space.high)
 
+
         x, y, z, grasp = action
         pos = self.data.sensor("pinch_pos").data
         dpos = np.asarray([x, y, z]) * self.action_scale[0]
         npos = np.clip(pos + dpos, *self._CARTESIAN_BOUNDS)
         self.data.mocap_pos[0] = npos
-
         if self.data.time - self.prev_grasp_time < 0.5:
             grasp = self.prev_grasp
             self.gripper_blocked = True
@@ -237,17 +237,20 @@ class reach_delta(MujocoEnv, utils.EzPickle):
             self.gripper_blocked = False
             if grasp > 0:
                 g = 0 # Closed
-                print(f"closing")
                 self.gripper_state = 1
             else:
                 g = 255 # Open
-                print(f"opening")
                 self.gripper_state = 0
             self.data.ctrl[self._gripper_ctrl_id] = g
             self.prev_grasp_time = self.data.time
             self.prev_grasp = grasp
 
-        mujoco.mj_step(self.model, self.data)
+        for _ in range(self.frame_skip):
+            if self.data.qpos[1] > 0.0:
+                self.data.ctrl[1] = -20
+            else:
+                self.data.ctrl[1] = 20
+            mujoco.mj_step(self.model, self.data)
 
         
         # Observation

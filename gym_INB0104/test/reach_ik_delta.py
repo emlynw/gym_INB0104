@@ -8,7 +8,6 @@ def main():
     render_mode = "rgb_array"
     env = gym.make("gym_INB0104/reach_ik_delta", render_mode=render_mode, randomize_domain=False)
     env = TimeLimit(env, max_episode_steps=200)    
-    camera_id = 0
     waitkey = 10
 
     while True:
@@ -17,7 +16,7 @@ def main():
         terminated = False
         truncated = False
         obs, info = env.reset()
-        rotate = False
+        rotate = True
         if render_mode == "rgb_array":
             pixels = obs["images"]["front"]
             cv2.resize(pixels, (224, 224))
@@ -25,14 +24,18 @@ def main():
             cv2.waitKey(waitkey)
         while not terminated and not truncated:
             if rotate:
-                if i < 50:
-                    action = np.array([0.0, 0.0, 0.0, 1.0, 1.0, 1.0, -1.0])
+                if i < 15:
+                    action = np.array([0.2, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])
+                elif i < 50:
+                    action = np.array([0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0])
+                elif i < 80:
+                    action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0])
                 elif i < 100:
-                    action = np.array([0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0])
-                elif i < 150:
-                    action = np.array([0.0, 0.0, 0.0, -1.0, -1.0, -1.0, -1.0])
-                elif i < 200:
+                    action = np.array([0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 1.0])
+                elif i < 120:
                     action = np.array([0.0, 0.0, 0.0, -1.0, -1.0, -1.0, 1.0])
+                elif i < 140:
+                    action = np.array([0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0])
             else:
                 if i < 15:
                     action = np.array([0.2, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])

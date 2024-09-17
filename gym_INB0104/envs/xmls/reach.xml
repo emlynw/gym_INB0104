@@ -22,12 +22,12 @@
 
     <!-- IK target -->
     <body name="target" pos=".15 0 .5" quat="0 1 0 0" mocap="true">
-      <geom name="target" type="box" size=".03 .03 .03" contype="0" conaffinity="0" rgba=".6 .3 .3 1"/>
+      <geom name="target" type="box" size=".03 .03 .03" contype="0" conaffinity="0" rgba=".6 .3 .3 0"/>
     </body>
   </worldbody>
 
   <equality>
-      <weld body1="target" body2="pinch" solimp="0.9 0.95 0.001" solref="0.01 1"/>
+      <weld body1="target" body2="pinch" solimp="0.1 0.5 0.01" solref="0.01 1"/>
   </equality>
 
   <sensor>

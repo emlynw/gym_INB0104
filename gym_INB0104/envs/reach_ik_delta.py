@@ -145,8 +145,6 @@ class reach_ik_delta(MujocoEnv, utils.EzPickle):
         self.init_brick_rgba = self.model.mat_rgba[self.model.mat('brick_wall').id].copy()
         self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('table').id]
 
-        self.object_center_site_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_SITE, "object_center_site")
-
         # Add this line to set the initial orientation
         self.initial_orientation = self.data.sensor("pinch_quat").data.copy()
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)
