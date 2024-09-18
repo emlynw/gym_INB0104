@@ -17,13 +17,9 @@ DEFAULT_CAMERA_CONFIG = {
     "distance": 4.0,
     }
 
-class reach_ik_abs(MujocoEnv, utils.EzPickle):
+class ReachIKAbsEnv(MujocoEnv, utils.EzPickle):
     metadata = { 
-        "render_modes": [ 
-            "human",
-            "rgb_array", 
-            "depth_array"
-        ], 
+        "render_modes": ["human", "rgb_array", "depth_array"], 
     }
     
     def __init__(
@@ -37,12 +33,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         render_mode="rgb_array",
         **kwargs,
     ):
-        utils.EzPickle.__init__(
-            self, 
-            image_obs=image_obs,
-            **kwargs
-        )
-
+        utils.EzPickle.__init__(self, image_obs=image_obs, **kwargs)
         self.image_obs = image_obs
         self.randomize_domain = randomize_domain
         self.render_mode = render_mode
@@ -52,19 +43,16 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         state_space = Dict(
             {
                 "panda/tcp_pos": Box(np.array([0.28, -0.5, 0.01]), np.array([0.75, 0.5, 0.55]), shape=(3,), dtype=np.float32),
-                "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
-                "panda/gripper_pos": Box(0.0, 0.08, shape=(1,), dtype=np.float32),
-                "panda/gripper_blocked": Box(0.0, 1.0, shape=(1,), dtype=np.float32),
                 "panda/tcp_orientation": Box(-1, 1, shape=(4,), dtype=np.float32),  # Quaternion
+                "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
+                "panda/gripper_pos": Box(-1, 1, shape=(1,), dtype=np.float32),
+                "panda/gripper_vec": Box(0.0, 1.0, shape=(4,), dtype=np.float32),
             }
         )
-
-        if not self.image_obs:
+        if not image_obs:
             state_space["block_pos"] = Box(-np.inf, np.inf, shape=(3,), dtype=np.float32)
-
         self.observation_space = Dict({"state": state_space})
-
-        if self.image_obs:
+        if image_obs:
             self.observation_space["images"] = Dict(
                 {
                     "wrist": Box(0, 255, shape=(self.height, self.width, 3), dtype=np.uint8),
@@ -87,6 +75,7 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
             camera_id=0, 
             **kwargs,
         )
+
         self.model.opt.timestep = physics_dt
         self.camera_id = (0, 1)
         self.action_space = Box(
@@ -94,47 +83,36 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
             np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
             dtype=np.float32,
         )
-        self._viewer = MujocoRenderer(
-            self.model,
-            self.data,
-        )
+        self._viewer = MujocoRenderer(self.model, self.data)
         self._viewer.render(self.render_mode)
         self.setup()
 
     def setup(self):
-        # self._PANDA_HOME = np.asarray((0, -0.785, 0, -2.35, 0, 1.57, np.pi / 4))
         self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 1.56444, 0.772088], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.5], dtype=np.float32)
-        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.01], [0.75, 0.35, 0.55]], dtype=np.float32)
-        self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/4, -np.pi/2], [np.pi/4, np.pi/4, np.pi/2]], dtype=np.float32)
         self.action_low = np.array([0.28, -0.5, 0.01, -np.pi/4, -np.pi/4, -np.pi/2, -1.0])
         self.action_high = np.array([0.75, 0.5, 0.55, np.pi/4, np.pi/4, np.pi/2, 1.0])
+        self.action_range = self.action_high - self.action_low
+
         self.default_obj_pos = np.array([0.5, 0])
         self.default_obs_quat = np.array([1, 0, 0, 0])
-        self._panda_dof_ids = np.array(
-            [self.model.joint(f"joint{i}").id for i in range(1, 8)]
-        )
-        self._panda_ctrl_ids = np.array(
-            [self.model.actuator(f"actuator{i}").id for i in range(1, 8)]
-        )
+        self._panda_dof_ids = np.array([self.model.joint(f"joint{i}").id for i in range(1, 8)])
+        self._panda_ctrl_ids = np.array([self.model.actuator(f"actuator{i}").id for i in range(1, 8)])
         self._gripper_ctrl_id = self.model.actuator("fingers_actuator").id
         self._pinch_site_id = self.model.site("pinch").id
         self._block_z = self.model.geom("block").size[2]
 
-        # Arm and gripper to home position
-        self.data.qpos[self._panda_dof_ids] = self._PANDA_HOME
-        self.data.qpos[7:9] = self._GRIPPER_HOME
-        mujoco.mj_forward(self.model, self.data)
-        
-        # Reset mocap body to home position
-        tcp_pos = self.data.sensor("pinch_pos").data
-        self.data.mocap_pos[0] = tcp_pos.copy()
+        self.reset_arm_and_gripper()
 
-        mujoco.mj_step(self.model, self.data)
-        self.initial_qvel = np.copy(self.data.qvel)
         self.prev_grasp_time = 0.0
         self.prev_grasp = -1.0
+        self.gripper_dict = {
+            "open": np.array([1, 0, 0, 0], dtype=np.float32),
+            "closed": np.array([0, 1, 0, 0], dtype=np.float32),
+            "opening": np.array([0, 0, 1, 0], dtype=np.float32),
+            "closing": np.array([0, 0, 0, 1], dtype=np.float32),
+        }
 
         # Store initial values for randomization
         self.init_cam_pos = self.model.body_pos[self.model.body('front_cam').id].copy()
@@ -145,15 +123,13 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('table').id]
 
         # Add this line to set the initial orientation
-        self.initial_orientation = self.data.sensor("pinch_quat").data.copy()
+        self.initial_orientation = [0, 1, 0, 0]
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)
+
 
     def domain_randomization(self):
         # Move robot
-        ee_noise_x = np.random.uniform(low=0.0, high=0.12)
-        ee_noise_y = np.random.uniform(low=-0.2, high=0.2)
-        ee_noise_z = np.random.uniform(low=-0.4, high=0.1)
-        ee_noise = np.array([ee_noise_x, ee_noise_y, ee_noise_z])
+        ee_noise = np.random.uniform(low=[0.0,-0.2,-0.4], high=[0.12, 0.2, 0.1], size=3)
         self.data.mocap_pos[0] = self._PANDA_XYZ + ee_noise
         # Add noise to camera position and orientation
         cam_pos_noise = np.random.uniform(low=[-0.05,-0.05,-0.02], high=[0.05,0.05,0.02], size=3)
@@ -185,24 +161,18 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         self.data.qpos[10] = self.default_obj_pos[1] + self.object_y_noise
         self.data.qpos[12] = self.default_obs_quat[0] + self.object_theta_noise
 
-
-    def reset_model(self):
-        # Reset arm to home position.
+    def reset_arm_and_gripper(self):
         self.data.qpos[self._panda_dof_ids] = self._PANDA_HOME
         self.data.qpos[7:9] = self._GRIPPER_HOME
         mujoco.mj_forward(self.model, self.data)
+        self.data.mocap_pos[0] = self.data.sensor("pinch_pos").data.copy()
+        mujoco.mj_step(self.model, self.data)
 
-        # Reset mocap body to home position.
-        tcp_pos = self.data.sensor("pinch_pos").data
-        self.data.mocap_pos[0] = tcp_pos.copy()
-
+    def reset_model(self):
+        self.reset_arm_and_gripper()
         if self.randomize_domain:
             self.domain_randomization()
-        
-        self.data.qvel[:] = self.initial_qvel
-        if self.model.na != 0:
-            self.data.act[:] = None
-        
+
         mujoco.mj_forward(self.model, self.data)
         for _ in range(5*self._n_substeps):
             tau = opspace(
@@ -220,27 +190,21 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         
         self._z_init = self.data.sensor("block_pos").data[2]
         self._z_success = self._z_init + 0.2
+
+        self.gripper_vec = self.gripper_dict["open"]
+        self.data.ctrl[self._gripper_ctrl_id] = 255
         self.prev_grasp_time = 0.0
         self.prev_gripper_state = 0 # 0 for open, 1 for closed
+        self.gripper_state = 0
         self.gripper_blocked = False
-        
-        # Reset the initial orientation
-        self.initial_orientation = self.data.sensor("pinch_quat").data.copy()
-        self.initial_rotation = Rotation.from_quat(self.initial_orientation)
 
         return self._get_obs()
 
     def step(self, action):
         if np.array(action).shape != self.action_space.shape:
             raise ValueError("Action dimension mismatch")
-        print(f"input action: {action}")
         action = np.clip(action, self.action_space.low, self.action_space.high)
-
-        low, high = self.action_low, self.action_high
-        action_range = high - low
-        action = (action_range/2.0)*(action+1.0) + low
-        print(f"absolute action: {action}")
-
+        action = (self.action_range/2.0)*(action+1.0) + self.action_low
 
         x, y, z, roll, pitch, yaw, grasp = action
         npos = np.array([x, y, z])
@@ -250,27 +214,35 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         self.data.mocap_pos[0] = npos
 
         # Orientation changes, ZYX because of mujoco quaternions?
-        # Convert the action rotation to a Rotation object
         action_rotation = Rotation.from_euler('zyx', nrot)
         final_rotation = self.initial_rotation * action_rotation
-        # Set the final orientation
         self.data.mocap_quat[0] = final_rotation.as_quat()
+
         # Handle grasping
+        grasp = int(grasp>0)
         if self.data.time - self.prev_grasp_time < 0.5:
-            grasp = self.prev_grasp
             self.gripper_blocked = True
+            grasp = self.prev_grasp
         else:
             self.gripper_blocked = False
-            if grasp > 0:
-                g = 0  # Closed
-                self.gripper_state = 1
-            else:
-                g = 255  # Open
+            if grasp == 0 and self.gripper_state == 0:
+                self.gripper_vec = self.gripper_dict["open"]
+            elif grasp == 1 and self.gripper_state == 1:
+                self.gripper_vec = self.gripper_dict["closed"]
+            elif grasp == 0 and self.gripper_state == 1:
+                self.data.ctrl[self._gripper_ctrl_id] = 255
                 self.gripper_state = 0
-            self.data.ctrl[self._gripper_ctrl_id] = g
-            self.prev_grasp_time = self.data.time
-            self.prev_grasp = grasp
-        for k in range(self._n_substeps):
+                self.gripper_vec = self.gripper_dict["opening"]
+                self.prev_grasp_time = self.data.time
+                self.prev_grasp = grasp
+            elif grasp == 1 and self.gripper_state == 0:
+                self.data.ctrl[self._gripper_ctrl_id] = 0
+                self.gripper_state = 1
+                self.gripper_vec = self.gripper_dict["closing"]
+                self.prev_grasp_time = self.data.time
+                self.prev_grasp = grasp
+
+        for _ in range(self._n_substeps):
             tau = opspace(
                 model=self.model,
                 data=self.data,
@@ -310,15 +282,11 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         obs["state"]["panda/tcp_pos"] = self.data.sensor("pinch_pos").data.astype(np.float32)
         obs["state"]["panda/tcp_orientation"] = self.data.sensor("pinch_quat").data.astype(np.float32)
         obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
-        obs["state"]["panda/gripper_pos"] = (25*2*np.array([self.data.qpos[8]], dtype=np.float32)-1).clip(
-            self.observation_space["state"]["panda/gripper_pos"].low,
-            self.observation_space["state"]["panda/gripper_pos"].high
-        )
-        obs["state"]["panda/gripper_blocked"] = np.array([self.gripper_blocked], dtype=np.float32)
+        obs["state"]["panda/gripper_pos"] = (25*2*np.array([self.data.qpos[8]], dtype=np.float32)-1)
+        obs["state"]["panda/gripper_vec"] = self.gripper_vec
 
         if not self.image_obs:
             obs["state"]["block_pos"] = self.data.sensor("block_pos").data.astype(np.float32)
-
         if self.image_obs:
             obs["images"] = {}
             obs["images"]["wrist"], obs["images"]["front"] = self.render()
@@ -349,6 +317,10 @@ class reach_ik_abs(MujocoEnv, utils.EzPickle):
         for i in range(self.data.ncon):
             geom1_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom1)
             geom2_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom2)
+            if geom1_name == None:
+                geom1_name = ""
+            if geom2_name == None:
+                geom2_name = ""
             geom_names = geom1_name + geom2_name
             if "block" in geom_names:
                 if "right_pad" in geom_names:

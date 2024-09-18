@@ -1,6 +1,7 @@
 ### Franka RL
 Mujoco simulation of Franka B in INB0104 for use in sim to real. 
 Uses SERL impedence control
+Also taken from https://github.com/zichunxx/panda_mujoco_gym/blob/master/panda_mujoco_gym/envs/panda_env.py
 
 ### Installation:
 
