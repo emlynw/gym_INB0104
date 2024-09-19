@@ -27,7 +27,7 @@
   </worldbody>
 
   <equality>
-      <weld body1="target" body2="pinch" solimp="0.1 0.5 0.01" solref="0.01 1"/>
+      <weld body1="target" body2="pinch"/>
   </equality>
 
   <sensor>
