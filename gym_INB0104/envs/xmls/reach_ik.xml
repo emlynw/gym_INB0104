@@ -11,6 +11,10 @@
     <body name = "front_cam" pos='1.6 0 0.4' euler='0 1.42 1.57'>
       <camera name='front' fovy="41"/> 
     </body>
+    <!-- <body name = "front_cam" pos='-0.16 0.55 0.4' euler='-1.0 -1.0 -2.6'>
+      <geom name="front_cam" type="box" size=".01 .01 .01" rgba="0 1 0 1" group="4"/>
+      <camera name='front' fovy="41"/>  -->
+    </body>
     <!-- target object -->
     <body name="block" pos="0.5 0 0.05" euler="0 0 1.57">
       <freejoint name="block"/>
