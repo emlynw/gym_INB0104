@@ -26,6 +26,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         self,
         image_obs=True,
         randomize_domain=True,
+        ee_dof = 6, # 3 for position, 3 for orientation
         control_dt=0.1,
         physics_dt=0.002,
         width=480,
@@ -36,6 +37,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self, image_obs=image_obs, **kwargs)
         self.image_obs = image_obs
         self.randomize_domain = randomize_domain
+        self.ee_dof = ee_dof
         self.render_mode = render_mode
         self.width = width
         self.height = height
@@ -78,8 +80,8 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         self.model.opt.timestep = physics_dt
         self.camera_id = (0, 1)
         self.action_space = Box(
-            np.array([-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]),  # x, y, z, roll, pitch, yaw, grasp
-            np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+            np.array([-1.0]*(self.ee_dof+1)), 
+            np.array([1.0]*(self.ee_dof+1)),
             dtype=np.float32,
         )
         self._viewer = MujocoRenderer(self.model, self.data,)
@@ -208,32 +210,40 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
             raise ValueError("Action dimension mismatch")
         action = np.clip(action, self.action_space.low, self.action_space.high)
         # Scale actions
-        x, y, z, roll, pitch, yaw, grasp = action
+        if self.ee_dof == 3:
+            x, y, z, grasp = action
+        elif self.ee_dof == 4:
+            x, y, z, yaw, grasp = action
+            roll, pitch = 0, 0
+            drot = np.array([roll, pitch, yaw]) * self.rot_scale
+        elif self.ee_dof == 6:
+            x, y, z, roll, pitch, yaw, grasp = action
+            drot = np.array([roll, pitch, yaw]) * self.rot_scale
         dpos = np.array([x, y, z]) * self.pos_scale
-        drot = np.array([roll, pitch, yaw]) * self.rot_scale
-
+        
         # Apply position change
         pos = self.data.sensor("pinch_pos").data
         npos = np.clip(pos + dpos, *self._CARTESIAN_BOUNDS)
         self.data.mocap_pos[0] = npos
 
-        # Orientation changes, ZYX because of mujoco quaternions?
-        current_quat = self.data.sensor("pinch_quat").data
-        current_rotation = Rotation.from_quat(current_quat)
-        # Convert the action rotation to a Rotation object
-        action_rotation = Rotation.from_euler('zyx', drot)
-        # Apply the action rotation
-        new_rotation = action_rotation * current_rotation
-        # Calculate the new relative rotation
-        new_relative_rotation = self.initial_rotation.inv() * new_rotation
-        # Convert to euler angles and clip
-        relative_euler = new_relative_rotation.as_euler('zyx')
-        clipped_euler = np.clip(relative_euler, self._ROTATION_BOUNDS[0], self._ROTATION_BOUNDS[1])
-        # Convert back to rotation and apply to initial orientation
-        clipped_rotation = Rotation.from_euler('zyx', clipped_euler)
-        final_rotation = self.initial_rotation * clipped_rotation
-        # Set the final orientation
-        self.data.mocap_quat[0] = final_rotation.as_quat()
+        if self.ee_dof > 3:
+            # Orientation changes, ZYX because of mujoco quaternions?
+            current_quat = self.data.sensor("pinch_quat").data
+            current_rotation = Rotation.from_quat(current_quat)
+            # Convert the action rotation to a Rotation object
+            action_rotation = Rotation.from_euler('zyx', drot)
+            # Apply the action rotation
+            new_rotation = action_rotation * current_rotation
+            # Calculate the new relative rotation
+            new_relative_rotation = self.initial_rotation.inv() * new_rotation
+            # Convert to euler angles and clip
+            relative_euler = new_relative_rotation.as_euler('zyx')
+            clipped_euler = np.clip(relative_euler, self._ROTATION_BOUNDS[0], self._ROTATION_BOUNDS[1])
+            # Convert back to rotation and apply to initial orientation
+            clipped_rotation = Rotation.from_euler('zyx', clipped_euler)
+            final_rotation = self.initial_rotation * clipped_rotation
+            # Set the final orientation
+            self.data.mocap_quat[0] = final_rotation.as_quat()
 
         # Handle grasping
         grasp = int(grasp>0)

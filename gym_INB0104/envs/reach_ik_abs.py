@@ -26,6 +26,7 @@ class ReachIKAbsEnv(MujocoEnv, utils.EzPickle):
         self,
         image_obs=True,
         randomize_domain=True,
+        ee_dof = 6, # 3 for position, 3 for orientation
         control_dt=0.1,
         physics_dt=0.002,
         width=480,
@@ -36,6 +37,7 @@ class ReachIKAbsEnv(MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self, image_obs=image_obs, **kwargs)
         self.image_obs = image_obs
         self.randomize_domain = randomize_domain
+        self.ee_dof = ee_dof
         self.render_mode = render_mode
         self.width = width
         self.height = height
@@ -79,8 +81,8 @@ class ReachIKAbsEnv(MujocoEnv, utils.EzPickle):
         self.model.opt.timestep = physics_dt
         self.camera_id = (0, 1)
         self.action_space = Box(
-            np.array([-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]),  # x, y, z, roll, pitch, yaw, grasp
-            np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
+            np.array([-1.0]*(self.ee_dof+1)), 
+            np.array([1.0]*(self.ee_dof+1)),
             dtype=np.float32,
         )
         self._viewer = MujocoRenderer(self.model, self.data)
@@ -91,8 +93,15 @@ class ReachIKAbsEnv(MujocoEnv, utils.EzPickle):
         self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 1.56444, 0.772088], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.5], dtype=np.float32)
-        self.action_low = np.array([0.28, -0.5, 0.01, -np.pi/4, -np.pi/4, -np.pi/2, -1.0])
-        self.action_high = np.array([0.75, 0.5, 0.55, np.pi/4, np.pi/4, np.pi/2, 1.0])
+        if self.ee_dof == 3:
+            self.action_low = np.array([0.28, -0.5, 0.01, -1.0])
+            self.action_high = np.array([0.75, 0.5, 0.55, 1.0])
+        elif self.ee_dof == 4:
+            self.action_low = np.array([0.28, -0.5, 0.01, -np.pi/4, -1.0])
+            self.action_high = np.array([0.75, 0.5, 0.55, np.pi/4, 1.0])
+        else:
+            self.action_low = np.array([0.28, -0.5, 0.01, -np.pi/4, -np.pi/4, -np.pi/2, -1.0])
+            self.action_high = np.array([0.75, 0.5, 0.55, np.pi/4, np.pi/4, np.pi/2, 1.0])
         self.action_range = self.action_high - self.action_low
 
         self.default_obj_pos = np.array([0.5, 0])
@@ -206,17 +215,25 @@ class ReachIKAbsEnv(MujocoEnv, utils.EzPickle):
         action = np.clip(action, self.action_space.low, self.action_space.high)
         action = (self.action_range/2.0)*(action+1.0) + self.action_low
 
-        x, y, z, roll, pitch, yaw, grasp = action
+        if self.ee_dof == 3:
+            x, y, z, grasp = action
+        elif self.ee_dof == 4:
+            x, y, z, yaw, grasp = action
+            roll, pitch = 0, 0
+            nrot = np.array([roll, pitch, yaw])
+        elif self.ee_dof == 6:
+            x, y, z, roll, pitch, yaw, grasp = action
+            nrot = np.array([roll, pitch, yaw])
         npos = np.array([x, y, z])
-        nrot = np.array([roll, pitch, yaw])
 
         # Apply position change
         self.data.mocap_pos[0] = npos
 
-        # Orientation changes, ZYX because of mujoco quaternions?
-        action_rotation = Rotation.from_euler('zyx', nrot)
-        final_rotation = self.initial_rotation * action_rotation
-        self.data.mocap_quat[0] = final_rotation.as_quat()
+        if self.ee_dof > 3:
+            # Orientation changes, ZYX because of mujoco quaternions?
+            action_rotation = Rotation.from_euler('zyx', nrot)
+            final_rotation = self.initial_rotation * action_rotation
+            self.data.mocap_quat[0] = final_rotation.as_quat()
 
         # Handle grasping
         grasp = int(grasp>0)
