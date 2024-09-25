@@ -25,15 +25,15 @@ def main():
         while not terminated and not truncated:
             if rotate:
                 if i < 50:
-                    action = np.array([0.12, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0])
+                    action = np.array([0.12, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0])
                 elif i < 80:
-                    action = np.array([0.12, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
+                    action = np.array([0.12, 0.0, -1.0, 0.0, 0.0, 0.0, 1.0])
                 elif i < 120:
-                    action = np.array([0.12, 0.0, 0.5, 0.0, 0.0, 0.0, -1.0])
+                    action = np.array([0.12, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0])
                 elif i < 140:
-                    action = np.array([0.12, 0.1, 0.5, -0.2, -0.2, -0.2, 1.0])
+                    action = np.array([0.12, 0.1, 0.0, -0.2, -0.2, -0.2, 1.0])
                 elif i < 160:
-                    action = np.array([0.12, -0.1, 0.5, 0.2, 0.2, 0.2, -1.0])
+                    action = np.array([0.12, -0.1, 0.0, 0.2, 0.2, 0.2, 1.0])
             else:
                 if i < 15:
                     action = np.array([0.2, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])

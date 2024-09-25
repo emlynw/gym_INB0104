@@ -7,9 +7,15 @@ from mujoco_ar import MujocoARConnector
 import time
 from scipy.spatial.transform import Rotation
 
+def render(obs, waitkey):
+    pixels = obs["images"]["front"]
+    cv2.resize(pixels, (224, 224))
+    cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), (720, 720)))
+    cv2.waitKey(waitkey)
+
 def main():
     render_mode = "rgb_array"
-    ee_dof = 4
+    ee_dof = 6
     env = gym.make("gym_INB0104/ReachIKAbsEnv", render_mode=render_mode, randomize_domain=True, ee_dof=ee_dof)
     env = TimeLimit(env, max_episode_steps=200)    
     waitkey = 10
@@ -18,36 +24,42 @@ def main():
     # Start the connector
     connector.start()
     data = connector.get_latest_data()  # Returns {"position": (3, 1), "rotation": (3, 3), "button": bool, "toggle": bool}
-    time.sleep(10)
+    while data['position'] is None:
+        data = connector.get_latest_data()
+        time.sleep(1)
+        print("Waiting for AR data...")
 
     while True:
         # reset the environment
         i=0
-        terminated = False
-        truncated = False
+        terminated, truncated = False, False
         obs, info = env.reset()
         action = np.array([0.0]*(ee_dof+1))
-        rotate = True
+
         if render_mode == "rgb_array":
-            pixels = obs["images"]["front"]
-            cv2.resize(pixels, (224, 224))
-            cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), (720, 720)))
-            cv2.waitKey(waitkey)
+            render(obs, waitkey)
+
         while not terminated and not truncated:
-            action[0:3] = data["position"]
-            action[1] = -3.0*action[1]
-            action[2] = 4.0*action[2]
-            r = Rotation.from_matrix(data["rotation"])
-            angles = r.as_euler("xyz", degrees=False)
-            action[3] = -angles[2]
-            action[4] = float(data["button"])
+            pos = data["position"]
+            pos[0] = -4*pos[0]
+            pos[1] = -2*pos[1]
+            pos[2] = 4*pos[2]
+            rot = []
+            grasp = [float(data["button"])]
+            if ee_dof == 4:
+                r = Rotation.from_matrix(data["rotation"])
+                angles = r.as_euler("xyz", degrees=False)
+                rot = [-angles[2]]
+            elif ee_dof == 6:
+                r = Rotation.from_matrix(data["rotation"])
+                angles = r.as_euler("xyz", degrees=False)
+                rot = angles
+                rot[2] = -rot[2]
+            action = np.concatenate((pos, rot, grasp))
             
             obs, reward, terminated, truncated, info = env.step(action)
             if render_mode == "rgb_array":
-                pixels = obs["images"]["front"]
-                cv2.resize(pixels, (224, 224))
-                cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), (720, 720)))
-                cv2.waitKey(waitkey)
+                render(obs, waitkey)
             i+=1
         
 if __name__ == "__main__":
