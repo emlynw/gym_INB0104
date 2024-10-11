@@ -46,26 +46,26 @@ def main():
                 pixels = obs["images"]["front"]
                 pixels = cv2.resize(pixels, (224, 224))
 
-                # cv2.putText(
-                #     pixels,
-                #     f"{reward:.3f}",
-                #     (10, 40),
-                #     cv2.FONT_HERSHEY_SIMPLEX,
-                #     0.5,
-                #     (0, 255, 0),
-                #     1,
-                #     cv2.LINE_AA,
-                # )
-                # cv2.putText(
-                #     pixels,
-                #     f"{info['reward_smooth']:.3f}",
-                #     (150, 40),
-                #     cv2.FONT_HERSHEY_SIMPLEX,
-                #     0.5,
-                #     (0, 255, 0),
-                #     1,
-                #     cv2.LINE_AA,
-                # )
+                cv2.putText(
+                    pixels,
+                    f"{reward:.3f}",
+                    (10, 40),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1,
+                    cv2.LINE_AA,
+                )
+                cv2.putText(
+                    pixels,
+                    f"{info['reward_smooth']:.3f}",
+                    (150, 40),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1,
+                    cv2.LINE_AA,
+                )
 
                 cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), (720, 720)))
                 cv2.waitKey(waitkey)

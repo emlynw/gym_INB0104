@@ -335,9 +335,10 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
             success = False
         r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
         r_lift = np.clip(r_lift, 0.0, 1.0)
-        r_smooth = np.exp(-5*np.linalg.norm(action - self.prev_action))
+        action_diff = np.linalg.norm(action[:-1] - self.prev_action[:-1])/(len(action)-1)
+        r_smooth = 1/(1 + np.exp(12*action_diff - 6))
         self.prev_action = action
-        reward = 0.3 * r_close + 0.7 * r_lift + 0.2 * r_smooth
+        reward = 0.3 * r_close + 0.7 * r_lift + 0.1 * r_smooth
         if self.gripper_blocked and self.gripper_state != self.prev_gripper_state:
             reward -= 0.1
 
