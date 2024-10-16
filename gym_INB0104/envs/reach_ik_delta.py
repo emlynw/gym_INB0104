@@ -194,8 +194,11 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
             self.data.ctrl[self._panda_ctrl_ids] = tau
             mujoco.mj_step(self.model, self.data)
         
-        self._z_init = self.data.sensor("block_pos").data[2]
+        self._block_init = self.data.sensor("block_pos").data
+        self._z_init = self._block_init[2]
         self._z_success = self._z_init + 0.2
+        self._block_success = self._block_init.copy()
+        self._block_success[2] = self._z_success
 
         self.gripper_vec = self.gripper_dict["open"]
         self.data.ctrl[self._gripper_ctrl_id] = 255
@@ -327,20 +330,27 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
     def _compute_reward(self, action):
         block_pos = self.data.sensor("block_pos").data
         tcp_pos = self.data.sensor("pinch_pos").data
-        dist = np.linalg.norm(block_pos - tcp_pos)
-        r_close = np.exp(-20 * dist)
-        if block_pos[2] > self._z_init + 0.15:
-            success = True
-        else:
-            success = False
-        r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
-        r_lift = np.clip(r_lift, 0.0, 1.0)
-        action_diff = np.linalg.norm(action[:-1] - self.prev_action[:-1])/(len(action)-1)
-        r_smooth = 1/(1 + np.exp(12*action_diff - 6))
+        box_target = 1 - np.tanh(5 * np.linalg.norm(block_pos - self._block_success))
+        gripper_box = 1 - np.tanh(5 * np.linalg.norm(block_pos - tcp_pos))
+
+        # dist = np.linalg.norm(block_pos - tcp_pos)
+        # r_close = np.exp(-20 * dist)
+        # if block_pos[2] > self._z_init + 0.15:
+        #     success = True
+        # else:
+        #     success = False
+        # r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
+        # r_lift = np.clip(r_lift, 0.0, 1.0)
+
+        action_diff = np.linalg.norm(action[:-1] - self.prev_action[:-1])/np.sqrt((len(action)-1)) # Divide by sqrt of action dimension to make it scale-invariant
+        r_smooth = 1 - np.tanh(5 * action_diff)
         self.prev_action = action
-        reward = 0.3 * r_close + 0.7 * r_lift + 0.1 * r_smooth
+
+        # reward = 0.3 * r_close + 0.7 * r_lift + 0.1 * r_smooth
         if self.gripper_blocked and self.gripper_state != self.prev_gripper_state:
-            reward -= 0.1
+            r_grasp = 0
+        else:
+            r_grasp = 1
 
         # Check if gripper pads are in contact with the object
         right_pad_contact = False
@@ -362,10 +372,21 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
                 break            
                 
         if right_pad_contact and left_pad_contact:
-            reward += 0.2
+            r_contact = 1
+        else:
+            r_contact = 0
             
-        if block_pos[2] >= self._z_success:
-            reward = 10
+        if box_target < 0.1:
+            success = True
+        else:
+            success = False
+
+        rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_smooth': r_smooth, 'r_grasp': r_grasp, 'r_contact': r_contact}
+        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_smooth': 0.5, 'r_grasp': 0.5, 'r_contact': 0.5}
+
+        rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
+        reward = np.clip(sum(rewards.values()), -1e4, 1e4)
         
-        info = dict(reward_close=r_close, reward_lift=r_lift, success=success, reward_smooth=r_smooth)
+        info = rewards
+        info['success'] = success
         return reward, info
