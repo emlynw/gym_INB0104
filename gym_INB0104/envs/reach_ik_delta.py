@@ -93,6 +93,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 1.56444, 0.772088], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.5], dtype=np.float32)
+        self.center_pos = np.array([0.3, 0, 0.2], dtype=np.float32)
         self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.01], [0.75, 0.35, 0.55]], dtype=np.float32)
         self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/4, -np.pi/2], [np.pi/4, np.pi/4, np.pi/2]], dtype=np.float32)
 
@@ -333,6 +334,9 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         box_target = 1 - np.tanh(5 * np.linalg.norm(block_pos - self._block_success))
         gripper_box = 1 - np.tanh(5 * np.linalg.norm(block_pos - tcp_pos))
 
+        # Reward for staying near center_pos
+        r_move = 1 - np.tanh(5 * np.linalg.norm(tcp_pos[:2] - self.center_pos[:2]))
+
         # dist = np.linalg.norm(block_pos - tcp_pos)
         # r_close = np.exp(-20 * dist)
         # if block_pos[2] > self._z_init + 0.15:
@@ -381,8 +385,8 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         else:
             success = False
 
-        rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_smooth': r_smooth, 'r_grasp': r_grasp, 'r_contact': r_contact}
-        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_smooth': 0.5, 'r_grasp': 0.5, 'r_contact': 0.5}
+        rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_smooth': r_smooth, 'r_grasp': r_grasp, 'r_contact': r_contact, 'r_move': r_move}
+        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_smooth': 0.5, 'r_grasp': 0.5, 'r_contact': 0.5, 'r_move': 1.0}
 
         rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
         reward = np.clip(sum(rewards.values()), -1e4, 1e4)
