@@ -337,20 +337,12 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         # Reward for staying near center_pos
         r_move = 1 - np.tanh(5 * np.linalg.norm(tcp_pos[:2] - self.center_pos[:2]))
 
-        # dist = np.linalg.norm(block_pos - tcp_pos)
-        # r_close = np.exp(-20 * dist)
-        # if block_pos[2] > self._z_init + 0.15:
-        #     success = True
-        # else:
-        #     success = False
-        # r_lift = (block_pos[2] - self._z_init) / (self._z_success - self._z_init)
-        # r_lift = np.clip(r_lift, 0.0, 1.0)
-
+        # Smoothness reward
         action_diff = np.linalg.norm(action[:-1] - self.prev_action[:-1])/np.sqrt((len(action)-1)) # Divide by sqrt of action dimension to make it scale-invariant
         r_smooth = 1 - np.tanh(5 * action_diff)
         self.prev_action = action
 
-        # reward = 0.3 * r_close + 0.7 * r_lift + 0.1 * r_smooth
+        # Reward for not interrupting grasp
         if self.gripper_blocked and self.gripper_state != self.prev_gripper_state:
             r_grasp = 0
         else:
@@ -374,12 +366,14 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
                     left_pad_contact = True
             if right_pad_contact and left_pad_contact:
                 break            
-                
+
+        # Reward if both pads are in contact with the object    
         if right_pad_contact and left_pad_contact:
             r_contact = 1
         else:
             r_contact = 0
             
+        # Success if
         if box_target < 0.1:
             success = True
         else:
