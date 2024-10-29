@@ -13,8 +13,8 @@ def main():
     waitkey = 1
 
     obs, info = env.reset()
-    for i in range(10):
-        action = np.array([0.0, 0.0, 0.0, 1.0, 0.0])
+    for i in range(5):
+        action = np.array([1.0, 0.0, 0.0, 0.0, 0.0])
         obs, reward, terminated, truncated, info = env.step(action)
         print(obs['state']['panda/tcp_pos'])
         if render_mode == "rgb_array":

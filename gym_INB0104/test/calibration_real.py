@@ -8,14 +8,14 @@ np.set_printoptions(suppress=True)
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachIKDeltaRealEnv", render_mode=render_mode, ee_dof=4, pos_scale= 0.2, rot_scale = 0.05)
+    env = gym.make("gym_INB0104/ReachIKDeltaRealEnv", render_mode=render_mode, ee_dof=4, pos_scale= 0.22, rot_scale = 0.05)
     env = TimeLimit(env, max_episode_steps=200)    
     waitkey = 1
 
     obs, info = env.reset()
     print(obs['state']['panda/tcp_pos'])
-    for i in range(10):
-        action = np.array([0.0, 0.0, 0.0, 1.0, 0.0])
+    for i in range(5):
+        action = np.array([1.0, 0.0, 0.0, 0.0, 0.0])
         obs, reward, terminated, truncated, info = env.step(action)
         print(obs['state']['panda/tcp_pos'])
         if render_mode == "rgb_array":

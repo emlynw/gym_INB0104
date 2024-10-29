@@ -334,56 +334,61 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         box_target = 1 - np.tanh(5 * np.linalg.norm(block_pos - self._block_success))
         gripper_box = 1 - np.tanh(5 * np.linalg.norm(block_pos - tcp_pos))
 
-        # Reward for staying near center_pos
-        r_move = 1 - np.tanh(5 * np.linalg.norm(tcp_pos[:2] - self.center_pos[:2]))
+        r_energy = -np.linalg.norm(action)
 
-        # Smoothness reward
-        action_diff = np.linalg.norm(action[:-1] - self.prev_action[:-1])/np.sqrt((len(action)-1)) # Divide by sqrt of action dimension to make it scale-invariant
-        r_smooth = 1 - np.tanh(5 * action_diff)
-        self.prev_action = action
+        # # Reward for staying near center_pos
+        # r_move = 1 - np.tanh(5 * np.linalg.norm(tcp_pos[:2] - self.center_pos[:2]))
 
-        # Reward for not interrupting grasp
-        if self.gripper_blocked and self.gripper_state != self.prev_gripper_state:
-            r_grasp = 0
-        else:
-            r_grasp = 1
+        # # Smoothness reward
+        # action_diff = np.linalg.norm(action[:-1] - self.prev_action[:-1])/np.sqrt((len(action)-1)) # Divide by sqrt of action dimension to make it scale-invariant
+        # r_smooth = 1 - np.tanh(5 * action_diff)
+        # self.prev_action = action
 
-        # Check if gripper pads are in contact with the object
-        right_pad_contact = False
-        left_pad_contact = False
-        for i in range(self.data.ncon):
-            geom1_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom1)
-            geom2_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom2)
-            if geom1_name == None:
-                geom1_name = ""
-            if geom2_name == None:
-                geom2_name = ""
-            geom_names = geom1_name + geom2_name
-            if "block" in geom_names:
-                if "right_pad" in geom_names:
-                    right_pad_contact = True
-                if "left_pad" in geom_names:
-                    left_pad_contact = True
-            if right_pad_contact and left_pad_contact:
-                break            
+        # # Reward for not interrupting grasp
+        # if self.gripper_blocked and self.gripper_state != self.prev_gripper_state:
+        #     r_grasp = 0
+        # else:
+        #     r_grasp = 1
 
-        # Reward if both pads are in contact with the object    
-        if right_pad_contact and left_pad_contact:
-            r_contact = 1
-        else:
-            r_contact = 0
+        # # Check if gripper pads are in contact with the object
+        # right_pad_contact = False
+        # left_pad_contact = False
+        # for i in range(self.data.ncon):
+        #     geom1_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom1)
+        #     geom2_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom2)
+        #     if geom1_name == None:
+        #         geom1_name = ""
+        #     if geom2_name == None:
+        #         geom2_name = ""
+        #     geom_names = geom1_name + geom2_name
+        #     if "block" in geom_names:
+        #         if "right_pad" in geom_names:
+        #             right_pad_contact = True
+        #         if "left_pad" in geom_names:
+        #             left_pad_contact = True
+        #     if right_pad_contact and left_pad_contact:
+        #         break            
+
+        # # Reward if both pads are in contact with the object    
+        # if right_pad_contact and left_pad_contact:
+        #     r_contact = 1
+        # else:
+        #     r_contact = 0
+
+        # rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_smooth': r_smooth, 'r_grasp': r_grasp, 'r_contact': r_contact, 'r_move': r_move}
+        # reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_smooth': 0.5, 'r_grasp': 0.5, 'r_contact': 0.5, 'r_move': 1.0}
+
+        rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_energy': r_energy}
+        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_energy': 1.0}
+
+        rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
+        reward = np.clip(sum(rewards.values()), -1e4, 1e4)
             
         # Success if
         if box_target < 0.1:
             success = True
         else:
             success = False
-
-        rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_smooth': r_smooth, 'r_grasp': r_grasp, 'r_contact': r_contact, 'r_move': r_move}
-        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_smooth': 0.5, 'r_grasp': 0.5, 'r_contact': 0.5, 'r_move': 1.0}
-
-        rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
-        reward = np.clip(sum(rewards.values()), -1e4, 1e4)
         
         info = rewards
         info['success'] = success
