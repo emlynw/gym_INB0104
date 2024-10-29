@@ -51,7 +51,7 @@ def opspace_4(
     nullspace_stiffness: float = 0.2,
     joint1_nullspace_stiffness: float = 100.0,
     max_pos_error: float = 0.01,
-    max_ori_error: float = 0.05,
+    max_ori_error: float = 0.01,
     delta_tau_max: float = 0.5,
     gravity_comp: bool = True,
     damped: bool = True,
