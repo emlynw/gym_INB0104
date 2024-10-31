@@ -1,6 +1,6 @@
 <mujoco model="basic_scene">
 
-  <include file="franka_emika_panda/panda_hand.xml"/>
+  <include file="franka_emika_panda/panda_hand_serl.xml"/>
   <option timestep=".002" noslip_iterations="5" noslip_tolerance="0"/>
   <statistic center="0.3 0 0.4" extent="1"/>
 

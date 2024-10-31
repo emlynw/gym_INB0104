@@ -1,5 +1,5 @@
 <mujoco model="Arena">
-  <include file="franka_emika_panda/panda_hand.xml"/>
+  <include file="franka_emika_panda/panda_hand_serl.xml"/>
 
   <option timestep=".002" noslip_iterations="5" noslip_tolerance="0"/>
 
