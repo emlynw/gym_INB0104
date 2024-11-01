@@ -122,8 +122,10 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         }
 
         # Store initial values for randomization
-        self.init_cam_pos = self.model.body_pos[self.model.body('front_cam').id].copy()
-        self.init_cam_quat = self.model.body_quat[self.model.body('front_cam').id].copy()
+        self.front_cam_pos = self.model.body_pos[self.model.body('front_cam').id].copy()
+        self.front_cam_quat = self.model.body_quat[self.model.body('front_cam').id].copy()
+        self.wrist_cam_pos = self.model.body_pos[self.model.body('wrist_cam1').id].copy()
+        self.wrist_cam_quat = self.model.body_quat[self.model.body('wrist_cam1').id].copy()
         self.init_light_pos = self.model.body_pos[self.model.body('light0').id].copy()
         self.init_plywood_rgba = self.model.mat_rgba[self.model.mat('plywood').id].copy()
         self.init_brick_rgba = self.model.mat_rgba[self.model.mat('brick_wall').id].copy()
@@ -138,10 +140,14 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         ee_noise = np.random.uniform(low=[0.0,-0.2,-0.4], high=[0.12, 0.2, 0.1], size=3)
         self.data.mocap_pos[0] = self._PANDA_XYZ + ee_noise
         # Add noise to camera position and orientation
-        cam_pos_noise = np.random.uniform(low=[-0.05,-0.05,-0.02], high=[0.05,0.05,0.02], size=3)
-        cam_quat_noise = np.random.uniform(low=-0.02, high=0.02, size=4)
-        self.model.body_pos[self.model.body('front_cam').id] = self.init_cam_pos + cam_pos_noise
-        self.model.body_quat[self.model.body('front_cam').id] = self.init_cam_quat + cam_quat_noise
+        front_cam_pos_noise = np.random.uniform(low=[-0.05,-0.05,-0.02], high=[0.05,0.05,0.02], size=3)
+        front_cam_quat_noise = np.random.uniform(low=-0.02, high=0.02, size=4)
+        self.model.body_pos[self.model.body('front_cam').id] = self.front_cam_pos + front_cam_pos_noise
+        self.model.body_quat[self.model.body('front_cam').id] = self.front_cam_quat + front_cam_quat_noise
+        wrist_cam_pos_noise = np.random.uniform(low=[-0.05,-0.05,-0.02], high=[0.05,0.05,0.02], size=3)
+        wrist_cam_quat_noise = np.random.uniform(low=-0.02, high=0.02, size=4)
+        self.model.body_pos[self.model.body('wrist_cam1').id] = self.wrist_cam_pos + wrist_cam_pos_noise
+        self.model.body_quat[self.model.body('wrist_cam1').id] = self.wrist_cam_quat + wrist_cam_quat_noise
         # Add noise to light position
         light_pos_noise = np.random.uniform(low=[-0.8,-0.5,-0.05], high=[1.2,0.5,0.2], size=3)
         self.model.body_pos[self.model.body('light0').id] = self.init_light_pos + light_pos_noise
