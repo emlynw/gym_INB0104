@@ -141,13 +141,17 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         self.data.mocap_pos[0] = self._PANDA_XYZ + ee_noise
         # Add noise to camera position and orientation
         front_cam_pos_noise = np.random.uniform(low=[-0.05,-0.05,-0.02], high=[0.05,0.05,0.02], size=3)
-        front_cam_quat_noise = np.random.uniform(low=-0.02, high=0.02, size=4)
         self.model.body_pos[self.model.body('front_cam').id] = self.front_cam_pos + front_cam_pos_noise
-        self.model.body_quat[self.model.body('front_cam').id] = self.front_cam_quat + front_cam_quat_noise
-        wrist_cam_pos_noise = np.random.uniform(low=[-0.05,-0.05,-0.02], high=[0.05,0.05,0.02], size=3)
-        wrist_cam_quat_noise = np.random.uniform(low=-0.02, high=0.02, size=4)
-        self.model.body_pos[self.model.body('wrist_cam1').id] = self.wrist_cam_pos + wrist_cam_pos_noise
-        self.model.body_quat[self.model.body('wrist_cam1').id] = self.wrist_cam_quat + wrist_cam_quat_noise
+
+        front_cam_quat_noise = np.random.uniform(low=-0.02, high=0.02, size=4)
+        new_front_cam_quat = self.front_cam_quat + front_cam_quat_noise
+        new_front_cam_quat = new_front_cam_quat/np.linalg.norm(new_front_cam_quat)
+        self.model.body_quat[self.model.body('front_cam').id] = new_front_cam_quat
+        
+        wrist_cam_quat_noise = np.random.uniform(low=-0.03, high=0.03, size=4)
+        new_wrist_cam_quat = self.wrist_cam_quat + wrist_cam_quat_noise
+        new_wrist_cam_quat = new_wrist_cam_quat/np.linalg.norm(new_wrist_cam_quat)
+        self.model.body_quat[self.model.body('wrist_cam1').id] = new_wrist_cam_quat
         # Add noise to light position
         light_pos_noise = np.random.uniform(low=[-0.8,-0.5,-0.05], high=[1.2,0.5,0.2], size=3)
         self.model.body_pos[self.model.body('light0').id] = self.init_light_pos + light_pos_noise
