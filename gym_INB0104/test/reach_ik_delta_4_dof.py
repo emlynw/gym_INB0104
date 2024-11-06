@@ -8,8 +8,8 @@ np.set_printoptions(suppress=True)
 def main():
     render_mode = "rgb_array"
     env = gym.make("gym_INB0104/ReachIKDeltaEnv", render_mode=render_mode, randomize_domain=True, ee_dof=4)
-    env = TimeLimit(env, max_episode_steps=20)    
-    waitkey = 10
+    env = TimeLimit(env, max_episode_steps=100)    
+    waitkey = 100
     resize_resolution = (480, 480)
 
     while True:
@@ -19,7 +19,7 @@ def main():
         obs, info = env.reset()
         while not terminated and not truncated:
             if render_mode == "rgb_array":
-                pixels = obs["images"]["z"]
+                pixels = obs["images"]["front"]
                 cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), resize_resolution))
                 cv2.waitKey(waitkey)
 
@@ -37,6 +37,8 @@ def main():
                 action = np.array([0.0, 0.0, 0.0, 1.0, 1.0])
             else:
                 action = np.array([0.0, 1.0, 0.0, 1.0, 1.0])
+
+            action = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
             
             obs, reward, terminated, truncated, info = env.step(action)
             i+=1
