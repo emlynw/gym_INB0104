@@ -389,7 +389,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         # reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_smooth': 0.5, 'r_grasp': 0.5, 'r_contact': 0.5, 'r_move': 1.0}
 
         rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_energy': r_energy}
-        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_energy': 1.0}
+        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_energy': 2.0}
 
         rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
         reward = np.clip(sum(rewards.values()), -1e4, 1e4)
