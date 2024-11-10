@@ -22,7 +22,7 @@
       <freejoint name="block"/>
       <geom name="block" type="mesh" mesh="strawberry" size="10" density="500" solref="0.02 0.9" solimp="0.95 0.95 0.01"
       friction="0.9 0.1 0.1" rgba="0.9 0.9 0.9 1.0" material="strawberry_material"/> 
-      <site name="block_center" pos="0 0 0" size="0.01" rgba="0 1 0 1" group="3"/>
+      <site name="block_center" pos="0 0.02 0" size="0.01" rgba="0 1 0 1" group="3"/>
     </body>
     <body name="block2" pos="0.5 0.1 0.02" euler="0 0 1.57">
       <freejoint name="block2"/>
