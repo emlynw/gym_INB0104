@@ -2,6 +2,7 @@
 import numpy as np
 import os
 import mujoco
+import random
 
 from gymnasium import utils
 from gymnasium.envs.mujoco import MujocoEnv
@@ -135,6 +136,9 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)
 
     def domain_randomization(self):
+        # Randomize action scales
+        self.pos_scale = random.uniform(0.05, 0.15)
+        self.rot_scale = random.uniform(0.02, 0.1)
         # Move robot
         ee_noise = np.random.uniform(low=[0.0,-0.2,-0.4], high=[0.12, 0.2, 0.1], size=3)
         self.data.mocap_pos[0] = self._PANDA_XYZ + ee_noise
@@ -155,8 +159,13 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         light_pos_noise = np.random.uniform(low=[-0.8,-0.5,-0.05], high=[1.2,0.5,0.2], size=3)
         self.model.body_pos[self.model.body('light0').id] = self.init_light_pos + light_pos_noise
         # Change light levels
-        light_0_diffuse_noise = np.random.uniform(low=0.1, high=0.8, size=1)
-        self.model.light_diffuse[0][:] = light_0_diffuse_noise
+        light_diffuse_noise = np.random.uniform(low=0.1, high=1.0, size=3)
+        self.model.light_diffuse[0] = light_diffuse_noise
+         # Optional: Randomize other properties like specular and ambient lighting
+        light_specular_noise = np.random.uniform(low=0.0, high=0.5, size=3)
+        self.model.light_specular[0] = light_specular_noise  # Apply random color to specular light
+        light_ambient_noise = np.random.uniform(low=0.0, high=0.5, size=3)
+        self.model.light_ambient[0] = light_ambient_noise  # Apply random color to ambient light
         # Randomize table color
         channel = np.random.randint(0,3)
         table_color_noise = np.random.uniform(low=-0.05, high=0.2, size=1)
@@ -343,12 +352,24 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
 
     def _get_obs(self):
         obs = {"state": {}}
-
-        # Populate state observations
-        obs["state"]["panda/tcp_pos"] = self.data.sensor("pinch_pos").data.astype(np.float32)
-        obs["state"]["panda/tcp_orientation"] = self.data.sensor("pinch_quat").data.astype(np.float32)
+        
+        # Original position and orientation observations
+        tcp_pos = self.data.sensor("pinch_pos").data.astype(np.float32)
+        tcp_orientation = self.data.sensor("pinch_quat").data.astype(np.float32)
+        # Define noise parameters
+        position_noise_std = 0.01  # e.g., 1 cm standard deviation
+        orientation_noise_std = 0.005  # e.g., small rotations in quaternion
+        # Add Gaussian noise to position and orientation
+        noisy_tcp_pos = tcp_pos + np.random.normal(0, position_noise_std, size=tcp_pos.shape)
+        noisy_tcp_orientation = tcp_orientation + np.random.normal(0, orientation_noise_std, size=tcp_orientation.shape)
+        # Normalize orientation quaternion to keep it valid
+        noisy_tcp_orientation /= np.linalg.norm(noisy_tcp_orientation)
+        
+        # Populate noisy observations
+        obs["state"]["panda/tcp_pos"] = noisy_tcp_pos
+        obs["state"]["panda/tcp_orientation"] = noisy_tcp_orientation
         obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
-        obs["state"]["panda/gripper_pos"] = (25*2*np.array([self.data.qpos[8]], dtype=np.float32)-1)
+        obs["state"]["panda/gripper_pos"] = 25 * 2 * np.array([self.data.qpos[8]], dtype=np.float32) - 1
         obs["state"]["panda/gripper_vec"] = self.gripper_vec
 
         if not self.image_obs:

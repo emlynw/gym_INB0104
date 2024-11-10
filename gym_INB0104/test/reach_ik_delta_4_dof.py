@@ -8,7 +8,7 @@ np.set_printoptions(suppress=True)
 def main():
     render_mode = "rgb_array"
     env = gym.make("gym_INB0104/ReachIKDeltaEnv", render_mode=render_mode, randomize_domain=True, ee_dof=4)
-    env = TimeLimit(env, max_episode_steps=100)    
+    env = TimeLimit(env, max_episode_steps=5)    
     waitkey = 100
     resize_resolution = (480, 480)
 
