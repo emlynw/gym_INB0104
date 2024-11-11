@@ -188,9 +188,7 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         self.data.qpos[block_qpos_index+3:block_qpos_index+7] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
 
         # Move distractor object 
-        print(self.data.qpos.shape)
         block2_qpos_index = self.model.jnt_qposadr[self.model.body("block2").jntadr][0]
-        print(block2_qpos_index)
         self.object_x_noise = np.random.uniform(low=-0.15, high=0.15)
         self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
         random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
