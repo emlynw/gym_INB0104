@@ -7,9 +7,9 @@ np.set_printoptions(suppress=True)
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbEnv", render_mode=render_mode, randomize_domain=True, ee_dof=4)
-    env = TimeLimit(env, max_episode_steps=4)    
-    waitkey = 1
+    env = gym.make("gym_INB0104/ReachIKDeltaStrawbEnv", render_mode=render_mode, randomize_domain=False, ee_dof=4)
+    env = TimeLimit(env, max_episode_steps=100)    
+    waitkey = 10
     resize_resolution = (480, 480)
 
     while True:
@@ -38,7 +38,7 @@ def main():
             else:
                 action = np.array([0.0, 1.0, 0.0, 1.0, 1.0])
 
-            action = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
+            # action = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
             
             obs, reward, terminated, truncated, info = env.step(action)
             i+=1

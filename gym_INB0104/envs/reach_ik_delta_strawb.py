@@ -11,6 +11,7 @@ from gymnasium.spaces import Box, Dict
 from gym_INB0104.controllers import opspace_4 as opspace
 from pathlib import Path
 from scipy.spatial.transform import Rotation
+import time
 
 
 DEFAULT_CAMERA_CONFIG = {
@@ -30,7 +31,7 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         ee_dof = 6, # 3 for position, 3 for orientation
         control_dt=0.1,
         physics_dt=0.002,
-        width=640,
+        width=480,
         height=480,
         pos_scale=0.1,
         rot_scale=0.05,
@@ -99,7 +100,7 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.5], dtype=np.float32)
         self.center_pos = np.array([0.3, 0, 0.2], dtype=np.float32)
-        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.01], [0.75, 0.35, 0.55]], dtype=np.float32)
+        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.005], [0.75, 0.35, 0.55]], dtype=np.float32)
         self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/4, -np.pi/2], [np.pi/4, np.pi/4, np.pi/2]], dtype=np.float32)
 
         self.default_obj_pos = np.array([0.5, 0])
@@ -221,8 +222,9 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         if self.randomize_domain:
             self.domain_randomization()
         
+        reset_time = time.time()
         mujoco.mj_forward(self.model, self.data)
-        for _ in range(5*self._n_substeps):
+        for _ in range(10*self._n_substeps):
             tau = opspace(
                 model=self.model,
                 data=self.data,
@@ -235,6 +237,7 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
             )
             self.data.ctrl[self._panda_ctrl_ids] = tau
             mujoco.mj_step(self.model, self.data)
+        print("Reset time: ", time.time()-reset_time)
         
         self._block_init = self.data.sensor("block_pos").data
         self._z_init = self._block_init[2]
@@ -352,8 +355,8 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         obs = {"state": {}}
         
         # Original position and orientation observations
-        tcp_pos = self.data.sensor("pinch_pos").data.astype(np.float32)
-        tcp_orientation = self.data.sensor("pinch_quat").data.astype(np.float32)
+        tcp_pos = self.data.sensor("pinch_pos").data
+        tcp_orientation = self.data.sensor("pinch_quat").data
         # Define noise parameters
         position_noise_std = 0.01  # e.g., 1 cm standard deviation
         orientation_noise_std = 0.005  # e.g., small rotations in quaternion
@@ -364,8 +367,8 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         noisy_tcp_orientation /= np.linalg.norm(noisy_tcp_orientation)
         
         # Populate noisy observations
-        obs["state"]["panda/tcp_pos"] = noisy_tcp_pos
-        obs["state"]["panda/tcp_orientation"] = noisy_tcp_orientation
+        obs["state"]["panda/tcp_pos"] = noisy_tcp_pos.astype(np.float32)
+        obs["state"]["panda/tcp_orientation"] = noisy_tcp_orientation.astype(np.float32)
         obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
         obs["state"]["panda/gripper_pos"] = 25 * 2 * np.array([self.data.qpos[8]], dtype=np.float32) - 1
         obs["state"]["panda/gripper_vec"] = self.gripper_vec
