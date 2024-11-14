@@ -1,0 +1,39 @@
+<mujoco model="big_workbench">
+
+    <site name="origin" pos="0 0 0" size="0.01" rgba="1 0 0 1"/>
+    <geom name="back_left_leg"   type="box" pos="0 -1.0 0.5" size="0.02 0.02 0.5" material="aluminium"/>
+    <geom name="front_left_leg"  type="box" pos="1.0 -1.0 0.5" size="0.02 0.02 0.5" material="aluminium"/>
+    <geom name="back_left_pillar" type="box" pos="0 -1.0 1.79" size="0.02 0.02 0.75" material="aluminium"/>
+    <geom name="front_left_pillar" type="box" pos="1.0 -1.0 1.794" size="0.02 0.02 0.746" material="aluminium"/>
+    <geom name="back_right_leg"    type="box" pos="0 1.0 0.5" size="0.02 0.02 0.5" material="aluminium"/>
+    <geom name="front_right_leg"   type="box" pos="1.0 1.0 0.5" size="0.02 0.02 0.5" material="aluminium"/> 
+    <geom name="back_right_pillar"  type="box" pos="0 1.0 1.79" size="0.02 0.02 0.75" material="aluminium"/>
+    <geom name="front_right_pillar" type="box" pos="1.0 1.0 1.794" size="0.02 0.02 0.746" material="aluminium"/>
+    <geom name="front_middle_leg" type="box" pos="1.0 0.0 0.5" size="0.02 0.02 0.5" material="aluminium"/>
+
+    <geom name="black_cover"      type="box" pos="0.14 0.802 1.04" size="0.16 0.218 0.001" rgba="0.2 0.2 0.2 1"/>
+
+    <geom name="x_bar_bottom_left"  type="box" pos="0.50 -1.0 1.02" size="0.48 0.02 0.02" material="aluminium"/>
+    <geom name="x_bar_top_left"     type="box" pos="0.50 -1.0 2.52" size="0.48 0.02 0.02" material="aluminium"/>
+    <geom name="x_bar_bottom_right" type="box" pos="0.50 1.0 1.02" size="0.48 0.02 0.02" material="aluminium"/>
+    <geom name="x_bar_top_right"    type="box" pos="0.50 1.0 2.52" size="0.48 0.02 0.02" material="aluminium"/>
+    <geom name="x_bar_top_middle" type="box" pos="0.50 0.0 2.52" size="0.48 0.02 0.02" material="aluminium"/>
+
+    <geom name="y_bar_bottom_front" type="box" pos="0 0.0 1.02" size="0.02 1.02 0.02" material="aluminium"/>
+    <geom name="y_bar_top_front"    type="box" pos="0 0.0 2.52" size="0.02 0.98 0.02" material="aluminium"/>
+    <geom name="y_bar_bottom_back"  type="box" pos="1.0 0.0 1.02" size="0.02 1.02 0.02" material="aluminium"/>
+    <geom name="y_bar_top_back"     type="box" pos="1.0 0.0 2.52" size="0.02 0.98 0.02" material="aluminium"/>
+
+    <geom name="y_bar_robot_support"   type="box" pos="0.28 0 1.02" size="0.02 0.98 0.02" material="aluminium"/>
+    <geom name="y_bar_surface_support" type="box" pos="0.37 0 1.02" size="0.02 0.98 0.02" material="aluminium"/>
+    <geom name="robot_base_plate" type="box" pos="0.14 0.43 1.05" size="0.16 0.15 0.01" material="aluminium"/>
+
+    <geom name="right_tabletop" type="box" pos="0.661 0.540 1.044" euler="0 0 3.14159" size="0.359 0.480 0.004" rgba="0.5 0.5 0.5 1" material="plywood"/>
+    <geom name="left_tabletop" type="box" pos="0.661 -0.482 1.044" euler="0 0 3.14159" size="0.359 0.538 0.004" rgba="0.5 0.5 0.5 1" material="plywood"/>
+
+    <geom name="strawb_bar"  type="box" pos="1.0 0.0 1.72" size="0.02 1.02 0.02" material="aluminium"/>
+
+
+
+
+</mujoco>

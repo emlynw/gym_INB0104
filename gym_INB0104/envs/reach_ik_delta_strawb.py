@@ -136,13 +136,60 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         self.initial_orientation = [0, 1, 0, 0]
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)
 
+        self.init_headlight_diffuse = self.model.vis.headlight.diffuse.copy()
+        self.init_headlight_ambient = self.model.vis.headlight.ambient.copy()
+        self.init_headlight_specular = self.model.vis.headlight.specular.copy()
+
+    def randomize_lighting(self):
+        # Add noise to light position
+        light_pos_noise = np.random.uniform(low=[-0.8,-0.5,-0.05], high=[1.2,0.5,0.2], size=3)
+        self.model.body_pos[self.model.body('light0').id] = self.init_light_pos + light_pos_noise
+
+        # Change light levels with varying brightness conditions
+        if random.random() < 0.5:  # 50% chance to make it darker
+            # Darker lighting configuration
+            print("Darker lighting")
+            light_diffuse_noise = np.random.uniform(low=0.05, high=0.3, size=3)  # Lower diffuse values for dim light
+            light_ambient_noise = np.random.uniform(low=0.0, high=0.2, size=3)   # Lower ambient light for a darker environment
+        else:
+            # Brighter lighting configuration (similar to current implementation)
+            print("Brighter lighting")
+            light_diffuse_noise = np.random.uniform(low=0.1, high=1.0, size=3)
+            light_ambient_noise = np.random.uniform(low=0.0, high=0.5, size=3)
+        self.model.light_diffuse[0] = light_diffuse_noise
+        self.model.light_ambient[0] = light_ambient_noise
+
+        # Randomize other properties like specular lighting
+        light_specular_noise = np.random.uniform(low=0.0, high=0.5, size=3)
+        self.model.light_specular[0] = light_specular_noise
+
+        # Add noise to headlight
+        if random.random() < 0.5:
+            light = -1.0
+            # Darker lighting configuration
+            headlight_diffuse_noise = np.random.uniform(low=0.0, high=0.1, size=3)  # Lower diffuse values for dim light
+            headlight_ambient_noise = np.random.uniform(low=0.0, high=0.1, size=3)   # Lower ambient light for a darker environment
+            headlight_specular_noise = np.random.uniform(low=0.0, high=0.1, size=3)  # Lower specular light for a darker environment
+        else:
+            light = 1.0
+            # Brighter lighting configuration (similar to current implementation)
+            headlight_diffuse_noise = np.random.uniform(low=0.0, high=0.1, size=3)
+            headlight_ambient_noise = np.random.uniform(low=0.0, high=0.1, size=3)
+            headlight_specular_noise = np.random.uniform(low=0.0, high=0.1, size=3)
+
+        self.model.vis.headlight.diffuse = self.init_headlight_diffuse + light * headlight_diffuse_noise
+        self.model.vis.headlight.ambient = self.init_headlight_ambient + light * headlight_ambient_noise
+        self.model.vis.headlight.specular = self.init_headlight_specular + light * headlight_specular_noise
+
     def domain_randomization(self):
         # Randomize action scales
         self.pos_scale = random.uniform(0.05, 0.15)
         self.rot_scale = random.uniform(0.02, 0.1)
+
         # Move robot
         ee_noise = np.random.uniform(low=[0.0,-0.2,-0.4], high=[0.12, 0.2, 0.1], size=3)
         self.data.mocap_pos[0] = self._PANDA_XYZ + ee_noise
+
         # Add noise to camera position and orientation
         front_cam_pos_noise = np.random.uniform(low=[-0.05,-0.05,-0.02], high=[0.05,0.05,0.02], size=3)
         self.model.body_pos[self.model.body('front_cam').id] = self.front_cam_pos + front_cam_pos_noise
@@ -156,28 +203,20 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         new_wrist_cam_quat = self.wrist_cam_quat + wrist_cam_quat_noise
         new_wrist_cam_quat = new_wrist_cam_quat/np.linalg.norm(new_wrist_cam_quat)
         self.model.body_quat[self.model.body('wrist_cam1').id] = new_wrist_cam_quat
-        # Add noise to light position
-        light_pos_noise = np.random.uniform(low=[-0.8,-0.5,-0.05], high=[1.2,0.5,0.2], size=3)
-        self.model.body_pos[self.model.body('light0').id] = self.init_light_pos + light_pos_noise
-        # Change light levels
-        light_diffuse_noise = np.random.uniform(low=0.1, high=1.0, size=3)
-        self.model.light_diffuse[0] = light_diffuse_noise
-         # Optional: Randomize other properties like specular and ambient lighting
-        light_specular_noise = np.random.uniform(low=0.0, high=0.5, size=3)
-        self.model.light_specular[0] = light_specular_noise  # Apply random color to specular light
-        light_ambient_noise = np.random.uniform(low=0.0, high=0.5, size=3)
-        self.model.light_ambient[0] = light_ambient_noise  # Apply random color to ambient light
+        
         # Randomize table color
         channel = np.random.randint(0,3)
         table_color_noise = np.random.uniform(low=-0.05, high=0.2, size=1)
         self.model.mat_texid[self.model.mat('plywood').id] = np.random.choice(self.table_tex_ids)
         self.model.mat_rgba[self.model.mat('plywood').id] = self.init_plywood_rgba
         self.model.mat_rgba[self.model.mat('plywood').id][channel] = self.init_plywood_rgba[channel] + table_color_noise
+
         # Randomize brick color
         channel = np.random.randint(0,3)
         brick_color_noise = np.random.uniform(low=-0.1, high=0.1, size=1)
         self.model.mat_rgba[self.model.mat('brick_wall').id] = self.init_brick_rgba
         self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + brick_color_noise
+
         # Move Target object
         block_qpos_index = self.model.jnt_qposadr[self.model.body("block").jntadr][0]
         self.object_x_noise = np.random.uniform(low=-0.15, high=0.15)
@@ -207,6 +246,9 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         self.data.qpos[block3_qpos_index] = self.default_obj_pos[0] + self.object_x_noise
         self.data.qpos[block3_qpos_index+1] = self.default_obj_pos[1] + self.object_y_noise
         self.data.qpos[block3_qpos_index+3:block3_qpos_index+7] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
+        
+        # Randomize lighting
+        self.randomize_lighting()
 
 
     def reset_arm_and_gripper(self):

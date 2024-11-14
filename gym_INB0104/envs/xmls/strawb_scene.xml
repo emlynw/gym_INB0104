@@ -56,10 +56,18 @@
       <geom name="right_curtain" type="plane" size="0.6 0.9 0.02" rgba="0.2 0.2 0.2 1"/> 
     </body> -->
     <body pos='-0.185 -0.43 -1.06' euler='0 0 0'>
-        <include file="big_workbench.xml"/>
+        <include file="strawb_workbench.xml"/>
     </body>
-    <!-- <body pos='-0.1575 -1.58 -0.92' euler='0 0 0'>
-        <include file="workbench_2.xml"/>
+
+    <body pos="1.5 0 0" euler="1.58 0 0">
+    <composite type="cable" count="10" curve="0 0 s">
+            <geom type="capsule" size="0.01" rgba="0 1 0 1"/>
+    </composite>
+    </body>
+    
+    <!-- <body name="vine1" pos="1.0 0 1.6">
+      <composite type="cable" count="5"/>
+      <geom name="vine1" type="capsule" size="0.02 0.02"/>
     </body> -->
   </worldbody>
 
