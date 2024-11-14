@@ -237,7 +237,6 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
             )
             self.data.ctrl[self._panda_ctrl_ids] = tau
             mujoco.mj_step(self.model, self.data)
-        print("Reset time: ", time.time()-reset_time)
         
         self._block_init = self.data.sensor("block_pos").data
         self._z_init = self._block_init[2]

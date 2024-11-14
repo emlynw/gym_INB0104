@@ -20,9 +20,9 @@ def main():
         while not terminated and not truncated:
             if render_mode == "rgb_array":
                 pixels = obs["images"]["front"]
-                cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), resize_resolution))
-                cv2.waitKey(waitkey)
-
+                # cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), resize_resolution))
+                # cv2.waitKey(waitkey)
+            print(i)
             if i < 15:
                 action = np.array([0.2, 0.0, 0.0, 0.0, -1.0])
             elif i < 50:
