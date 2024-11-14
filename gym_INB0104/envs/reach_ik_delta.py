@@ -30,7 +30,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         ee_dof = 6, # 3 for position, 3 for orientation
         control_dt=0.1,
         physics_dt=0.002,
-        width=640,
+        width=480,
         height=480,
         pos_scale=0.1,
         rot_scale=0.05,
