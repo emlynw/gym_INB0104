@@ -34,6 +34,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         height=480,
         pos_scale=0.1,
         rot_scale=0.05,
+        cameras=["wrist1", "wrist2", "front"],
         render_mode="rgb_array",
         **kwargs,
     ):
@@ -46,6 +47,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         self.height = height
         self.pos_scale = pos_scale
         self.rot_scale = rot_scale
+        self.cameras = cameras
 
         state_space = Dict(
             {
@@ -60,12 +62,11 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
             state_space["block_pos"] = Box(-np.inf, np.inf, shape=(3,), dtype=np.float32)
         self.observation_space = Dict({"state": state_space})
         if image_obs:
-            self.observation_space["images"] = Dict(
-                {
-                    "wrist": Box(0, 255, shape=(self.height, self.width, 3), dtype=np.uint8),
-                    "front": Box(0, 255, shape=(self.height, self.width, 3), dtype=np.uint8),
-                }
-            )
+            self.observation_space["images"] = Dict()
+            for camera in self.cameras:
+                self.observation_space["images"][camera] = Box(
+                    0, 255, shape=(self.height, self.width, 3), dtype=np.uint8
+                )
 
         p = Path(__file__).parent
         env_dir = os.path.join(p, "xmls/reach_ik.xml")
@@ -83,14 +84,17 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
             **kwargs,
         )
         self.model.opt.timestep = physics_dt
-        self.camera_id = (0, 1)
+        # self.camera_id = (0, 1)
+        self.camera_id = ()
+        for cam in self.cameras:
+            self.camera_id += (self.model.camera(cam).id,)
         self.action_space = Box(
             np.array([-1.0]*(self.ee_dof+1)), 
             np.array([1.0]*(self.ee_dof+1)),
             dtype=np.float32,
         )
         self._viewer = MujocoRenderer(self.model, self.data,)
-        self._viewer.render(self.render_mode)
+        # self._viewer.render(self.render_mode)
         self.setup()
 
     def setup(self):
@@ -125,8 +129,8 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         # Store initial values for randomization
         self.front_cam_pos = self.model.body_pos[self.model.body('front_cam').id].copy()
         self.front_cam_quat = self.model.body_quat[self.model.body('front_cam').id].copy()
-        self.wrist_cam_pos = self.model.body_pos[self.model.body('wrist_cam1').id].copy()
-        self.wrist_cam_quat = self.model.body_quat[self.model.body('wrist_cam1').id].copy()
+        self.wrist_cam_pos = self.model.body_pos[self.model.body('wrist1').id].copy()
+        self.wrist_cam_quat = self.model.body_quat[self.model.body('wrist1').id].copy()
         self.init_light_pos = self.model.body_pos[self.model.body('light0').id].copy()
         self.init_plywood_rgba = self.model.mat_rgba[self.model.mat('plywood').id].copy()
         self.init_brick_rgba = self.model.mat_rgba[self.model.mat('brick_wall').id].copy()
@@ -155,7 +159,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         wrist_cam_quat_noise = np.random.uniform(low=-0.03, high=0.03, size=4)
         new_wrist_cam_quat = self.wrist_cam_quat + wrist_cam_quat_noise
         new_wrist_cam_quat = new_wrist_cam_quat/np.linalg.norm(new_wrist_cam_quat)
-        self.model.body_quat[self.model.body('wrist_cam1').id] = new_wrist_cam_quat
+        self.model.body_quat[self.model.body('wrist1').id] = new_wrist_cam_quat
         # Add noise to light position
         light_pos_noise = np.random.uniform(low=[-0.8,-0.5,-0.05], high=[1.2,0.5,0.2], size=3)
         self.model.body_pos[self.model.body('light0').id] = self.init_light_pos + light_pos_noise
@@ -355,7 +359,11 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
             obs["state"]["block_pos"] = self.data.sensor("block_pos").data.astype(np.float32)
         if self.image_obs:
             obs["images"] = {}
-            obs["images"]["wrist"], obs["images"]["front"] = self.render()
+            # obs["images"]["wrist"], obs["images"]["front"] = self.render()
+            for cam_name in self.cameras:
+                cam_id = self.model.camera(cam_name).id
+                obs["images"][cam_name] = self._viewer.render(render_mode="rgb_array", camera_id=cam_id)
+
 
         if self.render_mode == "human":
             self._viewer.render(self.render_mode)

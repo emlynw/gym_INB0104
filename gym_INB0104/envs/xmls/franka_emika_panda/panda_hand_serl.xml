@@ -251,8 +251,8 @@
                       <geom mesh="camera_mount" material="black" class="visual"/>
                       <geom mesh="camera_mount_c" class="collision"/>
                       <body name="d435i_1" childclass="d435i" pos = "-0.015 -0.09676 0.025990" euler="-0.6108652 0 0">
-                        <body name="wrist_cam1" pos="0.0325 0 -0.003" quat="0 0 1 0">
-                          <camera name="wrist_cam_1" pos="0 0 0" quat="1 0 0 0" fovy="42" />
+                        <body name="wrist1" pos="0.0325 0 -0.003" quat="0 0 1 0">
+                          <camera name="wrist1" pos="0 0 0" quat="1 0 0 0" fovy="42" />
                         </body>
                         <site name="camera_1_site" pos="0.0325 0 -0.003" size="0.001" rgba="1 0 0 1" type="sphere"/>
                         <geom mesh="d435i_0" material="IR_Lens" class="d435i_visual"/>
@@ -267,8 +267,8 @@
                         <geom class="d435i_collision" type="capsule" mesh="d435i_8"/>
                       </body>
                       <body name="d435i_2" childclass="d435i" pos = "0.015 0.09676 0.025990" euler="0.6108652 0 -3.1415927">
-                        <body name="wrist_cam2" pos="0.0325 0 -0.003" quat="0 0 1 0">
-                          <!-- <camera name="wrist_cam_2" pos="0 0 0" quat="1 0 0 0" fovy="42" /> -->
+                        <body name="wrist2" pos="0.0325 0 -0.003" quat="0 0 1 0">
+                          <camera name="wrist2" pos="0 0 0" quat="1 0 0 0" fovy="42" />
                         </body>
                         <site name="camera_2_site" pos="0.0325 0 -0.003" quat = "0 0 1 0" size="0.001" rgba="1 0 0 1" type="sphere"/>
                         <geom mesh="d435i_0" material="IR_Lens" class="d435i_visual"/>
