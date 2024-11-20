@@ -11,6 +11,7 @@ from gymnasium.spaces import Box, Dict
 from gym_INB0104.controllers import opspace_4 as opspace
 from pathlib import Path
 from scipy.spatial.transform import Rotation
+import time
 
 
 DEFAULT_CAMERA_CONFIG = {
@@ -18,7 +19,7 @@ DEFAULT_CAMERA_CONFIG = {
     "distance": 4.0,
     }
 
-class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
+class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
     metadata = { 
         "render_modes": ["human", "rgb_array", "depth_array"], 
     }
@@ -69,7 +70,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
                 )
 
         p = Path(__file__).parent
-        env_dir = os.path.join(p, "xmls/reach_ik.xml")
+        env_dir = os.path.join(p, "xmls/reach_strawb_hanging.xml")
         self._n_substeps = int(float(control_dt) / float(physics_dt))
         self.frame_skip = 1
 
@@ -84,7 +85,6 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
             **kwargs,
         )
         self.model.opt.timestep = physics_dt
-        # self.camera_id = (0, 1)
         self.camera_id = ()
         for cam in self.cameras:
             self.camera_id += (self.model.camera(cam).id,)
@@ -103,7 +103,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.5], dtype=np.float32)
         self.center_pos = np.array([0.3, 0, 0.2], dtype=np.float32)
-        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.01], [0.75, 0.35, 0.55]], dtype=np.float32)
+        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.005], [0.75, 0.35, 0.55]], dtype=np.float32)
         self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/4, -np.pi/2], [np.pi/4, np.pi/4, np.pi/2]], dtype=np.float32)
 
         self.default_obj_pos = np.array([0.5, 0])
@@ -183,7 +183,6 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         self.model.vis.headlight.specular = self.init_headlight_specular + light * headlight_specular_noise
 
     def domain_randomization(self):
-
         # Randomize action scales
         self.pos_scale = random.uniform(0.05, 0.15)
         self.rot_scale = random.uniform(0.02, 0.1)
@@ -205,7 +204,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         new_wrist_cam_quat = self.wrist_cam_quat + wrist_cam_quat_noise
         new_wrist_cam_quat = new_wrist_cam_quat/np.linalg.norm(new_wrist_cam_quat)
         self.model.body_quat[self.model.body('wrist1').id] = new_wrist_cam_quat
-
+        
         # Randomize table color
         channel = np.random.randint(0,3)
         table_color_noise = np.random.uniform(low=-0.05, high=0.2, size=1)
@@ -219,13 +218,39 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         self.model.mat_rgba[self.model.mat('brick_wall').id] = self.init_brick_rgba
         self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + brick_color_noise
 
-        # Move object
-        self.object_x_noise = np.random.uniform(low=-0.15, high=0.1)
+        # Move Target object
+        block_qpos_index = self.model.jnt_qposadr[self.model.body("block").jntadr][0]
+        self.object_x_noise = np.random.uniform(low=-0.15, high=0.15)
         self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
-        self.object_theta_noise = np.random.uniform(low=-0.5, high=0.5)
-        self.data.qpos[9] = self.default_obj_pos[0] + self.object_x_noise
-        self.data.qpos[10] = self.default_obj_pos[1] + self.object_y_noise
-        self.data.qpos[12] = self.default_obs_quat[0] + self.object_theta_noise
+        random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
+        z_rotation = Rotation.from_euler('z', random_z_angle).as_quat()
+        self.data.qpos[block_qpos_index] = self.default_obj_pos[0] + self.object_x_noise
+        self.data.qpos[block_qpos_index+1] = self.default_obj_pos[1] + self.object_y_noise
+        self.data.qpos[block_qpos_index+3:block_qpos_index+7] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
+
+        # Move distractor object 
+        block2_qpos_index = self.model.jnt_qposadr[self.model.body("block2").jntadr][0]
+        self.object_x_noise = np.random.uniform(low=-0.15, high=0.15)
+        self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
+        random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
+        z_rotation = Rotation.from_euler('z', random_z_angle).as_quat()
+        self.data.qpos[block2_qpos_index] = self.default_obj_pos[0] + self.object_x_noise
+        self.data.qpos[block2_qpos_index+1] = self.default_obj_pos[1] + self.object_y_noise
+        self.data.qpos[block2_qpos_index+3:block2_qpos_index+7] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
+
+        # Move distractor object 
+        block3_qpos_index = self.model.jnt_qposadr[self.model.body("block3").jntadr][0]
+        self.object_x_noise = np.random.uniform(low=-0.15, high=0.15)
+        self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
+        random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
+        z_rotation = Rotation.from_euler('z', random_z_angle).as_quat()
+        self.data.qpos[block3_qpos_index] = self.default_obj_pos[0] + self.object_x_noise
+        self.data.qpos[block3_qpos_index+1] = self.default_obj_pos[1] + self.object_y_noise
+        self.data.qpos[block3_qpos_index+3:block3_qpos_index+7] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
+        
+        # Randomize lighting
+        self.randomize_lighting()
+
 
     def reset_arm_and_gripper(self):
         self.data.qpos[self._panda_dof_ids] = self._PANDA_HOME
@@ -234,13 +259,14 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         self.data.mocap_pos[0] = self.data.sensor("pinch_pos").data.copy()
         mujoco.mj_step(self.model, self.data)
 
+
     def reset_model(self):
         self.reset_arm_and_gripper()
         if self.randomize_domain:
             self.domain_randomization()
         
         mujoco.mj_forward(self.model, self.data)
-        for _ in range(5*self._n_substeps):
+        for _ in range(10*self._n_substeps):
             tau = opspace(
                 model=self.model,
                 data=self.data,
@@ -370,23 +396,20 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         obs = {"state": {}}
         
         # Original position and orientation observations
-        tcp_pos = self.data.sensor("pinch_pos").data.astype(np.float32)
-        tcp_orientation = self.data.sensor("pinch_quat").data.astype(np.float32)
-
+        tcp_pos = self.data.sensor("pinch_pos").data
+        tcp_orientation = self.data.sensor("pinch_quat").data
         # Define noise parameters
         position_noise_std = 0.01  # e.g., 1 cm standard deviation
         orientation_noise_std = 0.005  # e.g., small rotations in quaternion
-
         # Add Gaussian noise to position and orientation
         noisy_tcp_pos = tcp_pos + np.random.normal(0, position_noise_std, size=tcp_pos.shape)
         noisy_tcp_orientation = tcp_orientation + np.random.normal(0, orientation_noise_std, size=tcp_orientation.shape)
-        
         # Normalize orientation quaternion to keep it valid
         noisy_tcp_orientation /= np.linalg.norm(noisy_tcp_orientation)
         
         # Populate noisy observations
-        obs["state"]["panda/tcp_pos"] = noisy_tcp_pos
-        obs["state"]["panda/tcp_orientation"] = noisy_tcp_orientation
+        obs["state"]["panda/tcp_pos"] = noisy_tcp_pos.astype(np.float32)
+        obs["state"]["panda/tcp_orientation"] = noisy_tcp_orientation.astype(np.float32)
         obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
         obs["state"]["panda/gripper_pos"] = 25 * 2 * np.array([self.data.qpos[8]], dtype=np.float32) - 1
         obs["state"]["panda/gripper_vec"] = self.gripper_vec
@@ -395,11 +418,9 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
             obs["state"]["block_pos"] = self.data.sensor("block_pos").data.astype(np.float32)
         if self.image_obs:
             obs["images"] = {}
-            # obs["images"]["wrist"], obs["images"]["front"] = self.render()
             for cam_name in self.cameras:
                 cam_id = self.model.camera(cam_name).id
                 obs["images"][cam_name] = self._viewer.render(render_mode="rgb_array", camera_id=cam_id)
-
 
         if self.render_mode == "human":
             self._viewer.render(self.render_mode)
@@ -418,7 +439,7 @@ class ReachIKDeltaEnv(MujocoEnv, utils.EzPickle):
         # r_move = 1 - np.tanh(5 * np.linalg.norm(tcp_pos[:2] - self.center_pos[:2]))
 
         # Smoothness reward
-        r_smooth = -np.linalg.norm(action[:-1] - self.prev_action[:-1]) 
+        r_smooth = -np.linalg.norm(action - self.prev_action) 
         self.prev_action = action
 
         # # Reward for not interrupting grasp

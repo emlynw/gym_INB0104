@@ -19,7 +19,7 @@ DEFAULT_CAMERA_CONFIG = {
     "distance": 4.0,
     }
 
-class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
+class ReachIKDeltaStrawbTableEnv(MujocoEnv, utils.EzPickle):
     metadata = { 
         "render_modes": ["human", "rgb_array", "depth_array"], 
     }
@@ -35,6 +35,7 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         height=480,
         pos_scale=0.1,
         rot_scale=0.05,
+        cameras=["wrist1", "wrist2", "front"],
         render_mode="rgb_array",
         **kwargs,
     ):
@@ -47,6 +48,7 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         self.height = height
         self.pos_scale = pos_scale
         self.rot_scale = rot_scale
+        self.cameras = cameras
 
         state_space = Dict(
             {
@@ -61,15 +63,14 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
             state_space["block_pos"] = Box(-np.inf, np.inf, shape=(3,), dtype=np.float32)
         self.observation_space = Dict({"state": state_space})
         if image_obs:
-            self.observation_space["images"] = Dict(
-                {
-                    "wrist": Box(0, 255, shape=(self.height, self.width, 3), dtype=np.uint8),
-                    "front": Box(0, 255, shape=(self.height, self.width, 3), dtype=np.uint8),
-                }
-            )
+            self.observation_space["images"] = Dict()
+            for camera in self.cameras:
+                self.observation_space["images"][camera] = Box(
+                    0, 255, shape=(self.height, self.width, 3), dtype=np.uint8
+                )
 
         p = Path(__file__).parent
-        env_dir = os.path.join(p, "xmls/reach_strawb_ik.xml")
+        env_dir = os.path.join(p, "xmls/reach_strawb_table.xml")
         self._n_substeps = int(float(control_dt) / float(physics_dt))
         self.frame_skip = 1
 
@@ -84,14 +85,16 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
             **kwargs,
         )
         self.model.opt.timestep = physics_dt
-        self.camera_id = (0, 1)
+        self.camera_id = ()
+        for cam in self.cameras:
+            self.camera_id += (self.model.camera(cam).id,)
         self.action_space = Box(
             np.array([-1.0]*(self.ee_dof+1)), 
             np.array([1.0]*(self.ee_dof+1)),
             dtype=np.float32,
         )
         self._viewer = MujocoRenderer(self.model, self.data,)
-        self._viewer.render(self.render_mode)
+        # self._viewer.render(self.render_mode)
         self.setup()
 
     def setup(self):
@@ -125,8 +128,8 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         # Store initial values for randomization
         self.front_cam_pos = self.model.body_pos[self.model.body('front_cam').id].copy()
         self.front_cam_quat = self.model.body_quat[self.model.body('front_cam').id].copy()
-        self.wrist_cam_pos = self.model.body_pos[self.model.body('wrist_cam1').id].copy()
-        self.wrist_cam_quat = self.model.body_quat[self.model.body('wrist_cam1').id].copy()
+        self.wrist_cam_pos = self.model.body_pos[self.model.body('wrist1').id].copy()
+        self.wrist_cam_quat = self.model.body_quat[self.model.body('wrist1').id].copy()
         self.init_light_pos = self.model.body_pos[self.model.body('light0').id].copy()
         self.init_plywood_rgba = self.model.mat_rgba[self.model.mat('plywood').id].copy()
         self.init_brick_rgba = self.model.mat_rgba[self.model.mat('brick_wall').id].copy()
@@ -148,12 +151,10 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         # Change light levels with varying brightness conditions
         if random.random() < 0.5:  # 50% chance to make it darker
             # Darker lighting configuration
-            print("Darker lighting")
             light_diffuse_noise = np.random.uniform(low=0.05, high=0.3, size=3)  # Lower diffuse values for dim light
             light_ambient_noise = np.random.uniform(low=0.0, high=0.2, size=3)   # Lower ambient light for a darker environment
         else:
             # Brighter lighting configuration (similar to current implementation)
-            print("Brighter lighting")
             light_diffuse_noise = np.random.uniform(low=0.1, high=1.0, size=3)
             light_ambient_noise = np.random.uniform(low=0.0, high=0.5, size=3)
         self.model.light_diffuse[0] = light_diffuse_noise
@@ -202,7 +203,7 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         wrist_cam_quat_noise = np.random.uniform(low=-0.03, high=0.03, size=4)
         new_wrist_cam_quat = self.wrist_cam_quat + wrist_cam_quat_noise
         new_wrist_cam_quat = new_wrist_cam_quat/np.linalg.norm(new_wrist_cam_quat)
-        self.model.body_quat[self.model.body('wrist_cam1').id] = new_wrist_cam_quat
+        self.model.body_quat[self.model.body('wrist1').id] = new_wrist_cam_quat
         
         # Randomize table color
         channel = np.random.randint(0,3)
@@ -264,7 +265,6 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
         if self.randomize_domain:
             self.domain_randomization()
         
-        reset_time = time.time()
         mujoco.mj_forward(self.model, self.data)
         for _ in range(10*self._n_substeps):
             tau = opspace(
@@ -418,7 +418,9 @@ class ReachIKDeltaStrawbEnv(MujocoEnv, utils.EzPickle):
             obs["state"]["block_pos"] = self.data.sensor("block_pos").data.astype(np.float32)
         if self.image_obs:
             obs["images"] = {}
-            obs["images"]["wrist"], obs["images"]["front"] = self.render()
+            for cam_name in self.cameras:
+                cam_id = self.model.camera(cam_name).id
+                obs["images"][cam_name] = self._viewer.render(render_mode="rgb_array", camera_id=cam_id)
 
         if self.render_mode == "human":
             self._viewer.render(self.render_mode)

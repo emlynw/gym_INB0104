@@ -1,6 +1,6 @@
 <mujoco model="INB0104">
   
-  <include file="basic_scene.xml" pos="1.0 0 0"/>
+  <include file="strawb_table.xml" pos="1.0 0 0"/>
 
   <asset>
     <texture name="strawberry_color" type="2d" file="textures/strawberry.png"/>
@@ -14,10 +14,7 @@
     <body name = "front_cam" pos='1.6 0 0.4' euler='0 1.42 1.57'>
       <camera name='front' fovy="41"/> 
     </body>
-    <!-- <body name = "front_cam" pos='-0.16 0.55 0.4' euler='-1.0 -1.0 -2.6'>
-      <geom name="front_cam" type="box" size=".01 .01 .01" rgba="0 1 0 1" group="4"/>
-      <camera name='front' fovy="41"/>  -->
-    <!-- </body> -->
+
     <!-- target object -->
     <body name="block" pos="0.55 0.02 0.02" euler="0 0 1.57">
       <freejoint name="block"/>
@@ -27,6 +24,8 @@
       material="strawberry_material" contype="0" conaffinity="0"/> 
       <site name="block_center" pos="0 0.02 0" size="0.01" rgba="0 1 0 1" group="3"/>
     </body>
+
+    <!-- Distractor 1 -->
     <body name="block2" pos="0.5 0.12 0.02" euler="0 0 1.57">
       <freejoint name="block2"/>
       <geom name="block2" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0"
@@ -34,6 +33,8 @@
       <geom name="block2_visual" type="mesh" mesh="strawberry" rgba="0.1 0.6 0.1 1.0" 
       contype="0" conaffinity="0"/>
     </body>
+
+    <!-- Distractor 2 -->
     <body name="block3" pos="0.5 -0.12 0.02" euler="0 0 1.57">
       <freejoint name="block3"/>
       <geom name="block3" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0"
@@ -41,6 +42,8 @@
       <geom name="block3_visual" type="mesh" mesh="strawberry" rgba="0.1 0.6 0.1 1.0" 
       contype="0" conaffinity="0"/> 
     </body>
+
+    <!-- Mocap target for IK -->
     <body name="target" pos=".15 0 .5" quat="0 1 0 0" mocap="true">
       <geom name="target" type="box" size=".03 .03 .03" contype="0" conaffinity="0" rgba=".6 .3 .3 0"/>
     </body>
