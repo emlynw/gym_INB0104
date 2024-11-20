@@ -1,0 +1,32 @@
+<mujoco model="strawb">
+
+  <compiler angle="radian" meshdir="franka_emika_panda/assets" autolimits="true"/>
+
+  <asset>
+    <texture name="strawberry_color" type="2d" file="textures/strawberry.png"/>
+    <material name="strawberry_material" texture="strawberry_color" shininess="0.1" specular="0.1" reflectance="0.5" texuniform="true"/>
+    <mesh name="strawberry" file="strawberry.obj" scale="0.006 0.006 0.006"/>
+    <mesh name="strawberry_collision" file="strawberry_collision.obj" scale="0.006 0.006 0.006"/>
+  </asset>  
+
+  <worldbody>
+    
+
+    <!-- target object -->
+    <body name="block" pos="0.55 0.02 0.02" euler="0 0 1.57">
+      <freejoint name="block"/>
+      <geom name="block" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
+      <geom name="block_visual" type="mesh" mesh="strawberry" rgba="0.9 0.9 0.9 1.0" material="strawberry_material" contype="0" conaffinity="0"/> 
+      <site name="block_center" pos="0 0.02 0" size="0.01" rgba="0 1 0 1" group="3"/>
+      <geom name="stem" type="capsule" pos="0.0026 0.045 0.004" euler="-1.0 0.3 0.0" size="0.0009 0.008" rgba="0.208 0.337 0.149 1"/>
+      <site name="stem" pos="0.0048 0.051 0.0079" size="0.001" rgba="0 0 1 1" group="3"/>
+      <site name="grasp" pos="0.0033 0.047 0.0052" size="0.001" rgba="0 0 1 1" group="3"/>
+    </body>
+
+  
+
+  </worldbody>
+
+
+
+</mujoco>

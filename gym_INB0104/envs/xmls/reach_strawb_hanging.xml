@@ -21,7 +21,9 @@
       <geom name="block" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
       <geom name="block_visual" type="mesh" mesh="strawberry" rgba="0.9 0.9 0.9 1.0" material="strawberry_material" contype="0" conaffinity="0"/> 
       <site name="block_center" pos="0 0.02 0" size="0.01" rgba="0 1 0 1" group="3"/>
-      <site name="stem" pos="0.002 0.037 0.002" size="0.001" rgba="0 0 1 1" group="3"/>
+      <geom name="stem" type="capsule" pos="0.0026 0.045 0.004" euler="-1.0 0.3 0.0" size="0.0009 0.008" rgba="0.208 0.337 0.149 1"/>
+      <site name="stem" pos="0.0048 0.051 0.0079" size="0.001" rgba="0 0 1 1" group="3"/>
+      <site name="stem_grasp" pos="0.0033 0.047 0.0052" size="0.001" rgba="0 0 1 1" group="3"/>
     </body>
 
     <!-- Distractor 1 -->
@@ -29,7 +31,8 @@
       <freejoint name="block2"/>
       <geom name="block2" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
       <geom name="block2_visual" type="mesh" mesh="strawberry" rgba="0.1 0.6 0.1 1.0" contype="0" conaffinity="0"/>
-      <site name="stem2" pos="0.002 0.037 0.002" size="0.001" rgba="0 0 1 1" group="3"/>
+      <geom name="stem2" type="capsule" pos="0.0026 0.045 0.004" euler="-1.0 0.3 0.0" size="0.0009 0.008" rgba="0.208 0.337 0.149 1"/>
+      <site name="stem2" pos="0.0048 0.051 0.0079" size="0.001" rgba="0 0 1 1" group="3"/>
     </body>
 
     <!-- Distractor 2 -->
@@ -37,7 +40,8 @@
       <freejoint name="block3"/>
       <geom name="block3" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
       <geom name="block3_visual" type="mesh" mesh="strawberry" rgba="0.1 0.6 0.1 1.0" contype="0" conaffinity="0"/>
-      <site name="stem3" pos="0.002 0.037 0.002" size="0.001" rgba="0 0 1 1" group="3"/> 
+      <geom name="stem3" type="capsule" pos="0.0026 0.045 0.004" euler="-1.0 0.3 0.0" size="0.0009 0.008" rgba="0.208 0.337 0.149 1"/>
+      <site name="stem3" pos="0.0048 0.051 0.0079" size="0.001" rgba="0 0 1 1" group="3"/>
     </body>
 
     <!-- Mocap for IK -->
@@ -46,49 +50,49 @@
     </body>
 
     <!-- Target Strawb Vine -->
-    <body name="vine" pos="0.82 0.0 0.62" euler="0 1.57 0">
+    <body name="vine" pos="0.76 0.0 0.62" euler="0 1.57 0">
       <geom size="0.012 0.012 0.012" type="box" group="3"/>
       <composite type="cable" curve="s" count="4 1 1" size="0.3" offset="0 0 0" initial="ball" prefix="a">
         <joint kind="main" damping="0.02"/>
-        <geom type="capsule" size=".0015 .0015 .0015" rgba="0.1 0.6 0.1 1"/>
+        <geom type="capsule" size=".0015 .0015 .0015" rgba="0.208 0.337 0.149 1"/>
       </composite>
     </body>
 
     <!-- Distractor strawb vine 1 -->
-    <body name="vine2" pos="0.82 0.12 0.62" euler="0 1.57 0">
+    <body name="vine2" pos="0.76 0.12 0.62" euler="0 1.57 0">
       <geom size="0.012 0.012 0.012" type="box" group="3"/>
       <composite type="cable" curve="s" count="4 1 1" size="0.3" offset="0 0 0" initial="ball" prefix="b">
         <joint kind="main" damping="0.02"/>
-        <geom type="capsule" size=".0015 .0015 .0015" rgba="0.1 0.6 0.1 1"/>
+        <geom type="capsule" size=".0015 .0015 .0015" rgba="0.208 0.337 0.149 1"/>
       </composite>
     </body>
 
     <!-- Distractor strawb vine 2 -->
-    <body name="vine3" pos="0.82 -0.12 0.62" euler="0 1.57 0">
+    <body name="vine3" pos="0.76 -0.12 0.62" euler="0 1.57 0">
       <geom size="0.012 0.012 0.012" type="box" group="3"/>
       <composite type="cable" curve="s" count="4 1 1" size="0.3" offset="0 0 0" initial="ball" prefix="c">
         <joint kind="main" damping="0.02"/>
-        <geom type="capsule" size=".0015 .0015 .0015" rgba="0.1 0.6 0.1 1"/>
+        <geom type="capsule" size=".0015 .0015 .0015" rgba="0.208 0.337 0.149 1"/>
       </composite>
     </body>
 
   </worldbody>
 
   <sensor>
-    <framepos name="block_pos" objtype="site" objname="block_center"/>
+    <framepos name="block_pos" objtype="site" objname="stem_grasp"/>
     <framequat name="block_quat" objtype="geom" objname="block"/>
   </sensor>
 
   <equality>
-    <weld name="strawb_joint" site1="aS_last" site2="stem"/>
+    <weld name="strawb_joint" site1="aS_last" site2="stem" torquescale="1" solimp="0.9 0.95 0.001" solref="0.01 1.0"/>
   </equality>
 
   <equality>
-    <weld name="strawb2_joint" site1="bS_last" site2="stem2"/>
+    <weld name="strawb2_joint" site1="bS_last" site2="stem2" solimp="0.9 0.95 0.001" solref="0.01 1.0"/>
   </equality>
 
   <equality>
-    <weld name="strawb3_joint" site1="cS_last" site2="stem3"/>
+    <weld name="strawb3_joint" site1="cS_last" site2="stem3" solimp="0.9 0.95 0.001" solref="0.01 1.0"/>
   </equality>
 
 </mujoco>

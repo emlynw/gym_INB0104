@@ -99,12 +99,12 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
 
     def setup(self):
         # self._PANDA_HOME = np.asarray((0, -0.785, 0, -2.35, 0, 1.57, np.pi / 4))
-        self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 1.56444, 0.772088], dtype=np.float32)
+        self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 2.35, 0.772088], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.5], dtype=np.float32)
         self.center_pos = np.array([0.3, 0, 0.2], dtype=np.float32)
-        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.005], [0.75, 0.35, 0.55]], dtype=np.float32)
-        self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/4, -np.pi/2], [np.pi/4, np.pi/4, np.pi/2]], dtype=np.float32)
+        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.005], [0.8, 0.35, 0.55]], dtype=np.float32)
+        self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/2, -np.pi/2], [np.pi/4, np.pi/2, np.pi/2]], dtype=np.float32)
 
         self.default_obj_pos = np.array([0.5, 0])
         self.default_obs_quat = np.array([1, 0, 0, 0])
@@ -136,7 +136,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('table').id]
 
         # Add this line to set the initial orientation
-        self.initial_orientation = [0, 1, 0, 0]
+        self.initial_orientation = [0, 0.9239557, 0.0, 0.39715412]
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)
 
         self.init_headlight_diffuse = self.model.vis.headlight.diffuse.copy()
@@ -281,10 +281,10 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             mujoco.mj_step(self.model, self.data)
         
         self._block_init = self.data.sensor("block_pos").data
-        self._z_init = self._block_init[2]
-        self._z_success = self._z_init + 0.2
+        self._x_init = self._block_init[0]
+        self._x_success = self._x_init - 0.1
         self._block_success = self._block_init.copy()
-        self._block_success[2] = self._z_success
+        self._block_success[0] = self._x_success
 
         self.gripper_vec = self.gripper_dict["open"]
         self.data.ctrl[self._gripper_ctrl_id] = 255
