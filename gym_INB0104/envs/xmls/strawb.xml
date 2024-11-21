@@ -18,9 +18,9 @@
       <geom name="block" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
       <geom name="block_visual" type="mesh" mesh="strawberry" rgba="0.9 0.9 0.9 1.0" material="strawberry_material" contype="0" conaffinity="0"/> 
       <site name="block_center" pos="0 0.02 0" size="0.01" rgba="0 1 0 1" group="3"/>
-      <geom name="stem" type="capsule" pos="0.0026 0.045 0.004" euler="-1.0 0.3 0.0" size="0.0009 0.008" rgba="0.208 0.337 0.149 1"/>
-      <site name="stem" pos="0.0048 0.051 0.0079" size="0.001" rgba="0 0 1 1" group="3"/>
-      <site name="grasp" pos="0.0033 0.047 0.0052" size="0.001" rgba="0 0 1 1" group="3"/>
+      <geom name="stem" type="capsule" size="0.0012 0.014" pos="0.0025 0.05 -0.0004" euler="-1.57 0.2 0.0" rgba="0.208 0.337 0.149 1"/>
+      <site name="stem" pos="0.005 0.062 -0.0005" size="0.0012" rgba="0 0 1 1" group="3"/>
+      <site name="stem_grasp" pos="0.0021 0.049 -0.0005" size="0.0012" rgba="0 0 1 1" group="3"/>
     </body>
 
   
