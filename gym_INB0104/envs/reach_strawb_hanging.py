@@ -251,6 +251,16 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         # Randomize lighting
         self.randomize_lighting()
 
+    def set_block_velocity_to_zero(self):
+        block_qvel_index = self.model.jnt_dofadr[self.model.body("block").jntadr][0]
+        self.data.qvel[block_qvel_index:block_qvel_index+6] = 0
+
+        block_qvel_index = self.model.jnt_dofadr[self.model.body("block2").jntadr][0]
+        self.data.qvel[block_qvel_index:block_qvel_index+6] = 0
+
+        block_qvel_index = self.model.jnt_dofadr[self.model.body("block3").jntadr][0]
+        self.data.qvel[block_qvel_index:block_qvel_index+6] = 0
+
 
     def reset_arm_and_gripper(self):
         self.data.qpos[self._panda_dof_ids] = self._PANDA_HOME
@@ -279,6 +289,9 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             )
             self.data.ctrl[self._panda_ctrl_ids] = tau
             mujoco.mj_step(self.model, self.data)
+
+        # self.set_block_velocity_to_zero()
+        mujoco.mj_step(self.model, self.data)
         
         self._block_init = self.data.sensor("block_pos").data
         self._x_init = self._block_init[0]

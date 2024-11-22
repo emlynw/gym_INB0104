@@ -19,7 +19,7 @@ def main():
         obs, info = env.reset()
         while not terminated and not truncated:
             if render_mode == "rgb_array":
-                pixels = obs["images"]["front"]
+                pixels = obs["images"]["wrist1"]
                 cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), resize_resolution))
                 cv2.waitKey(waitkey)
             # print(i)
