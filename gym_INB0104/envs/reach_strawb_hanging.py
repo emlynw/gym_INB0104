@@ -137,7 +137,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('table').id]
 
         # Add this line to set the initial orientation
-        self.initial_orientation = [0, 0.9239557, 0.0, 0.39715412]
+        self.initial_orientation = [0, 0.725, 0.0, 0.688]
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)
 
         self.init_headlight_diffuse = self.model.vis.headlight.diffuse.copy()
@@ -268,6 +268,8 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.data.qpos[7:9] = self._GRIPPER_HOME
         mujoco.mj_forward(self.model, self.data)
         self.data.mocap_pos[0] = self.data.sensor("pinch_pos").data.copy()
+        self.data.mocap_quat[0] = self.data.sensor("pinch_quat").data.copy()
+        print(f"pinch quat: {self.data.sensor('pinch_quat').data}")
         mujoco.mj_step(self.model, self.data)
 
 
