@@ -19,7 +19,7 @@ def main():
         obs, info = env.reset()
         while not terminated and not truncated:
             if render_mode == "rgb_array":
-                pixels = obs["images"]["wrist1"]
+                pixels = obs["images"]["front"]
                 cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), resize_resolution))
                 cv2.waitKey(waitkey)
             # print(i)
@@ -40,7 +40,7 @@ def main():
             else:
                 action = np.array([0.0, 1.0, 0.0, 1.0, 1.0])
 
-            # action = np.array([0.0, 0.0, 0.0, 0.0, -1.0])
+            action = np.array([0.0, 0.0, 0.0, 0.0, -1.0])
             print(obs['state'])
             
             obs, reward, terminated, truncated, info = env.step(action)

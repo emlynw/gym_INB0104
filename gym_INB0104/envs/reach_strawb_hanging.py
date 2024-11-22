@@ -52,7 +52,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
 
         state_space = Dict(
             {
-                "panda/tcp_pos": Box(np.array([0.28, -0.5, 0.01]), np.array([0.75, 0.5, 0.55]), shape=(3,), dtype=np.float32),
+                "panda/tcp_pos": Box(np.array([0.28, -0.5, 0.01]), np.array([0.75, 0.5, 0.8]), shape=(3,), dtype=np.float32),
                 "panda/tcp_orientation": Box(-1, 1, shape=(4,), dtype=np.float32),  # Quaternion
                 "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
                 "panda/gripper_pos": Box(-1, 1, shape=(1,), dtype=np.float32),
@@ -99,11 +99,12 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
 
     def setup(self):
         # self._PANDA_HOME = np.asarray((0, -0.785, 0, -2.35, 0, 1.57, np.pi / 4))
-        self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 2.35, 0.772088], dtype=np.float32)
+        # self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 2.35, 0.772088], dtype=np.float32)
+        self._PANDA_HOME = np.array([0.0, -1.15, -0.12, -2.98, -0.14, 3.35, 0.84], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.5], dtype=np.float32)
         self.center_pos = np.array([0.3, 0, 0.2], dtype=np.float32)
-        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.005], [0.8, 0.35, 0.55]], dtype=np.float32)
+        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.005], [0.8, 0.35, 0.8]], dtype=np.float32)
         self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/2, -np.pi/2], [np.pi/4, np.pi/2, np.pi/2]], dtype=np.float32)
 
         self.default_obj_pos = np.array([0.5, 0])
