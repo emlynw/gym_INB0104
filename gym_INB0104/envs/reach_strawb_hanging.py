@@ -269,7 +269,6 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         mujoco.mj_forward(self.model, self.data)
         self.data.mocap_pos[0] = self.data.sensor("pinch_pos").data.copy()
         self.data.mocap_quat[0] = self.data.sensor("pinch_quat").data.copy()
-        print(f"pinch quat: {self.data.sensor('pinch_quat').data}")
         mujoco.mj_step(self.model, self.data)
 
 
