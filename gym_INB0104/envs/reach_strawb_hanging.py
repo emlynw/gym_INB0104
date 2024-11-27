@@ -11,8 +11,12 @@ from gymnasium.spaces import Box, Dict
 from gym_INB0104.controllers import opspace_4 as opspace
 from pathlib import Path
 from scipy.spatial.transform import Rotation
-import time
+import yaml
+from pathlib import Path
 
+def load_config(config_path):
+    with open(config_path, 'r') as config_file:
+        return yaml.safe_load(config_file)
 
 DEFAULT_CAMERA_CONFIG = {
     "trackbodyid": 0,
@@ -49,6 +53,10 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.pos_scale = pos_scale
         self.rot_scale = rot_scale
         self.cameras = cameras
+
+        print(Path(__file__).parent)
+        config_path = Path(__file__).parent.parent / "configs" / "strawb_hanging.yaml"
+        self.cfg = load_config(config_path)
 
         state_space = Dict(
             {
@@ -102,13 +110,12 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         # self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 2.35, 0.772088], dtype=np.float32)
         self._PANDA_HOME = np.array([0.0, -1.15, -0.12, -2.98, -0.14, 3.35, 0.84], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
-        self._PANDA_XYZ = np.array([0.3, 0, 0.5], dtype=np.float32)
+        self._PANDA_XYZ = np.array([0.3, 0, 0.7], dtype=np.float32)
         self.center_pos = np.array([0.3, 0, 0.2], dtype=np.float32)
         self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.005], [0.8, 0.35, 0.8]], dtype=np.float32)
         self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/2, -np.pi/2], [np.pi/4, np.pi/2, np.pi/2]], dtype=np.float32)
 
-        self.default_obj_pos = np.array([0.5, 0])
-        self.default_obs_quat = np.array([1, 0, 0, 0])
+        self.default_obj_pos = np.array([0.6, 0, 0.8])
         self._panda_dof_ids = np.array([self.model.joint(f"joint{i}").id for i in range(1, 8)])
         self._panda_ctrl_ids = np.array([self.model.actuator(f"actuator{i}").id for i in range(1, 8)])
         self._gripper_ctrl_id = self.model.actuator("fingers_actuator").id
@@ -127,14 +134,17 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         }
 
         # Store initial values for randomization
-        self.front_cam_pos = self.model.body_pos[self.model.body('front_cam').id].copy()
-        self.front_cam_quat = self.model.body_quat[self.model.body('front_cam').id].copy()
-        self.wrist_cam_pos = self.model.body_pos[self.model.body('wrist1').id].copy()
-        self.wrist_cam_quat = self.model.body_quat[self.model.body('wrist1').id].copy()
+        for camera_name in self.cameras:
+            setattr(self, f"{camera_name}_pos", self.model.body_pos[self.model.body(camera_name).id].copy())
+            setattr(self, f"{camera_name}_quat", self.model.body_quat[self.model.body(camera_name).id].copy())
         self.init_light_pos = self.model.body_pos[self.model.body('light0').id].copy()
         self.init_plywood_rgba = self.model.mat_rgba[self.model.mat('plywood').id].copy()
+        self.init_room_rgba = self.model.mat_rgba[self.model.mat('room').id].copy()
         self.init_brick_rgba = self.model.mat_rgba[self.model.mat('brick_wall').id].copy()
         self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('table').id]
+        self.front_wall_tex_ids = [self.model.texture('room').id, self.model.texture('field').id]
+        self.brick_wall_tex_ids = [self.model.texture('brick_wall').id, self.model.texture('field').id]
+        self.brick_wall_texrepeat = self.model.mat_texrepeat[self.model.mat('brick_wall').id].copy()
 
         # Add this line to set the initial orientation
         self.initial_orientation = [0, 0.725, 0.0, 0.688]
@@ -144,7 +154,8 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.init_headlight_ambient = self.model.vis.headlight.ambient.copy()
         self.init_headlight_specular = self.model.vis.headlight.specular.copy()
 
-    def randomize_lighting(self):
+    def lighting_noise(self):
+
         # Add noise to light position
         light_pos_noise = np.random.uniform(low=[-0.8,-0.5,-0.05], high=[1.2,0.5,0.2], size=3)
         self.model.body_pos[self.model.body('light0').id] = self.init_light_pos + light_pos_noise
@@ -183,85 +194,114 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.model.vis.headlight.ambient = self.init_headlight_ambient + light * headlight_ambient_noise
         self.model.vis.headlight.specular = self.init_headlight_specular + light * headlight_specular_noise
 
-    def domain_randomization(self):
-        # Randomize action scales
-        self.pos_scale = random.uniform(0.05, 0.15)
-        self.rot_scale = random.uniform(0.02, 0.1)
+    def action_scale_noise(self):
+        pos_scale_range = self.cfg.get("pos_scale_range", [0.0, 0.0])
+        rot_scale_range = self.cfg.get("rot_scale_range", [0.0, 0.0])
+        self.pos_scale = random.uniform(*pos_scale_range)
+        self.rot_scale = random.uniform(*rot_scale_range)
 
-        # Move robot
-        ee_noise = np.random.uniform(low=[0.0,-0.2,-0.4], high=[0.12, 0.2, 0.1], size=3)
+    def initial_state_noise(self):
+        ee_noise_low = self.cfg.get("ee_noise_low", [0.0, 0.0, 0.0])
+        ee_noise_high = self.cfg.get("ee_noise_high", [0.12, 0.2, 0.1])
+        ee_noise = np.random.uniform(low=ee_noise_low, high=ee_noise_high, size=3)
         self.data.mocap_pos[0] = self._PANDA_XYZ + ee_noise
 
-        # Add noise to camera position and orientation
-        front_cam_pos_noise = np.random.uniform(low=[-0.05,-0.05,-0.02], high=[0.05,0.05,0.02], size=3)
-        self.model.body_pos[self.model.body('front_cam').id] = self.front_cam_pos + front_cam_pos_noise
+    def camera_noise(self):
+        for cam_name in self.cameras:
+            # Fetch noise ranges from configuration or use default values
+            pos_noise_low = self.cfg.get(f"{cam_name}_pos_noise_low", [0.0, 0.0, 0.0])
+            pos_noise_high = self.cfg.get(f"{cam_name}_pos_noise_high", [0.0, 0.0, 0.0])
+            quat_noise_range = self.cfg.get(f"{cam_name}_quat_noise_range", [0.0, 0.0])
 
-        front_cam_quat_noise = np.random.uniform(low=-0.02, high=0.02, size=4)
-        new_front_cam_quat = self.front_cam_quat + front_cam_quat_noise
-        new_front_cam_quat = new_front_cam_quat/np.linalg.norm(new_front_cam_quat)
-        self.model.body_quat[self.model.body('front_cam').id] = new_front_cam_quat
-        
-        wrist_cam_quat_noise = np.random.uniform(low=-0.03, high=0.03, size=4)
-        new_wrist_cam_quat = self.wrist_cam_quat + wrist_cam_quat_noise
-        new_wrist_cam_quat = new_wrist_cam_quat/np.linalg.norm(new_wrist_cam_quat)
-        self.model.body_quat[self.model.body('wrist1').id] = new_wrist_cam_quat
-        
+            # Randomize position
+            cam_pos_noise = np.random.uniform(low=pos_noise_low, high=pos_noise_high, size=3)
+            self.model.body_pos[self.model.body(cam_name).id] = getattr(self, f"{cam_name}_pos") + cam_pos_noise
+
+            # Randomize orientation
+            cam_quat_noise = np.random.uniform(low=quat_noise_range[0], high=quat_noise_range[1], size=4)
+            new_cam_quat = getattr(self, f"{cam_name}_quat") + cam_quat_noise
+            new_cam_quat /= np.linalg.norm(new_cam_quat)
+            self.model.body_quat[self.model.body(cam_name).id] = new_cam_quat
+
+    def table_noise(self):
+        table_tex_id = np.random.choice(self.table_tex_ids)
+        material_id = self.model.mat('plywood').id
+        self.model.mat_texid[material_id] = table_tex_id
+
         # Randomize table color
+        channel = np.random.randint(0, 3)
+        table_color_noise_range = self.cfg.get("table_color_noise_range", [0.0, 0.0])
+        table_color_noise = np.random.uniform(low=table_color_noise_range[0], high=table_color_noise_range[1], size=1)
+        self.model.mat_rgba[material_id][channel] += table_color_noise
+
+    def wall_noise(self):
+        # Randomize front wall
+        front_wall_tex_id = np.random.choice(self.front_wall_tex_ids)
+        self.model.mat_texid[self.model.mat('room').id] = front_wall_tex_id
         channel = np.random.randint(0,3)
-        table_color_noise = np.random.uniform(low=-0.05, high=0.2, size=1)
-        self.model.mat_texid[self.model.mat('plywood').id] = np.random.choice(self.table_tex_ids)
-        self.model.mat_rgba[self.model.mat('plywood').id] = self.init_plywood_rgba
-        self.model.mat_rgba[self.model.mat('plywood').id][channel] = self.init_plywood_rgba[channel] + table_color_noise
+        wall_color_noise_range = self.cfg.get("wall_color_noise_range", [0.0, 0.0])
+        wall_color_noise = np.random.uniform(low=wall_color_noise_range[0], high=wall_color_noise_range[1], size=1)
+        self.model.mat_rgba[self.model.mat('room').id] = self.init_room_rgba.copy()
+        self.model.mat_rgba[self.model.mat('room').id][channel] = self.init_room_rgba[channel] + wall_color_noise
 
         # Randomize brick color
-        channel = np.random.randint(0,3)
-        brick_color_noise = np.random.uniform(low=-0.1, high=0.1, size=1)
-        self.model.mat_rgba[self.model.mat('brick_wall').id] = self.init_brick_rgba
-        self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + brick_color_noise
+        self.model.mat_texid[self.model.mat('brick_wall').id] = self.brick_wall_tex_ids[0]
+        self.model.mat_texrepeat[self.model.mat('brick_wall').id] = self.brick_wall_texrepeat
+        if self.model.mat_texid[self.model.mat('room').id][0] == self.model.texture('field').id:
+            self.model.mat_texrepeat[self.model.mat('brick_wall').id] = [1, 1]
+            self.model.mat_texid[self.model.mat('brick_wall').id] = self.model.texture('field').id
+        np.random.uniform(low=-0.1, high=0.1, size=1)
+        self.model.mat_rgba[self.model.mat('brick_wall').id] = self.init_brick_rgba.copy()
+        self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + wall_color_noise
 
-        # Move Target object
-        block_qpos_index = self.model.jnt_qposadr[self.model.body("block").jntadr][0]
-        self.object_x_noise = np.random.uniform(low=-0.15, high=0.15)
-        self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
+    def object_noise(self):
+        # Target pos
+        target_pos_noise_low = self.cfg.get("target_noise_low", [0.0, 0.0, 0.0])
+        target_pos_noise_high = self.cfg.get("target_noise_high", [0.0, 0.0, 0.0])
+        target_pos_noise = np.random.uniform(low=target_pos_noise_low, high=target_pos_noise_high, size=3)
+        target_pos = self.default_obj_pos + target_pos_noise
+        self.model.body_pos[self.model.body("vine").id] = target_pos
+        # Target orientation
         random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
         z_rotation = Rotation.from_euler('z', random_z_angle).as_quat()
-        self.data.qpos[block_qpos_index] = self.default_obj_pos[0] + self.object_x_noise
-        self.data.qpos[block_qpos_index+1] = self.default_obj_pos[1] + self.object_y_noise
-        self.data.qpos[block_qpos_index+3:block_qpos_index+7] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
+        self.model.body_quat[self.model.body("vine").id] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
 
-        # Move distractor object 
-        block2_qpos_index = self.model.jnt_qposadr[self.model.body("block2").jntadr][0]
-        self.object_x_noise = np.random.uniform(low=-0.15, high=0.15)
-        self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
+        # Distractor 1 pos
+        distract1_pos_noise_low = self.cfg.get("distract1_noise_low", [0.0, 0.0, 0.0])
+        distract1_pos_noise_high = self.cfg.get("distract1_noise_high", [0.0, 0.0, 0.0])
+        distract1_pos_noise = np.random.uniform(low=distract1_pos_noise_low, high=distract1_pos_noise_high, size=3)
+        self.model.body_pos[self.model.body("vine2").id] = target_pos + distract1_pos_noise
+        # Distractor 1 orientation
         random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
         z_rotation = Rotation.from_euler('z', random_z_angle).as_quat()
-        self.data.qpos[block2_qpos_index] = self.default_obj_pos[0] + self.object_x_noise
-        self.data.qpos[block2_qpos_index+1] = self.default_obj_pos[1] + self.object_y_noise
-        self.data.qpos[block2_qpos_index+3:block2_qpos_index+7] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
+        self.model.body_quat[self.model.body("vine2").id] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
 
-        # Move distractor object 
-        block3_qpos_index = self.model.jnt_qposadr[self.model.body("block3").jntadr][0]
-        self.object_x_noise = np.random.uniform(low=-0.15, high=0.15)
-        self.object_y_noise = np.random.uniform(low=-0.1, high=0.1)
+        # Distractor 2 pos
+        distract2_pos_noise_low = self.cfg.get("distract2_noise_low", [0.0, 0.0, 0.0])
+        distract2_pos_noise_high = self.cfg.get("distract2_noise_high", [0.0, 0.0, 0.0])
+        distract2_pos_noise = np.random.uniform(low=distract2_pos_noise_low, high=distract2_pos_noise_high, size=3)
+        self.model.body_pos[self.model.body("vine3").id] = target_pos + distract2_pos_noise
+        # Distractor 2 orientation
         random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
         z_rotation = Rotation.from_euler('z', random_z_angle).as_quat()
-        self.data.qpos[block3_qpos_index] = self.default_obj_pos[0] + self.object_x_noise
-        self.data.qpos[block3_qpos_index+1] = self.default_obj_pos[1] + self.object_y_noise
-        self.data.qpos[block3_qpos_index+3:block3_qpos_index+7] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
-        
-        # Randomize lighting
-        self.randomize_lighting()
+        self.model.body_quat[self.model.body("vine3").id] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
 
-    def set_block_velocity_to_zero(self):
-        block_qvel_index = self.model.jnt_dofadr[self.model.body("block").jntadr][0]
-        self.data.qvel[block_qvel_index:block_qvel_index+6] = 0
-
-        block_qvel_index = self.model.jnt_dofadr[self.model.body("block2").jntadr][0]
-        self.data.qvel[block_qvel_index:block_qvel_index+6] = 0
-
-        block_qvel_index = self.model.jnt_dofadr[self.model.body("block3").jntadr][0]
-        self.data.qvel[block_qvel_index:block_qvel_index+6] = 0
-
+    def domain_randomization(self):
+        if self.cfg.get("apply_lighting_noise", False):
+            self.lighting_noise()
+        if self.cfg.get("apply_action_scale_noise", False):
+            self.action_scale_noise()
+        if self.cfg.get("apply_initial_state_noise", False):
+            self.initial_state_noise()
+        if self.cfg.get("apply_camera_noise", False):
+            self.camera_noise()
+        if self.cfg.get("apply_table_noise", False):
+            self.table_noise()
+        if self.cfg.get("apply_wall_noise", False):
+            self.wall_noise()
+        if self.cfg.get("apply_object_noise", False):
+            self.object_noise()
+        self._viewer = MujocoRenderer(self.model, self.data,)
 
     def reset_arm_and_gripper(self):
         self.data.qpos[self._panda_dof_ids] = self._PANDA_HOME
@@ -276,9 +316,29 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.reset_arm_and_gripper()
         if self.randomize_domain:
             self.domain_randomization()
-        
-        mujoco.mj_forward(self.model, self.data)
-        for _ in range(10*self._n_substeps):
+
+
+        self.vine1_site_id = self.model.site("aS_last").id
+        vine1_pos = self.data.site_xpos[self.vine1_site_id]
+        self.vine2_site_id = self.model.site("bS_last").id
+        vine2_pos = self.data.site_xpos[self.vine2_site_id]
+        self.vine3_site_id = self.model.site("cS_last").id
+        vine3_pos = self.data.site_xpos[self.vine3_site_id]
+
+
+        # get pos of site "aSLast"
+        block_qpos_index = self.model.jnt_qposadr[self.model.body("block").jntadr][0]
+        block2_qpos_index = self.model.jnt_qposadr[self.model.body("block2").jntadr][0]
+        block3_qpos_index = self.model.jnt_qposadr[self.model.body("block3").jntadr][0]
+        self.data.qpos[block_qpos_index:block_qpos_index+3] = vine1_pos
+        self.data.qpos[block2_qpos_index:block2_qpos_index+3] = vine2_pos
+        self.data.qpos[block3_qpos_index:block3_qpos_index+3] = vine3_pos
+
+        self.data.qvel[:] = 0
+        self.data.xfrc_applied[:] = 0
+
+
+        for _ in range(20*self._n_substeps):
             tau = opspace(
                 model=self.model,
                 data=self.data,
@@ -291,9 +351,6 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             )
             self.data.ctrl[self._panda_ctrl_ids] = tau
             mujoco.mj_step(self.model, self.data)
-
-        # self.set_block_velocity_to_zero()
-        mujoco.mj_step(self.model, self.data)
         
         self._block_init = self.data.sensor("block_pos").data
         self._x_init = self._block_init[0]

@@ -1,0 +1,27 @@
+# Domain randomization config for the strawberry hanging task
+apply_lighting_noise: true
+apply_action_scale_noise: true
+pos_scale_range: [0.05, 0.15]
+rot_scale_range: [0.02, 0.1]
+apply_initial_state_noise: true
+ee_noise_low: [0.0,-0.2,-0.4]
+ee_noise_high: [0.12, 0.2, 0.1]
+apply_camera_noise: true
+front_pos_noise_low: [-0.05, -0.05, -0.02]
+front_pos_noise_high: [0.05, 0.05, 0.02]
+front_quat_noise_range: [-0.02, 0.02]
+wrist1_quat_noise_range: [-0.03, 0.03]
+wrist2_quat_noise_range: [-0.03, 0.03]
+apply_table_noise: true
+table_color_noise_range: [-0.05, 0.2]
+apply_wall_noise: true
+wall_color_noise_range: [-0.1, 0.1]
+apply_object_noise: true
+target_pos_noise_low: [-0.05, -0.2, -0.1]
+target_pos_noise_high: [0.15, 0.2, 0.1]
+distract1_pos_noise_low: [-0.08, -0.05, -0.03]
+distract1_pos_noise_high: [0.02, 0.05, 0.03]
+distract2_pos_noise_low: [-0.08, -0.05, -0.03]
+distract2_pos_noise_high: [0.02, 0.05, 0.03]
+apply_initial_ee_noise: true
+lighting_intensity_range: [0.1, 1.0]

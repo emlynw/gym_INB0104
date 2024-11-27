@@ -13,7 +13,7 @@
 
   <worldbody>
     <!-- Camera --> 
-    <body name="front_cam" pos="1.6 0 0.4" euler="0 1.42 1.57">
+    <body name="front" pos="1.6 0 0.6" euler="0 1.42 1.57">
       <camera name="front" fovy="41"/> 
     </body>
 
@@ -52,8 +52,8 @@
     </body>
 
     <!-- Target Strawb Vine -->
-    <body name="vine" pos="0.76 0.0 0.62" euler="0 1.57 0">
-      <geom size="0.012 0.012 0.012" type="box" group="3"/>
+    <body name="vine" pos="0.76 0.0 0.85" euler="0 1.57 0">
+      <geom size="0.04 0.06 0.03" type="box"/>
       <composite type="cable" curve="s" count="4 1 1" size="0.3" offset="0 0 0" initial="ball" prefix="a">
         <joint kind="main" damping="0.01"/>
         <geom type="capsule" size=".0015 .0015" rgba="0.208 0.337 0.149 1"/>
@@ -61,7 +61,7 @@
     </body>
 
     <!-- Distractor strawb vine 1 -->
-    <body name="vine2" pos="0.72 0.04 0.62" euler="0 1.57 0">
+    <body name="vine2" pos="0.72 0.04 0.85" euler="0 1.57 0">
       <geom size="0.012 0.012 0.012" type="box" group="3"/>
       <composite type="cable" curve="s" count="4 1 1" size="0.3" offset="0 0 0" initial="ball" prefix="b">
         <joint kind="main" damping="0.01"/>
@@ -70,7 +70,7 @@
     </body>
 
     <!-- Distractor strawb vine 2 -->
-    <body name="vine3" pos="0.7 -0.03 0.62" euler="0 1.57 0">
+    <body name="vine3" pos="0.7 -0.03 0.85" euler="0 1.57 0">
       <geom size="0.012 0.012 0.012" type="box" group="3"/>
       <composite type="cable" curve="s" count="4 1 1" size="0.3" offset="0 0 0" initial="ball" prefix="c">
         <joint kind="main" damping="0.01"/>
