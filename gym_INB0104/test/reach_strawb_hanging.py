@@ -7,10 +7,11 @@ np.set_printoptions(suppress=True)
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", render_mode=render_mode, randomize_domain=True, ee_dof=6)
+    height, width = 112, 112
+    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=height, width=width, render_mode=render_mode, randomize_domain=True, ee_dof=6)
     env = TimeLimit(env, max_episode_steps=20)    
     waitkey = 10
-    resize_resolution = (480, 480)
+    resize_resolution = (height, width)
 
     while True:
         i=0
@@ -20,7 +21,7 @@ def main():
         while not terminated and not truncated:
             if render_mode == "rgb_array":
                 pixels = obs["images"]["wrist1"]
-                cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), resize_resolution))
+                cv2.imshow("pixels", cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR))
                 cv2.waitKey(waitkey)
             # print(i)
             if i < 20:

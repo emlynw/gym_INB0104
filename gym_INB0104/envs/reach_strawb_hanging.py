@@ -88,6 +88,8 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             self.frame_skip, 
             observation_space=self.observation_space, 
             render_mode=self.render_mode,
+            width=self.width,
+            height=self.height,
             default_camera_config=DEFAULT_CAMERA_CONFIG, 
             camera_id=0, 
             **kwargs,
@@ -102,7 +104,6 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             dtype=np.float32,
         )
         self._viewer = MujocoRenderer(self.model, self.data,)
-        # self._viewer.render(self.render_mode)
         self.setup()
 
     def setup(self):
