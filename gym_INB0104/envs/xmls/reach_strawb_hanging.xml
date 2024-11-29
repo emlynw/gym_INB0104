@@ -83,6 +83,8 @@
   <sensor>
     <framepos name="block_pos" objtype="site" objname="stem_grasp"/>
     <framequat name="block_quat" objtype="geom" objname="block"/>
+    <framepos name="block2_pos" objtype="body" objname="block2"/>
+    <framepos name="block3_pos" objtype="body" objname="block3"/>
   </sensor>
 
   <equality>

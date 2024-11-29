@@ -279,7 +279,7 @@
                         <geom mesh="hand_3" material="white" class="visual"/>
                         <geom mesh="hand_4" material="off_white" class="visual"/>
                         <geom mesh="hand_c" class="collision"/>
-                        <body name="pinch" pos="0 0 0.105">
+                        <body name="pinch" pos="0 0 0.15">
                               <site name='pinch' rgba = "1 0 0 1" size="0.01" group="3"/>
                         </body>
                         <body name="left_finger" pos="0 0 0.0584">
