@@ -54,7 +54,6 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.rot_scale = rot_scale
         self.cameras = cameras
 
-        print(Path(__file__).parent)
         config_path = Path(__file__).parent.parent / "configs" / "strawb_hanging.yaml"
         self.cfg = load_config(config_path)
 
@@ -127,11 +126,15 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.prev_action = np.zeros(self.action_space.shape)
         self.prev_grasp_time = 0.0
         self.prev_grasp = -1.0
+        # self.gripper_dict = {
+        #     "open": np.array([1, 0, 0, 0], dtype=np.float32),
+        #     "closed": np.array([0, 1, 0, 0], dtype=np.float32),
+        #     "opening": np.array([0, 0, 1, 0], dtype=np.float32),
+        #     "closing": np.array([0, 0, 0, 1], dtype=np.float32),
+        # }
         self.gripper_dict = {
-            "open": np.array([1, 0, 0, 0], dtype=np.float32),
-            "closed": np.array([0, 1, 0, 0], dtype=np.float32),
-            "opening": np.array([0, 0, 1, 0], dtype=np.float32),
-            "closing": np.array([0, 0, 0, 1], dtype=np.float32),
+            "moving": np.array([1, 0], dtype=np.float32),
+            "grasping": np.array([0, 1], dtype=np.float32),
         }
 
         # Store initial values for randomization
@@ -362,8 +365,9 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self._block2_init = self.data.sensor("block2_pos").data
         self._block3_init = self.data.sensor("block3_pos").data
 
-        self.gripper_vec = self.gripper_dict["open"]
-        self.data.ctrl[self._gripper_ctrl_id] = 30
+        self.gripper_vec = self.gripper_dict["moving"]
+        self.data.ctrl[self._gripper_ctrl_id] = 255
+        self.grasp = -1.0
         self.prev_grasp_time = 0.0
         self.prev_gripper_state = 0 # 0 for open, 1 for closed
         self.gripper_state = 0
@@ -412,28 +416,41 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             self.data.mocap_quat[0] = final_rotation.as_quat()
 
         # Handle grasping
-        grasp = int(grasp>0)
         if self.data.time - self.prev_grasp_time < 0.5:
             self.gripper_blocked = True
             grasp = self.prev_grasp
         else:
-            self.gripper_blocked = False
-            if grasp == 0 and self.gripper_state == 0:
-                self.gripper_vec = self.gripper_dict["open"]
-            elif grasp == 1 and self.gripper_state == 1:
-                self.gripper_vec = self.gripper_dict["closed"]
-            elif grasp == 0 and self.gripper_state == 1:
-                self.data.ctrl[self._gripper_ctrl_id] = 30
-                self.gripper_state = 0
-                self.gripper_vec = self.gripper_dict["opening"]
-                self.prev_grasp_time = self.data.time
-                self.prev_grasp = grasp
-            elif grasp == 1 and self.gripper_state == 0:
-                self.data.ctrl[self._gripper_ctrl_id] = 0
-                self.gripper_state = 1
-                self.gripper_vec = self.gripper_dict["closing"]
-                self.prev_grasp_time = self.data.time
-                self.prev_grasp = grasp
+            grasp = np.round(grasp,1)
+            if grasp == self.prev_grasp:
+                self.gripper_blocked = False
+            else:
+                if -1 <= grasp <= 0:
+                    self.data.ctrl[self._gripper_ctrl_id] = int(255 + (40 - 255) * (grasp + 1))
+                    self.prev_grasp_time = self.data.time
+                    self.prev_grasp = grasp
+                    self.gripper_vec = self.gripper_dict["moving"]
+                elif 0 < grasp <= 1:
+                    self.data.ctrl[self._gripper_ctrl_id] = 0
+                    self.prev_grasp_time = self.data.time
+                    self.prev_grasp = grasp
+                    self.gripper_vec = self.gripper_dict["grasping"]
+            # if grasp == 0 and self.gripper_state == 0:
+            #     self.gripper_vec = self.gripper_dict["open"]
+            # elif grasp == 1 and self.gripper_state == 1:
+            #     self.gripper_vec = self.gripper_dict["closed"]
+            # elif grasp == 0 and self.gripper_state == 1:
+            #     self.data.ctrl[self._gripper_ctrl_id] = 30
+            #     self.gripper_state = 0
+            #     self.gripper_vec = self.gripper_dict["opening"]
+            #     self.prev_grasp_time = self.data.time
+            #     self.prev_grasp = grasp
+            # elif grasp == 1 and self.gripper_state == 0:
+            #     self.data.ctrl[self._gripper_ctrl_id] = 0
+            #     self.gripper_state = 1
+            #     self.gripper_vec = self.gripper_dict["closing"]
+            #     self.prev_grasp_time = self.data.time
+            #     self.prev_grasp = grasp
+        self.grasp = grasp
 
         for _ in range(self._n_substeps):
             tau = opspace(
@@ -488,7 +505,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         obs["state"]["panda/tcp_orientation"] = noisy_tcp_orientation.astype(np.float32)
         obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
         obs["state"]["panda/gripper_pos"] = 25 * 2 * np.array([self.data.qpos[8]], dtype=np.float32) - 1
-        obs["state"]["panda/gripper_vec"] = self.gripper_vec
+        obs["state"]["panda/gripper_vec"] = np.concatenate([self.gripper_vec, [self.grasp], [int(self.gripper_blocked)]]).astype(np.float32)
 
         if not self.image_obs:
             obs["state"]["block_pos"] = self.data.sensor("block_pos").data.astype(np.float32)
