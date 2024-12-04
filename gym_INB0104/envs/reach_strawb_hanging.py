@@ -357,10 +357,11 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             mujoco.mj_step(self.model, self.data)
         
         self._block_init = self.data.sensor("block_pos").data
-        self._x_init = self._block_init[0]
-        self._x_success = self._x_init - 0.1
+        self._x_success = self._block_init[0] - 0.1
+        self._z_success = self._block_init[2] + self._x_success/2.0
         self._block_success = self._block_init.copy()
         self._block_success[0] = self._x_success
+        self._block_success[2] = self._z_success
 
         self._block2_init = self.data.sensor("block2_pos").data
         self._block3_init = self.data.sensor("block3_pos").data
@@ -539,7 +540,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.prev_action = action
 
         rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_block2': r_block2, 'r_block3': r_block3, 'r_energy': r_energy, 'r_smooth': r_smooth}
-        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_block2': 2.0, 'r_block3': 2.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
+        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_block2': 1.0, 'r_block3': 1.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
 
         rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
         reward = np.clip(sum(rewards.values()), -1e4, 1e4)

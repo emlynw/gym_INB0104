@@ -23,7 +23,7 @@
       <geom name="block" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
       <geom name="block_visual" type="mesh" mesh="strawberry" rgba="0.9 0.9 0.9 1.0" material="strawberry_material" contype="0" conaffinity="0"/> 
       <site name="block_center" pos="0 0.02 0" size="0.01" rgba="0 1 0 1" group="3"/>
-      <geom name="stem" type="capsule" size="0.0012 0.014" pos="0.0025 0.05 -0.0004" euler="-1.57 0.2 0.0" rgba="0.208 0.337 0.149 1"/>
+      <geom name="stem" type="capsule" size="0.0015 0.014" pos="0.0025 0.05 -0.0004" euler="-1.57 0.2 0.0" rgba="0.208 0.337 0.149 1"/>
       <site name="stem" pos="0.005 0.062 -0.0005" size="0.0012" rgba="0 0 1 1" group="3"/>
       <site name="stem_grasp" pos="0.0021 0.049 -0.0005" size="0.0012" rgba="0 0 1 1" group="3"/>
     </body>
@@ -33,7 +33,7 @@
       <freejoint name="block2"/>
       <geom name="block2" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
       <geom name="block2_visual" type="mesh" mesh="strawberry" rgba="0.1 0.6 0.1 1.0" contype="0" conaffinity="0"/>
-      <geom name="stem2" type="capsule" size="0.0012 0.014" pos="0.0025 0.05 -0.0004" euler="-1.57 0.2 0.0" rgba="0.208 0.337 0.149 1"/>
+      <geom name="stem2" type="capsule" size="0.0015 0.014" pos="0.0025 0.05 -0.0004" euler="-1.57 0.2 0.0" rgba="0.208 0.337 0.149 1"/>
       <site name="stem2" pos="0.005 0.062 -0.0005" size="0.0012" rgba="0 0 1 1" group="3"/>
     </body>
 
@@ -42,7 +42,7 @@
       <freejoint name="block3"/>
       <geom name="block3" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
       <geom name="block3_visual" type="mesh" mesh="strawberry" rgba="0.1 0.6 0.1 1.0" contype="0" conaffinity="0"/>
-      <geom name="stem3" type="capsule" size="0.0012 0.014" pos="0.0025 0.05 -0.0004" euler="-1.57 0.2 0.0" rgba="0.208 0.337 0.149 1"/>
+      <geom name="stem3" type="capsule" size="0.0015 0.014" pos="0.0025 0.05 -0.0004" euler="-1.57 0.2 0.0" rgba="0.208 0.337 0.149 1"/>
       <site name="stem3" pos="0.005 0.062 -0.0005" size="0.0012" rgba="0 0 1 1" group="3"/>
     </body>
 
