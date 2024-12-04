@@ -34,7 +34,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         randomize_domain=True,
         ee_dof = 6, # 3 for position, 3 for orientation
         control_dt=0.1,
-        physics_dt=0.002,
+        physics_dt=0.001,
         width=480,
         height=480,
         pos_scale=0.1,
@@ -77,7 +77,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
                 )
 
         p = Path(__file__).parent
-        env_dir = os.path.join(p, "xmls/reach_strawb_hanging.xml")
+        env_dir = os.path.join(p, "xmls/mjmodel.xml")
         self._n_substeps = int(float(control_dt) / float(physics_dt))
         self.frame_skip = 1
 
@@ -106,12 +106,9 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.setup()
 
     def setup(self):
-        # self._PANDA_HOME = np.asarray((0, -0.785, 0, -2.35, 0, 1.57, np.pi / 4))
-        # self._PANDA_HOME = np.array([-0.00171672, -0.786471, -0.00122413, -2.36062, 0.00499334, 2.35, 0.772088], dtype=np.float32)
         self._PANDA_HOME = np.array([0.0, -1.15, -0.12, -2.98, -0.14, 3.35, 0.84], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.7], dtype=np.float32)
-        self.center_pos = np.array([0.3, 0, 0.2], dtype=np.float32)
         self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.005], [0.8, 0.35, 0.8]], dtype=np.float32)
         self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/2, -np.pi/2], [np.pi/4, np.pi/2, np.pi/2]], dtype=np.float32)
 
@@ -126,12 +123,6 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.prev_action = np.zeros(self.action_space.shape)
         self.prev_grasp_time = 0.0
         self.prev_grasp = -1.0
-        # self.gripper_dict = {
-        #     "open": np.array([1, 0, 0, 0], dtype=np.float32),
-        #     "closed": np.array([0, 1, 0, 0], dtype=np.float32),
-        #     "opening": np.array([0, 0, 1, 0], dtype=np.float32),
-        #     "closing": np.array([0, 0, 0, 1], dtype=np.float32),
-        # }
         self.gripper_dict = {
             "moving": np.array([1, 0], dtype=np.float32),
             "grasping": np.array([0, 1], dtype=np.float32),
@@ -260,8 +251,8 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
 
     def object_noise(self):
         # Target pos
-        target_pos_noise_low = self.cfg.get("target_noise_low", [0.0, 0.0, 0.0])
-        target_pos_noise_high = self.cfg.get("target_noise_high", [0.0, 0.0, 0.0])
+        target_pos_noise_low = self.cfg.get("target_pos_noise_low", [0.0, 0.0, 0.0])
+        target_pos_noise_high = self.cfg.get("target_pos_noise_high", [0.0, 0.0, 0.0])
         target_pos_noise = np.random.uniform(low=target_pos_noise_low, high=target_pos_noise_high, size=3)
         target_pos = self.default_obj_pos + target_pos_noise
         self.model.body_pos[self.model.body("vine").id] = target_pos
@@ -271,8 +262,8 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.model.body_quat[self.model.body("vine").id] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
 
         # Distractor 1 pos
-        distract1_pos_noise_low = self.cfg.get("distract1_noise_low", [0.0, 0.0, 0.0])
-        distract1_pos_noise_high = self.cfg.get("distract1_noise_high", [0.0, 0.0, 0.0])
+        distract1_pos_noise_low = self.cfg.get("distract1_pos_noise_low", [0.0, 0.0, 0.0])
+        distract1_pos_noise_high = self.cfg.get("distract1_pos_noise_high", [0.0, 0.0, 0.0])
         distract1_pos_noise = np.random.uniform(low=distract1_pos_noise_low, high=distract1_pos_noise_high, size=3)
         self.model.body_pos[self.model.body("vine2").id] = target_pos + distract1_pos_noise
         # Distractor 1 orientation
@@ -281,8 +272,8 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.model.body_quat[self.model.body("vine2").id] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
 
         # Distractor 2 pos
-        distract2_pos_noise_low = self.cfg.get("distract2_noise_low", [0.0, 0.0, 0.0])
-        distract2_pos_noise_high = self.cfg.get("distract2_noise_high", [0.0, 0.0, 0.0])
+        distract2_pos_noise_low = self.cfg.get("distract2_pos_noise_low", [0.0, 0.0, 0.0])
+        distract2_pos_noise_high = self.cfg.get("distract2_pos_noise_high", [0.0, 0.0, 0.0])
         distract2_pos_noise = np.random.uniform(low=distract2_pos_noise_low, high=distract2_pos_noise_high, size=3)
         self.model.body_pos[self.model.body("vine3").id] = target_pos + distract2_pos_noise
         # Distractor 2 orientation
@@ -321,28 +312,13 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         if self.randomize_domain:
             self.domain_randomization()
 
-
-        self.vine1_site_id = self.model.site("aS_last").id
-        vine1_pos = self.data.site_xpos[self.vine1_site_id]
-        self.vine2_site_id = self.model.site("bS_last").id
-        vine2_pos = self.data.site_xpos[self.vine2_site_id]
-        self.vine3_site_id = self.model.site("cS_last").id
-        vine3_pos = self.data.site_xpos[self.vine3_site_id]
-
-
-        # get pos of site "aSLast"
-        block_qpos_index = self.model.jnt_qposadr[self.model.body("block").jntadr][0]
-        block2_qpos_index = self.model.jnt_qposadr[self.model.body("block2").jntadr][0]
-        block3_qpos_index = self.model.jnt_qposadr[self.model.body("block3").jntadr][0]
-        self.data.qpos[block_qpos_index:block_qpos_index+3] = vine1_pos
-        self.data.qpos[block2_qpos_index:block2_qpos_index+3] = vine2_pos
-        self.data.qpos[block3_qpos_index:block3_qpos_index+3] = vine3_pos
-
         self.data.qvel[:] = 0
+        self.data.qacc[:] = 0
+        self.data.qfrc_applied[:] = 0
         self.data.xfrc_applied[:] = 0
+        mujoco.mj_forward(self.model, self.data)
 
-
-        for _ in range(20*self._n_substeps):
+        for _ in range(30*self._n_substeps):
             tau = opspace(
                 model=self.model,
                 data=self.data,
@@ -358,7 +334,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         
         self._block_init = self.data.sensor("block_pos").data
         self._x_success = self._block_init[0] - 0.1
-        self._z_success = self._block_init[2] + self._x_success/2.0
+        self._z_success = self._block_init[2] + 0.05
         self._block_success = self._block_init.copy()
         self._block_success[0] = self._x_success
         self._block_success[2] = self._z_success
@@ -435,22 +411,6 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
                     self.prev_grasp_time = self.data.time
                     self.prev_grasp = grasp
                     self.gripper_vec = self.gripper_dict["grasping"]
-            # if grasp == 0 and self.gripper_state == 0:
-            #     self.gripper_vec = self.gripper_dict["open"]
-            # elif grasp == 1 and self.gripper_state == 1:
-            #     self.gripper_vec = self.gripper_dict["closed"]
-            # elif grasp == 0 and self.gripper_state == 1:
-            #     self.data.ctrl[self._gripper_ctrl_id] = 30
-            #     self.gripper_state = 0
-            #     self.gripper_vec = self.gripper_dict["opening"]
-            #     self.prev_grasp_time = self.data.time
-            #     self.prev_grasp = grasp
-            # elif grasp == 1 and self.gripper_state == 0:
-            #     self.data.ctrl[self._gripper_ctrl_id] = 0
-            #     self.gripper_state = 1
-            #     self.gripper_vec = self.gripper_dict["closing"]
-            #     self.prev_grasp_time = self.data.time
-            #     self.prev_grasp = grasp
         self.grasp = grasp
 
         for _ in range(self._n_substeps):
@@ -546,7 +506,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         reward = np.clip(sum(rewards.values()), -1e4, 1e4)
             
         # Success if
-        if box_target < 0.1:
+        if box_target < 0.01:
             success = True
         else:
             success = False

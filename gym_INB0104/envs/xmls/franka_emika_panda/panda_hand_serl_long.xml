@@ -287,7 +287,7 @@
                           <joint name="finger_joint1" class="finger"/>
                           <geom mesh="finger_0" material="off_white" class="visual"/>
                           <geom mesh="finger_0" class="collision"/>
-                          <geom mesh="gripper_long" class="collision"/>
+                          <geom mesh="gripper_long" class="collision" friction="20 0.005 0.0001"/>
                           <geom mesh="gripper_long" material="black" class="visual"/>
 
                         </body>
@@ -296,7 +296,7 @@
                           <joint name="finger_joint2" class="finger"/>
                           <geom mesh="finger_0" material="off_white" class="visual"/>
                           <geom mesh="finger_0" class="collision"/>
-                          <geom mesh="gripper_long" class="collision"/>
+                          <geom mesh="gripper_long" class="collision" friction="20 0.005 0.0001"/>
                           <geom mesh="gripper_long" material="black" class="visual"/>
 
                         </body>
