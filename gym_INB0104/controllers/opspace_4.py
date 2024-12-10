@@ -44,8 +44,10 @@ def opspace_4(
     pos: Optional[np.ndarray] = None,
     ori: Optional[np.ndarray] = None,
     joint: Optional[np.ndarray] = None,
-    pos_gains: Union[Tuple[float, float, float], np.ndarray] = (2000.0, 2000.0, 2000.0),
+    pos_gains: Union[Tuple[float, float, float], np.ndarray] = (1500.0, 1500.0, 1500.0),
     ori_gains: Union[Tuple[float, float, float], np.ndarray] = (200.0, 200.0, 200.0),
+    joint_upper_limits: Union[Tuple[float, float, float, float, float, float, float], np.ndarray] = (2.8, 1.7, 2.8, -0.08, 2.8, 3.74, 2.8),
+    joint_lower_limits: Union[Tuple[float, float, float, float, float, float, float], np.ndarray] = (-2.8, -1.7, -2.8, -3.0, -2.8, -0.010, -2.8),
     translational_damping: float = 89.0,
     rotational_damping: float = 7.0,
     nullspace_stiffness: float = 0.2,
@@ -57,6 +59,8 @@ def opspace_4(
     damped: bool = True,
     lambda_: float = 0.2,
 ) -> np.ndarray:
+    
+    
     x_des = data.site_xpos[site_id] if pos is None else np.asarray(pos)
     quat_des = (
         tr.mat_to_quat(data.site_xmat[site_id].reshape((3, 3))) if ori is None else
@@ -107,6 +111,14 @@ def opspace_4(
         tau_nullspace = (np.eye(len(dof_ids)) - J.T @ jacobian_transpose_pinv) @ tau_nullspace
 
     tau = tau_task + tau_nullspace
+
+    # Check if any joint is at or near its limits and adjust torques
+    for i, (q_i, q_upper, q_lower) in enumerate(zip(q, joint_upper_limits, joint_lower_limits)):
+        if q_i >= q_upper and tau[i] > 0.0:
+            tau[i] = 0.0
+        elif q_i <= q_lower and tau[i] < 0.0:
+            tau[i] = 0.0
+
     if gravity_comp:
         tau += C
 
