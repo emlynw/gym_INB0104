@@ -9,7 +9,7 @@ def main():
     render_mode = "rgb_array"
     height, width = 720, 720
     env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=height, width=width, render_mode=render_mode, randomize_domain=True, ee_dof=6)
-    env = TimeLimit(env, max_episode_steps=50)    
+    env = TimeLimit(env, max_episode_steps=20)    
     waitkey = 10
     resize_resolution = (height, width)
 
@@ -21,30 +21,34 @@ def main():
         obs, info = env.reset()
         while not terminated and not truncated:
             if render_mode == "rgb_array":
-                pixels = obs["images"]["front"].copy()
-                cv2.putText(pixels, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
-                cv2.imshow("pixels", cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR))
+                wrist1 = obs["images"]["wrist1"].copy()
+                wrist2 = obs["images"]["wrist2"].copy()
+                front = obs["images"]["front"].copy()
+                cv2.putText(wrist1, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
+                cv2.imshow("wrist1", cv2.cvtColor(wrist1, cv2.COLOR_RGB2BGR))
+                cv2.putText(wrist2, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
+                cv2.imshow("wrist2", cv2.cvtColor(wrist2, cv2.COLOR_RGB2BGR))
+                cv2.putText(front, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
+                cv2.imshow("front", cv2.cvtColor(front, cv2.COLOR_RGB2BGR))
                 cv2.waitKey(waitkey)
-            # if i < 10:
-            #     action = np.array([0.5, 0.04, -0.07, 0.0, 0.0, 0.0, -0.2])
-            # elif i < 37:
-            #     action = np.array([0.1, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2])
-            # elif i < 45:
-            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
-            # elif i < 50:
-            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
-            # elif i < 60:
-            #     action = np.array([-0.1, 0.0, 0.02, 0.0, 0.0, 0.0, 0.2])
-            # elif i < 70:
-            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
+            if i < 10:
+                action = np.array([0.5, 0.04, -0.07, 0.0, 0.0, 0.0, -0.2])
+            elif i < 37:
+                action = np.array([0.15, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2])
+            elif i < 45:
+                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
+            elif i < 50:
+                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
+            elif i < 60:
+                action = np.array([-0.2, 0.0, 0.02, 0.0, 0.0, 0.0, 0.2])
+            elif i < 70:
+                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
 
-            if i < 20:  
-                action = np.array([0.3, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])
-            else:
-                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])
+            # if i < 20:  
+            #     action = np.array([0.3, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])
+            # else:
+            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])
 
-            print(env.data.qpos[0])
-            
             obs, reward, terminated, truncated, info = env.step(action)
             print(f"i: {i}")
             print(f"cartesian pos: {obs['state']['panda/tcp_pos']}")

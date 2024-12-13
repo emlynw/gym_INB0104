@@ -483,7 +483,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         
     def _compute_reward(self, action):
         block_pos = self.data.sensor("block_pos").data
-        tcp_pos = self.data.sensor("pinch_pos").data
+        tcp_pos = self.data.sensor("long_pinch_pos").data
         box_target = 1 - np.tanh(5 * np.linalg.norm(block_pos - self._block_success))
         gripper_box = 1 - np.tanh(5 * np.linalg.norm(block_pos - tcp_pos))
 

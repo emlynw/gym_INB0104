@@ -58,7 +58,7 @@
     <mesh name="link5_c2" file="link5_collision_2.obj"/>
     <mesh name="link6_c" file="link6.stl"/>
     <mesh name="link7_c" file="link7.stl"/>
-    <mesh name="camera_mount_c" file="camera_mount_collision.stl"/>
+    <mesh name="camera_mount_c" file="camera_mount_collision_straight.stl"/>
     <mesh name="hand_c" file="hand.stl"/>
     <mesh name="gripper_long" file="gripper_long.stl"/>
 
@@ -112,7 +112,7 @@
     <mesh file="link7_5.obj"/>
     <mesh file="link7_6.obj"/>
     <mesh file="link7_7.obj"/>
-    <mesh name="camera_mount" file="camera_mount_visual.stl"/>
+    <mesh name="camera_mount" file="camera_mount_straight_visual.stl"/>
     <mesh file="hand_0.obj"/>
     <mesh file="hand_1.obj"/>
     <mesh file="hand_2.obj"/>
@@ -232,11 +232,11 @@
                     <geom mesh="link7_6" material="black" class="visual"/>
                     <geom mesh="link7_7" material="white" class="visual"/>
                     <geom mesh="link7_c" class="collision"/>
-                    <body name="camera_mount" pos="0 0 0.107" quat="1 0 0 0">
+                    <body name="camera_mount" pos="0 0 0.107" euler="0 0 0">
                       <inertial mass="0.5" pos="0 0 0"/>
-                      <geom mesh="camera_mount" material="black" class="visual"/>
+                      <geom mesh="camera_mount" material="black" class="visual" euler="0 0 0"/>
                       <geom mesh="camera_mount_c" class="collision"/>
-                      <body name="d435i_1" childclass="d435i" pos = "-0.032 -0.09676 0.025990" euler="-0.6108652 0 0">
+                      <body name="d435i_1" childclass="d435i" pos = "-0.079892 0.033930 0.026921" euler="0.2518991 0.2442666 0.754317">
                         <body name="wrist1" pos="0.0325 0 -0.003" quat="0 0 1 0">
                           <camera name="wrist1" pos="0 0 0" quat="1 0 0 0" fovy="42" />
                         </body>
@@ -252,7 +252,7 @@
                         <geom mesh="d435i_8" mass="0.072" material="Metal_Casing" class="d435i_visual"/>
                         <geom class="d435i_collision" type="capsule" mesh="d435i_8"/>
                       </body>
-                      <body name="d435i_2" childclass="d435i" pos = "0.032 0.09676 0.025990" euler="0.6108652 0 -3.1415927">
+                      <body name="d435i_2" childclass="d435i" pos = "0.079892 -0.033930 0.026921" euler="-0.2518523 -0.2443152 -2.3870816">
                         <body name="wrist2" pos="0.0325 0 -0.003" quat="0 0 1 0">
                           <camera name="wrist2" pos="0 0 0" quat="1 0 0 0" fovy="42" />
                         </body>
