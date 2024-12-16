@@ -77,7 +77,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
                 )
 
         p = Path(__file__).parent
-        env_dir = os.path.join(p, "xmls/mjmodel.xml")
+        env_dir = os.path.join(p, "xmls/reach_strawb_hanging.xml")
         self._n_substeps = int(float(control_dt) / float(physics_dt))
         self.frame_skip = 1
 
@@ -133,12 +133,31 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             setattr(self, f"{camera_name}_pos", self.model.body_pos[self.model.body(camera_name).id].copy())
             setattr(self, f"{camera_name}_quat", self.model.body_quat[self.model.body(camera_name).id].copy())
         self.init_light_pos = self.model.body_pos[self.model.body('light0').id].copy()
-        self.init_plywood_rgba = self.model.mat_rgba[self.model.mat('plywood').id].copy()
-        self.init_room_rgba = self.model.mat_rgba[self.model.mat('room').id].copy()
+        self.init_table_surface_rgba = self.model.mat_rgba[self.model.mat('table_surface').id].copy()
+        self.init_front_wall_rgba = self.model.mat_rgba[self.model.mat('front_wall').id].copy()
         self.init_brick_rgba = self.model.mat_rgba[self.model.mat('brick_wall').id].copy()
-        self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('table').id]
-        self.front_wall_tex_ids = [self.model.texture('room').id, self.model.texture('field').id]
-        self.brick_wall_tex_ids = [self.model.texture('brick_wall').id, self.model.texture('field').id]
+
+
+        wall_textures = []
+        table_textures = []
+        skybox_textures = []
+        for i in range(self.model.ntex):
+            if i < self.model.ntex - 1:
+                # For all but the last texture, use the next index
+                name_start = self.model.name_texadr[i]
+                name_end = self.model.name_texadr[i + 1] - 1
+            else:
+                # For the last texture, go until the first null byte or the end of the names array
+                name_start = self.model.name_texadr[i]
+                name_end = len(self.model.names)
+            # Decode the name slice
+            texture_name = self.model.names[name_start:name_end].split(b'\x00', 1)[0].decode('utf-8')
+            if self.model.texture(texture_name).type[0] == 2:
+                skybox_textures.append(texture_name)
+
+        self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('Planks033B').id, self.model.texture('table_surface').id]
+        self.front_wall_tex_ids = [self.model.texture('lab_0104').id, self.model.texture('Bricks086').id]
+        self.brick_wall_tex_ids = [self.model.texture('brick_wall').id]
         self.brick_wall_texrepeat = self.model.mat_texrepeat[self.model.mat('brick_wall').id].copy()
         self.initial_vine_rotation = Rotation.from_quat(np.roll(self.model.body_quat[self.model.body("vine").id], -1))
 
@@ -221,7 +240,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
 
     def table_noise(self):
         table_tex_id = np.random.choice(self.table_tex_ids)
-        material_id = self.model.mat('plywood').id
+        material_id = self.model.mat('table_surface').id
         self.model.mat_texid[material_id] = table_tex_id
 
         # Randomize table color
@@ -233,23 +252,18 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
     def wall_noise(self):
         # Randomize front wall
         front_wall_tex_id = np.random.choice(self.front_wall_tex_ids)
-        self.model.mat_texid[self.model.mat('room').id] = front_wall_tex_id
+        self.model.mat_texid[self.model.mat('front_wall').id] = front_wall_tex_id
         channel = np.random.randint(0,3)
         wall_color_noise_range = self.cfg.get("wall_color_noise_range", [0.0, 0.0])
         wall_color_noise = np.random.uniform(low=wall_color_noise_range[0], high=wall_color_noise_range[1], size=1)
-        self.model.mat_rgba[self.model.mat('room').id] = self.init_room_rgba.copy()
-        self.model.mat_rgba[self.model.mat('room').id][channel] = self.init_room_rgba[channel] + wall_color_noise
+        self.model.mat_rgba[self.model.mat('front_wall').id] = self.init_front_wall_rgba.copy()
+        self.model.mat_rgba[self.model.mat('front_wall').id][channel] = self.init_front_wall_rgba[channel] + wall_color_noise
 
         # Randomize brick color
         self.model.mat_texid[self.model.mat('brick_wall').id] = self.brick_wall_tex_ids[0]
         self.model.mat_texrepeat[self.model.mat('brick_wall').id] = self.brick_wall_texrepeat
-        if self.model.mat_texid[self.model.mat('room').id][0] == self.model.texture('field').id:
-            self.model.mat_texrepeat[self.model.mat('brick_wall').id] = [1, 1]
-            self.model.mat_texid[self.model.mat('brick_wall').id] = self.model.texture('field').id
-        np.random.uniform(low=-0.1, high=0.1, size=1)
         self.model.mat_rgba[self.model.mat('brick_wall').id] = self.init_brick_rgba.copy()
         self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + wall_color_noise
-        print(f"texfile: {self.model.texture('field').data.shape}")
 
     def object_noise(self):
         # Target pos
@@ -304,6 +318,8 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             self.camera_noise()
         if self.cfg.get("apply_table_noise", False):
             self.table_noise()
+        if self.cfg.get("apply_skybox_noise", False):
+            self.skybox_noise()
         if self.cfg.get("apply_wall_noise", False):
             self.wall_noise()
         if self.cfg.get("apply_object_noise", False):

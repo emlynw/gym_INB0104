@@ -1,0 +1,75 @@
+<mujoco model="textures">
+
+  <asset>
+    <texture name="space_2" type="skybox" file="textures/skyboxes/space_2.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="sky_4" type="skybox" file="textures/skyboxes/sky_4.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="field_5" type="skybox" file="textures/skyboxes/field_5.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="field_3" type="skybox" file="textures/skyboxes/field_3.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="desert" type="skybox" file="textures/skyboxes/desert.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="campus" type="skybox" file="textures/skyboxes/campus.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="space" type="skybox" file="textures/skyboxes/space.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="field_2" type="skybox" file="textures/skyboxes/field_2.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="field" type="skybox" file="textures/skyboxes/field.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="field_4" type="skybox" file="textures/skyboxes/field_4.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="evening" type="skybox" file="textures/skyboxes/evening.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="dining_room" type="skybox" file="textures/skyboxes/dining_room.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="viewpoint" type="skybox" file="textures/skyboxes/viewpoint.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="sky" type="skybox" file="textures/skyboxes/sky.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="office" type="skybox" file="textures/skyboxes/office.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="park" type="skybox" file="textures/skyboxes/park.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="mall" type="skybox" file="textures/skyboxes/mall.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="sky_2" type="skybox" file="textures/skyboxes/sky_2.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="forest" type="skybox" file="textures/skyboxes/forest.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="stairs" type="skybox" file="textures/skyboxes/stairs.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture name="sky_3" type="skybox" file="textures/skyboxes/sky_3.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>    
+
+    <texture name="table_surface" file="textures/table.png" type="2d"/>
+    <texture name="plywood" file="textures/plywood.png" type="2d"/>
+    <texture name="brick_wall" file="textures/brick_wall.png" type="2d"/>
+    <texture name="aluminium" file="textures/aluminium.png" type="2d"/>
+    <texture name="lab_0104" file="textures/lab_0104.png" type="2d"/>
+
+    <texture name="Grass001" file="textures/Grass001_2K-PNG_Color.png" type="2d"/>
+    <texture name="PavingStones131" file="textures/PavingStones131_2K-PNG_Color.png" type="2d"/>
+    <texture name="Bricks095" file="textures/Bricks095_2K-PNG_Color.png" type="2d"/>
+    <texture name="Tiles074" file="textures/Tiles074_2K-PNG_Color.png" type="2d"/>
+    <texture name="DiamondPlate008C" file="textures/DiamondPlate008C_2K-PNG_Color.png" type="2d"/>
+    <texture name="Ground072" file="textures/Ground072_2K-PNG_Color.png" type="2d"/>
+    <texture name="Metal056C" file="textures/Metal056C_2K-PNG_Color.png" type="2d"/>
+    <texture name="Planks033B" file="textures/Planks033B_2K-PNG_Color.png" type="2d"/>
+    <texture name="Grass004" file="textures/Grass004_2K-PNG_Color.png" type="2d"/>
+    <texture name="Asphalt026C" file="textures/Asphalt026C_2K-PNG_Color.png" type="2d"/>
+    <texture name="Wood084A" file="textures/Wood084A_2K-PNG_Color.png" type="2d"/>
+    <texture name="Moss002" file="textures/Moss002_2K-PNG_Color.png" type="2d"/>
+    <texture name="Bamboo001C" file="textures/Bamboo001C_2K-PNG_Color.png" type="2d"/>
+    <texture name="Bark012" file="textures/Bark012_2K-PNG_Color.png" type="2d"/>
+    <texture name="Gravel023" file="textures/Gravel023_2K-PNG_Color.png" type="2d"/>
+    <texture name="Metal007" file="textures/Metal007_2K-PNG_Color.png" type="2d"/>
+    <texture name="Plastic012A" file="textures/Plastic012A_2K-PNG_Color.png" type="2d"/>
+    <texture name="Bricks074" file="textures/Bricks074_2K-PNG_Color.png" type="2d"/>
+    <texture name="Ground062S" file="textures/Ground062S_2K-PNG_Color.png" type="2d"/>
+    <texture name="WoodFloor052" file="textures/WoodFloor052_2K-PNG_Color.png" type="2d"/>
+    <texture name="Plastic006" file="textures/Plastic006_2K-PNG_Color.png" type="2d"/>
+    <texture name="Planks023A" file="textures/Planks023A_2K-PNG_Color.png" type="2d"/>
+    <texture name="PavingStones070" file="textures/PavingStones070_2K-PNG_Color.png" type="2d"/>
+    <texture name="Rock029" file="textures/Rock029_2K-PNG_Color.png" type="2d"/>
+    <texture name="Wood090A" file="textures/Wood090A_2K-PNG_Color.png" type="2d"/>
+    <texture name="Rock057" file="textures/Rock057_2K-PNG_Color.png" type="2d"/>
+    <texture name="Rock030" file="textures/Rock030_2K-PNG_Color.png" type="2d"/>
+    <texture name="Ground075" file="textures/Ground075_2K-PNG_Color.png" type="2d"/>
+    <texture name="PavingStones139" file="textures/PavingStones139_2K-PNG_Color.png" type="2d"/>
+    <texture name="Bricks086" file="textures/Bricks086_2K-PNG_Color.png" type="2d"/>
+    <texture name="Wood059" file="textures/Wood059_2K-PNG_Color.png" type="2d"/>
+    <texture name="Tiles078" file="textures/Tiles078_2K-PNG_Color.png" type="2d"/>
+    <texture name="Fabric019" file="textures/Fabric019_2K-PNG_Color.png" type="2d"/>
+    <texture name="Travertine013" file="textures/Travertine013_2K-PNG_Color.png" type="2d"/>
+    <texture name="Bricks051" file="textures/Bricks051_2K-PNG_Color.png" type="2d"/>
+
+    <material name="table_surface" texture="plywood" specular="1" shininess="1"/>
+    <material name="brick_wall" texture="brick_wall" texuniform="false" specular="1" shininess="1" texrepeat="2 2"/>
+    <material name="aluminium" texture="aluminium" texuniform="true" specular="1" shininess="1"/>
+    <material name="front_wall" texture="field" specular="1" shininess="1"/>
+    <material name="floor" texture="Grass001" specular="1" shininess="1"/>
+
+  </asset>  
+</mujoco>
