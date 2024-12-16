@@ -140,6 +140,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.front_wall_tex_ids = [self.model.texture('room').id, self.model.texture('field').id]
         self.brick_wall_tex_ids = [self.model.texture('brick_wall').id, self.model.texture('field').id]
         self.brick_wall_texrepeat = self.model.mat_texrepeat[self.model.mat('brick_wall').id].copy()
+        self.initial_vine_rotation = Rotation.from_quat(np.roll(self.model.body_quat[self.model.body("vine").id], -1))
 
         # Add this line to set the initial orientation
         self.initial_orientation = [0, 0.725, 0.0, 0.688]
@@ -248,6 +249,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         np.random.uniform(low=-0.1, high=0.1, size=1)
         self.model.mat_rgba[self.model.mat('brick_wall').id] = self.init_brick_rgba.copy()
         self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + wall_color_noise
+        print(f"texfile: {self.model.texture('field').data.shape}")
 
     def object_noise(self):
         # Target pos
@@ -258,8 +260,10 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.model.body_pos[self.model.body("vine").id] = target_pos
         # Target orientation
         random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
-        z_rotation = Rotation.from_euler('z', random_z_angle).as_quat()
-        self.model.body_quat[self.model.body("vine").id] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
+        z_rotation = Rotation.from_euler('z', random_z_angle)
+        new_rotation = z_rotation * self.initial_vine_rotation
+        new_quat = new_rotation.as_quat()
+        self.model.body_quat[self.model.body("vine").id] = [new_quat[3], new_quat[0], new_quat[1], new_quat[2]]
 
         # Distractor 1 pos
         distract1_pos_noise_low = self.cfg.get("distract1_pos_noise_low", [0.0, 0.0, 0.0])
@@ -268,8 +272,10 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.model.body_pos[self.model.body("vine2").id] = target_pos + distract1_pos_noise
         # Distractor 1 orientation
         random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
-        z_rotation = Rotation.from_euler('z', random_z_angle).as_quat()
-        self.model.body_quat[self.model.body("vine2").id] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
+        z_rotation = Rotation.from_euler('z', random_z_angle)
+        new_rotation = z_rotation * self.initial_vine_rotation
+        new_quat = new_rotation.as_quat()
+        self.model.body_quat[self.model.body("vine2").id] = [new_quat[3], new_quat[0], new_quat[1], new_quat[2]]
 
         # Distractor 2 pos
         distract2_pos_noise_low = self.cfg.get("distract2_pos_noise_low", [0.0, 0.0, 0.0])
@@ -278,8 +284,14 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.model.body_pos[self.model.body("vine3").id] = target_pos + distract2_pos_noise
         # Distractor 2 orientation
         random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
-        z_rotation = Rotation.from_euler('z', random_z_angle).as_quat()
-        self.model.body_quat[self.model.body("vine3").id] = [z_rotation[3], z_rotation[0], z_rotation[1], z_rotation[2]]
+        z_rotation = Rotation.from_euler('z', random_z_angle)
+        new_rotation = z_rotation * self.initial_vine_rotation
+        new_quat = new_rotation.as_quat()
+        self.model.body_quat[self.model.body("vine3").id] = [new_quat[3], new_quat[0], new_quat[1], new_quat[2]]
+
+        self.data.qvel[:] = 0
+        self.data.qacc[:] = 0
+        mujoco.mj_forward(self.model, self.data)
 
     def domain_randomization(self):
         if self.cfg.get("apply_lighting_noise", False):
@@ -318,7 +330,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.data.xfrc_applied[:] = 0
         mujoco.mj_forward(self.model, self.data)
 
-        for _ in range(30*self._n_substeps):
+        for _ in range(1):
             tau = opspace(
                 model=self.model,
                 data=self.data,

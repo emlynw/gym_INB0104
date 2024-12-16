@@ -1,9 +1,5 @@
 <mujoco model="basic_scene">
 
-  <extension>
-    <plugin plugin="mujoco.elasticity.cable"/>
-  </extension>
-
   <include file="franka_emika_panda/panda_hand_serl_long_2.xml"/>
   <option timestep=".002" noslip_iterations="5" noslip_tolerance="0"/>
   <statistic center="0.3 0 0.4" extent="1"/>
@@ -20,7 +16,7 @@
   </option>
 
   <asset>
-    <!-- <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/> -->
+    <texture name ="skybox" type="skybox" file="textures/desert.png" gridsize="3 4" gridlayout =".U..LFRB.D.."/>
     <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="50" height="50"/>
     <texture name="table" file="textures/table.png" type="2d"/>
     <texture name="plywood" file="textures/plywood.png" type="2d"/>
@@ -28,21 +24,24 @@
     <texture name="aluminium" file="textures/aluminium.png" type="2d"/>
     <texture name="room" file="textures/room.png" type="2d"/>
     <texture name="field" file="textures/field.png" type="2d"/>
+    <texture name="grass" file="textures/Grass001_2K-PNG_Color.png" type="2d"/>
+
     <material name="groundplane" texture="groundplane" texuniform="true"  reflectance="0.2"/>
     <material name="plywood" texture="plywood" specular="1" shininess="1"/>
     <material name="brick_wall" texture="brick_wall" texuniform="false" specular="1" shininess="1" texrepeat="2 2"/>
     <material name="aluminium" texture="aluminium" texuniform="true" specular="1" shininess="1"/>
     <material name="room" texture="field" specular="1" shininess="1"/>
     <material name="field" texture="field" specular="1" shininess="1"/>
+    <material name="grass" texture="grass" specular="1" shininess="1"/>
 
   </asset>  
 
   <worldbody>
     <body name="light0" pos="0.3 0 1.6">
       <site name="light0" pos="0 0 0" size="0.02" rgba="1 1 1 1"/>
-      <light mode="fixed" pos="0 0 0" diffuse="0.1 0.1 0.1" ambient="0.1 0.1 0.1"/>
+      <light mode="fixed" pos="0 0 0" diffuse="0.2 0.2 0.2" ambient="0.1 0.1 0.1"/>
     </body>
-    <geom name="floor" size="0 0 0.05" pos="0 0 -1.06" type="plane" rgba="0.556 0.522 0.461 1"/>
+    <geom name="floor" size="0 0 0.05" pos="0 0 -1.06" type="plane" material="grass"/>
     <body name="roof_right" pos="0.3 0.09 1.5">
       <geom name="roof_right" type="box" size="0.25 0.52 0.004" material="plywood"/> 
     </body>

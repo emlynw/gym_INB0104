@@ -18,7 +18,7 @@ apply_wall_noise: true
 wall_color_noise_range: [-0.1, 0.1]
 apply_object_noise: true
 target_pos_noise_low: [0.0, -0.2, -0.1]
-target_pos_noise_high: [0.25, 0.2, 0.1]
+target_pos_noise_high: [0.25, 0.2, 0.6]
 distract1_pos_noise_low: [-0.1, -0.05, -0.03]
 distract1_pos_noise_high: [0.02, 0.05, 0.03]
 distract2_pos_noise_low: [-0.1, -0.05, -0.03]
