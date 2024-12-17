@@ -50,12 +50,12 @@ def main():
             #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])
 
             obs, reward, terminated, truncated, info = env.step(action)
-            print(f"i: {i}")
-            print(f"cartesian pos: {obs['state']['panda/tcp_pos']}")
-            print(f"cartesian ori: {obs['state']['panda/tcp_orientation']}")
-            print(f"cartesian vel: {obs['state']['panda/tcp_vel']}")
-            print(f"gripper pos: {obs['state']['panda/gripper_pos']}")
-            print(f"gripper vec: {obs['state']['panda/gripper_vec']}")
+            # print(f"i: {i}")
+            # print(f"cartesian pos: {obs['state']['panda/tcp_pos']}")
+            # print(f"cartesian ori: {obs['state']['panda/tcp_orientation']}")
+            # print(f"cartesian vel: {obs['state']['panda/tcp_vel']}")
+            # print(f"gripper pos: {obs['state']['panda/gripper_pos']}")
+            # print(f"gripper vec: {obs['state']['panda/gripper_vec']}")
             i+=1
         
 if __name__ == "__main__":

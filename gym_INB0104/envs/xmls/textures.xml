@@ -23,9 +23,9 @@
     <texture name="stairs" type="skybox" file="textures/skyboxes/stairs.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
     <texture name="sky_3" type="skybox" file="textures/skyboxes/sky_3.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>    
 
-    <texture name="table_surface" file="textures/table.png" type="2d"/>
-    <texture name="plywood" file="textures/plywood.png" type="2d"/>
-    <texture name="brick_wall" file="textures/brick_wall.png" type="2d"/>
+    <texture name="table_surface" file="textures/Table.png" type="2d"/>
+    <texture name="plywood" file="textures/Wood.png" type="2d"/>
+    <texture name="brick_wall" file="textures/Bricks0104.png" type="2d"/>
     <texture name="aluminium" file="textures/aluminium.png" type="2d"/>
     <texture name="lab_0104" file="textures/lab_0104.png" type="2d"/>
 
@@ -64,7 +64,8 @@
     <texture name="Fabric019" file="textures/Fabric019_2K-PNG_Color.png" type="2d"/>
     <texture name="Travertine013" file="textures/Travertine013_2K-PNG_Color.png" type="2d"/>
     <texture name="Bricks051" file="textures/Bricks051_2K-PNG_Color.png" type="2d"/>
-
+    
+    <material name="skybox" texture="space_2"/>
     <material name="table_surface" texture="plywood" specular="1" shininess="1"/>
     <material name="brick_wall" texture="brick_wall" texuniform="false" specular="1" shininess="1" texrepeat="2 2"/>
     <material name="aluminium" texture="aluminium" texuniform="true" specular="1" shininess="1"/>

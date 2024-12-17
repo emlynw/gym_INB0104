@@ -138,9 +138,11 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.init_brick_rgba = self.model.mat_rgba[self.model.mat('brick_wall').id].copy()
 
 
-        wall_textures = []
-        table_textures = []
-        skybox_textures = []
+        self.table_tex_ids = []
+        self.skybox_tex_ids = []
+        self.brick_wall_tex_ids = []
+        self.front_wall_tex_ids = []
+        self.floor_tex_ids = []
         for i in range(self.model.ntex):
             if i < self.model.ntex - 1:
                 # For all but the last texture, use the next index
@@ -153,12 +155,17 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             # Decode the name slice
             texture_name = self.model.names[name_start:name_end].split(b'\x00', 1)[0].decode('utf-8')
             if self.model.texture(texture_name).type[0] == 2:
-                skybox_textures.append(texture_name)
+                self.skybox_tex_ids.append(self.model.texture(texture_name).id)
+            else:
+                if 'Brick' in texture_name:
+                    self.brick_wall_tex_ids.append(self.model.texture(texture_name).id)
+                elif any(substring in texture_name for substring in ['Wood', 'Table', 'Rock', 'Plank']):
+                    self.table_tex_ids.append(self.model.texture(texture_name).id)
+                elif any(substring in texture_name for substring in ['Paving', 'Tiles', 'Ground', 'Gravel', 'Grass']):
+                    self.floor_tex_ids.append(self.model.texture(texture_name).id)
+                else:
+                    self.front_wall_tex_ids.append(self.model.texture(texture_name).id)
 
-        self.table_tex_ids = [self.model.texture('plywood').id, self.model.texture('Planks033B').id, self.model.texture('table_surface').id]
-        self.front_wall_tex_ids = [self.model.texture('lab_0104').id, self.model.texture('Bricks086').id]
-        self.brick_wall_tex_ids = [self.model.texture('brick_wall').id]
-        self.brick_wall_texrepeat = self.model.mat_texrepeat[self.model.mat('brick_wall').id].copy()
         self.initial_vine_rotation = Rotation.from_quat(np.roll(self.model.body_quat[self.model.body("vine").id], -1))
 
         # Add this line to set the initial orientation
@@ -239,31 +246,68 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             self.model.body_quat[self.model.body(cam_name).id] = new_cam_quat
 
     def table_noise(self):
-        table_tex_id = np.random.choice(self.table_tex_ids)
-        material_id = self.model.mat('table_surface').id
-        self.model.mat_texid[material_id] = table_tex_id
+        if random.random() < 0.5:
+            # Make all geoms in the "workbench" body invisible
+            for geom_id in range(int(self.model.body("workbench").geomadr), int(self.model.body("workbench").geomadr + self.model.body("workbench").geomnum)):
+                self.model.geom_contype[geom_id] = 0
+                self.model.geom_conaffinity[geom_id] = 0
+                # Set the group to 3 (hidden group)
+                self.model.geom_group[geom_id] = 3
+        else:
+            # Make all geoms in the "workbench" body visible
+            for geom_id in range(int(self.model.body("workbench").geomadr), int(self.model.body("workbench").geomadr + int(self.model.body("workbench").geomnum))):
+                self.model.geom_contype[geom_id] = 1
+                self.model.geom_conaffinity[geom_id] = 1
+                # Set the group to 0 (default group)
+                self.model.geom_group[geom_id] = 0
 
-        # Randomize table color
-        channel = np.random.randint(0, 3)
-        table_color_noise_range = self.cfg.get("table_color_noise_range", [0.0, 0.0])
-        table_color_noise = np.random.uniform(low=table_color_noise_range[0], high=table_color_noise_range[1], size=1)
-        self.model.mat_rgba[material_id][channel] += table_color_noise
+            table_tex_id = np.random.choice(self.table_tex_ids)
+            material_id = self.model.mat('table_surface').id
+            self.model.mat_texid[material_id] = table_tex_id
+
+            # Randomize table color
+            channel = np.random.randint(0, 3)
+            table_color_noise_range = self.cfg.get("table_color_noise_range", [0.0, 0.0])
+            table_color_noise = np.random.uniform(low=table_color_noise_range[0], high=table_color_noise_range[1], size=1)
+            self.model.mat_rgba[material_id][channel] += table_color_noise
 
     def wall_noise(self):
-        # Randomize front wall
-        front_wall_tex_id = np.random.choice(self.front_wall_tex_ids)
-        self.model.mat_texid[self.model.mat('front_wall').id] = front_wall_tex_id
-        channel = np.random.randint(0,3)
-        wall_color_noise_range = self.cfg.get("wall_color_noise_range", [0.0, 0.0])
-        wall_color_noise = np.random.uniform(low=wall_color_noise_range[0], high=wall_color_noise_range[1], size=1)
-        self.model.mat_rgba[self.model.mat('front_wall').id] = self.init_front_wall_rgba.copy()
-        self.model.mat_rgba[self.model.mat('front_wall').id][channel] = self.init_front_wall_rgba[channel] + wall_color_noise
+        if random.random() < 0.7:
+            for geom_id in range(int(self.model.body("walls").geomadr), int(self.model.body("walls").geomadr + self.model.body("walls").geomnum)):
+                self.model.geom_contype[geom_id] = 0
+                self.model.geom_conaffinity[geom_id] = 0
+                self.model.geom_group[geom_id] = 3
+        else:
+            for geom_id in range(int(self.model.body("walls").geomadr), int(self.model.body("walls").geomadr + self.model.body("walls").geomnum)):
+                self.model.geom_contype[geom_id] = 1
+                self.model.geom_conaffinity[geom_id] = 1
+                self.model.geom_group[geom_id] = 0
+            front_wall_tex_id = np.random.choice(self.front_wall_tex_ids)
+            self.model.mat_texid[self.model.mat('front_wall').id] = front_wall_tex_id
+            channel = np.random.randint(0,3)
+            wall_color_noise_range = self.cfg.get("wall_color_noise_range", [0.0, 0.0])
+            wall_color_noise = np.random.uniform(low=wall_color_noise_range[0], high=wall_color_noise_range[1], size=1)
+            self.model.mat_rgba[self.model.mat('front_wall').id] = self.init_front_wall_rgba.copy()
+            self.model.mat_rgba[self.model.mat('front_wall').id][channel] = self.init_front_wall_rgba[channel] + wall_color_noise
 
-        # Randomize brick color
-        self.model.mat_texid[self.model.mat('brick_wall').id] = self.brick_wall_tex_ids[0]
-        self.model.mat_texrepeat[self.model.mat('brick_wall').id] = self.brick_wall_texrepeat
-        self.model.mat_rgba[self.model.mat('brick_wall').id] = self.init_brick_rgba.copy()
-        self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + wall_color_noise
+            # Randomize brick color
+            brick_wall_tex_id = np.random.choice(self.brick_wall_tex_ids)
+            self.model.mat_texid[self.model.mat('brick_wall').id] = brick_wall_tex_id
+            self.model.mat_rgba[self.model.mat('brick_wall').id] = self.init_brick_rgba.copy()
+            self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + wall_color_noise
+
+    def floor_noise(self):
+        if random.random() < 0.5:
+            # Set the group to 3 (hidden group)
+            self.model.geom('floor').group = 3
+        else:
+            self.model.geom('floor').group = 0
+            floor_tex_id = np.random.choice(self.floor_tex_ids)
+            self.model.mat_texid[self.model.mat('floor').id] = floor_tex_id
+
+    def skybox_noise(self):
+        skybox_tex_id = np.random.choice(self.skybox_tex_ids)
+        self._viewer.model.tex_adr[0] = self.model.tex_adr[skybox_tex_id]
 
     def object_noise(self):
         # Target pos
@@ -322,6 +366,10 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             self.skybox_noise()
         if self.cfg.get("apply_wall_noise", False):
             self.wall_noise()
+        if self.cfg.get("apply_floor_noise", False):
+            self.floor_noise()
+        if self.cfg.get("apply_skybox_noise", False):
+            self.skybox_noise()
         if self.cfg.get("apply_object_noise", False):
             self.object_noise()
         self._viewer = MujocoRenderer(self.model, self.data,)
