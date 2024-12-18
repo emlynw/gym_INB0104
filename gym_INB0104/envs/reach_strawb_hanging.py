@@ -77,7 +77,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
                 )
 
         p = Path(__file__).parent
-        env_dir = os.path.join(p, "xmls/reach_strawb_hanging.xml")
+        env_dir = os.path.join(p, "xmls/mjmodel.xml")
         self._n_substeps = int(float(control_dt) / float(physics_dt))
         self.frame_skip = 1
 
