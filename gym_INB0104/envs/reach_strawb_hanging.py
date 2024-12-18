@@ -297,17 +297,25 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             self.model.mat_rgba[self.model.mat('brick_wall').id][channel] = self.init_brick_rgba[channel] + wall_color_noise
 
     def floor_noise(self):
-        if random.random() < 0.5:
-            # Set the group to 3 (hidden group)
-            self.model.geom('floor').group = 3
-        else:
-            self.model.geom('floor').group = 0
-            floor_tex_id = np.random.choice(self.floor_tex_ids)
-            self.model.mat_texid[self.model.mat('floor').id] = floor_tex_id
+        # if random.random() < 0.5:
+        #     # Set the group to 3 (hidden group)
+        #     self.model.geom('floor').group = 3
+        # else:
+        #     self.model.geom('floor').group = 0
+        floor_tex_id = np.random.choice(self.floor_tex_ids)
+        self.model.mat_texid[self.model.mat('floor').id] = floor_tex_id
 
     def skybox_noise(self):
         skybox_tex_id = np.random.choice(self.skybox_tex_ids)
+        start_idx = self.model.name_texadr[skybox_tex_id]
+        end_idx = self.model.name_texadr[skybox_tex_id + 1] - 1 if skybox_tex_id+ 1 < len(self.model.name_texadr) else None
+        texture_name = self.model.names[start_idx:end_idx].decode('utf-8')
+        if 'sky' not in texture_name:
+            self.model.geom('floor').group = 3
+        else:
+            self.model.geom('floor').group = 0
         self._viewer.model.tex_adr[0] = self.model.tex_adr[skybox_tex_id]
+
 
     def object_noise(self):
         # Target pos
