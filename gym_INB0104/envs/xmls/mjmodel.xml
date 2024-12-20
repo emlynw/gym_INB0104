@@ -422,13 +422,13 @@
       <geom name="left_tabletop" size="0.359 0.538 0.004" pos="0.661 -0.482 1.044" quat="1.32679e-06 0 0 1" type="box" material="table_surface"/>
       <site name="origin" pos="0 0 0" size="0.01" rgba="1 0 0 1"/>
     </body>
-    <body name="front" pos="1.6 0 0.6" quat="0.536456 0.460733 0.4611 0.536029">
+    <body name="front" pos="2.0 0 0.6" quat="0.536456 0.460733 0.4611 0.536029">
       <camera name="front" pos="0 0 0" fovy="41"/>
     </body>
     <body name="target" pos="0.15 0 0.5" quat="0 1 0 0" mocap="true">
       <geom name="target" size="0.03 0.03 0.03" type="box" contype="0" conaffinity="0" rgba="0.6 0.3 0.3 0"/>
     </body>
-    <body name="vine" pos="0.76 0 0.85" quat="0.707388 0 0.706825 0">
+    <body name="vine" pos="0.75 0 0.85" quat="0.707388 0 0.706825 0">
       <body name="aB_first">
         <joint name="aJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
         <geom name="aG0" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>

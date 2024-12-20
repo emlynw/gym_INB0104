@@ -110,7 +110,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.7], dtype=np.float32)
         self._CARTESIAN_BOUNDS = np.array([[0.2, -0.6, 0.01], [0.9, 0.6, 0.9]], dtype=np.float32)
-        self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/2, -np.pi/2], [np.pi/4, np.pi/2, np.pi/2]], dtype=np.float32)
+        self._ROTATION_BOUNDS= np.array([[-np.pi, -np.pi, -np.pi], [np.pi, np.pi, np.pi]], dtype=np.float32)
 
         self.default_obj_pos = np.array([0.6, 0, 0.8])
         self._panda_dof_ids = np.array([self.model.joint(f"joint{i}").id for i in range(1, 8)])
