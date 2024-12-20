@@ -402,7 +402,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.data.xfrc_applied[:] = 0
         mujoco.mj_forward(self.model, self.data)
 
-        for _ in range(1):
+        for _ in range(self._n_substeps):
             tau = opspace(
                 model=self.model,
                 data=self.data,
