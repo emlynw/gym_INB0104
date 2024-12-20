@@ -59,7 +59,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
 
         state_space = Dict(
             {
-                "panda/tcp_pos": Box(np.array([0.28, -0.5, 0.01]), np.array([0.75, 0.5, 0.8]), shape=(3,), dtype=np.float32),
+                "panda/tcp_pos": Box(np.array([0.2, -0.6, 0.01]), np.array([0.9, 0.6, 0.9]), shape=(3,), dtype=np.float32),
                 "panda/tcp_orientation": Box(-1, 1, shape=(4,), dtype=np.float32),  # Quaternion
                 "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
                 "panda/gripper_pos": Box(-1, 1, shape=(1,), dtype=np.float32),
@@ -109,7 +109,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self._PANDA_HOME = np.array([0.0, -1.15, -0.12, -2.98, -0.14, 3.35, 0.84], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
         self._PANDA_XYZ = np.array([0.3, 0, 0.7], dtype=np.float32)
-        self._CARTESIAN_BOUNDS = np.array([[0.28, -0.35, 0.005], [0.8, 0.35, 0.8]], dtype=np.float32)
+        self._CARTESIAN_BOUNDS = np.array([[0.2, -0.6, 0.01], [0.9, 0.6, 0.9]], dtype=np.float32)
         self._ROTATION_BOUNDS= np.array([[-np.pi/4, -np.pi/2, -np.pi/2], [np.pi/4, np.pi/2, np.pi/2]], dtype=np.float32)
 
         self.default_obj_pos = np.array([0.6, 0, 0.8])
@@ -169,7 +169,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.initial_vine_rotation = Rotation.from_quat(np.roll(self.model.body_quat[self.model.body("vine").id], -1))
 
         # Add this line to set the initial orientation
-        self.initial_orientation = [0, 0.725, 0.0, 0.688]
+        self.initial_orientation = np.roll([0, 0.725, 0.0, 0.688], -1)
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)
 
         self.init_headlight_diffuse = self.model.vis.headlight.diffuse.copy()
@@ -458,23 +458,23 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.data.mocap_pos[0] = npos
 
         if self.ee_dof > 3:
-            # Orientation changes, ZYX because of mujoco quaternions?
-            current_quat = self.data.sensor("pinch_quat").data
+            # Convert mujoco wxyz to scipy xyzw
+            current_quat = np.roll(self.data.sensor("pinch_quat").data, -1)
             current_rotation = Rotation.from_quat(current_quat)
             # Convert the action rotation to a Rotation object
-            action_rotation = Rotation.from_euler('zyx', drot)
+            action_rotation = Rotation.from_euler('xyz', drot)
             # Apply the action rotation
             new_rotation = action_rotation * current_rotation
             # Calculate the new relative rotation
             new_relative_rotation = self.initial_rotation.inv() * new_rotation
             # Convert to euler angles and clip
-            relative_euler = new_relative_rotation.as_euler('zyx')
+            relative_euler = new_relative_rotation.as_euler('xyz')
             clipped_euler = np.clip(relative_euler, self._ROTATION_BOUNDS[0], self._ROTATION_BOUNDS[1])
             # Convert back to rotation and apply to initial orientation
-            clipped_rotation = Rotation.from_euler('zyx', clipped_euler)
+            clipped_rotation = Rotation.from_euler('xyz', clipped_euler)
             final_rotation = self.initial_rotation * clipped_rotation
             # Set the final orientation
-            self.data.mocap_quat[0] = final_rotation.as_quat()
+            self.data.mocap_quat[0] = np.roll(final_rotation.as_quat(), 1)
 
         # Handle grasping
         if self.data.time - self.prev_grasp_time < 0.5:

@@ -8,7 +8,7 @@ np.set_printoptions(suppress=True)
 def main():
     render_mode = "rgb_array"
     height, width = 720, 720
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=height, width=width, render_mode=render_mode, randomize_domain=True, ee_dof=6)
+    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=height, width=width, render_mode=render_mode, randomize_domain=False, ee_dof=6)
     env = TimeLimit(env, max_episode_steps=20)    
     waitkey = 10
     resize_resolution = (height, width)
@@ -31,6 +31,7 @@ def main():
                 cv2.putText(front, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
                 cv2.imshow("front", cv2.cvtColor(front, cv2.COLOR_RGB2BGR))
                 cv2.waitKey(waitkey)
+                
             if i < 10:
                 action = np.array([0.5, 0.04, -0.07, 0.0, 0.0, 0.0, -0.2])
             elif i < 37:
@@ -44,10 +45,7 @@ def main():
             elif i < 70:
                 action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
 
-            # if i < 20:  
-            #     action = np.array([0.3, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])
-            # else:
-            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0])
+
 
             obs, reward, terminated, truncated, info = env.step(action)
             # print(f"i: {i}")

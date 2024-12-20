@@ -124,7 +124,7 @@
     <material name="table_surface" texture="plywood" specular="1" shininess="1"/>
     <material name="brick_wall" texture="brick_wall" texrepeat="2 2" specular="1" shininess="1"/>
     <material name="aluminium" texture="aluminium" texuniform="true" specular="1" shininess="1"/>
-    <material name="front_wall" texture="field" specular="1" shininess="1"/>
+    <material name="front_wall" texture="lab_0104" specular="1" shininess="1"/>
     <material name="floor" texture="Grass001" specular="1" shininess="1"/>
     <material name="strawberry_material" texture="strawberry_color" texuniform="true" specular="0.1" shininess="0.1" reflectance="0.5"/>
     <mesh name="link0_c" file="link0.stl"/>
@@ -460,7 +460,7 @@
                         <site name="aS_last" pos="0.0555556 0 0" group="3"/>
                         <body name="block" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
                           <geom name="block" type="mesh" group="3" density="800" mesh="strawberry_collision"/>
-                          <geom name="block_visual" type="mesh" contype="0" conaffinity="0" material="strawberry_material" rgba="0.9 0.5 0.1 1" mesh="strawberry"/>
+                          <geom name="block_visual" type="mesh" contype="0" conaffinity="0" material="strawberry_material" rgba="0.8 0.8 0.8 1" mesh="strawberry"/>
                           <geom name="stem" size="0.0007 0.02" pos="0 0.056 0" quat="0.707388 -0.706825 0 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
                           <site name="block_center" pos="0 0.02 0" size="0.01" group="3" rgba="0 1 0 1"/>
                           <site name="stem" pos="0.005 0.062 -0.0005" size="0.0012" group="3" rgba="0 0 1 1"/>
