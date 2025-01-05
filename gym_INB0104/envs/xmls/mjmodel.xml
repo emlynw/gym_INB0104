@@ -357,7 +357,7 @@
                           <joint name="finger_joint1" class="finger" pos="0 0 0" axis="0 1 0"/>
                           <geom class="visual" material="off_white" mesh="finger_0"/>
                           <geom class="collision" mesh="finger_0"/>
-                          <geom class="collision" friction="20" mesh="gripper_long"/>
+                          <geom class="collision" friction="2.0 0.1 0.05" mesh="gripper_long"/>
                           <geom class="visual" material="black" mesh="gripper_long"/>
                         </body>
                         <body name="right_finger" pos="0 0 0.0584" quat="0 0 0 1">
@@ -365,7 +365,7 @@
                           <joint name="finger_joint2" class="finger" pos="0 0 0" axis="0 1 0"/>
                           <geom class="visual" material="off_white" mesh="finger_0"/>
                           <geom class="collision" mesh="finger_0"/>
-                          <geom class="collision" friction="20" mesh="gripper_long"/>
+                          <geom class="collision" friction="2.0 0.1 0.05" mesh="gripper_long"/>
                           <geom class="visual" material="black" mesh="gripper_long"/>
                         </body>
                       </body>
@@ -461,7 +461,7 @@
                         <body name="block" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
                           <geom name="block" type="mesh" group="3" density="800" mesh="strawberry_collision"/>
                           <geom name="block_visual" type="mesh" contype="0" conaffinity="0" material="strawberry_material" rgba="0.8 0.8 0.8 1" mesh="strawberry"/>
-                          <geom name="stem" size="0.0007 0.02" pos="0 0.056 0" quat="0.707388 -0.706825 0 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                          <geom name="stem" size="0.0007 0.02" pos="0 0.056 0" quat="0.707388 -0.706825 0 0" friction="2.0 0.1 0.05" type="capsule" rgba="0.208 0.337 0.149 1"/>
                           <site name="block_center" pos="0 0.02 0" size="0.01" group="3" rgba="0 1 0 1"/>
                           <site name="stem" pos="0.005 0.062 -0.0005" size="0.0012" group="3" rgba="0 0 1 1"/>
                           <site name="stem_grasp" pos="0.0021 0.049 -0.0005" size="0.0012" group="3" rgba="0 0 1 1"/>

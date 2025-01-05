@@ -9,7 +9,7 @@ def main():
     render_mode = "rgb_array"
     height, width = 720, 720
     env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=height, width=width, render_mode=render_mode, randomize_domain=True, ee_dof=6)
-    env = TimeLimit(env, max_episode_steps=20)    
+    env = TimeLimit(env, max_episode_steps=100)    
     waitkey = 10
     resize_resolution = (height, width)
 
@@ -33,15 +33,15 @@ def main():
                 cv2.waitKey(waitkey)
 
             if i < 10:
-                action = np.array([0.5, 0.04, -0.07, 0.0, 0.0, 0.0, -0.2])
+                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, -0.2])
             elif i < 37:
-                action = np.array([0.15, 0.0, 0.0, 0.0, 0.0, 0.0, -0.2])
+                action = np.array([0.0, 0.0, 0.5, 0.0, 0.0, 0.0, -0.2])
             elif i < 45:
                 action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
             elif i < 50:
                 action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
             elif i < 60:
-                action = np.array([-0.2, 0.0, 0.02, 0.0, 0.0, 0.0, 0.2])
+                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
             elif i < 70:
                 action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
 

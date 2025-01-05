@@ -19,7 +19,7 @@ apply_floor_noise: true
 apply_skybox_noise: true
 wall_color_noise_range: [-0.1, 0.1]
 apply_object_noise: true
-target_pos_noise_low: [-0.45, -0.4, -0.2]
+target_pos_noise_low: [-0.3, -0.4, 0.0]
 target_pos_noise_high: [0.2, 0.4, 0.5]
 distract1_pos_noise_low: [-0.1, -0.05, -0.03]
 distract1_pos_noise_high: [0.02, 0.05, 0.03]

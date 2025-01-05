@@ -15,14 +15,14 @@ def mouse_callback(event, x, y, flags, param):
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachIKDeltaEnv", render_mode=render_mode, randomize_domain=True, ee_dof=4)
+    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", render_mode=render_mode, randomize_domain=True, ee_dof=6)
     env = TimeLimit(env, max_episode_steps=500)    
     waitkey = 10
     resize_resolution = (480, 480)
     gripper_closed = False
 
     # Define the range for absolute movement control
-    max_speed = 0.2  # Maximum speed in any direction
+    max_speed = 1.0  # Maximum speed in any direction
     rot_speed = 0.8  # Maximum rotation speed
 
     # Set up mouse callback
@@ -37,8 +37,9 @@ def main():
         while not terminated and not truncated:
             # Display the environment
             if render_mode == "rgb_array":
-                pixels = obs["images"]["front"]
+                pixels = obs["images"]["wrist2"]
                 cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), resize_resolution))
+                cv2.imshow("front", cv2.resize(cv2.cvtColor(obs["images"]["front"], cv2.COLOR_RGB2BGR), resize_resolution))
             
             # Calculate movement based on absolute mouse position within window
             move_left_right = ((mouse_x / resize_resolution[0]) * 2 - 1) * max_speed
@@ -46,12 +47,12 @@ def main():
 
             # Define movement actions for W and S keys (forward/backward)
             key = cv2.waitKey(waitkey) & 0xFF
-            move_action = np.array([0.0, move_left_right, move_up_down, 0.0, 1.0])  # Default move
+            move_action = np.array([0, move_left_right, move_up_down, 0.0, 1.0])  # Default move
 
             if key == ord('w'):
-                move_action[0] = -max_speed  # Forward
+                move_action[0] = max_speed  # Forward
             elif key == ord('s'):
-                move_action[0] = max_speed   # Backward
+                move_action[0] = -max_speed   # Backward
             elif key == ord('a'):
                 move_action[3] = -rot_speed
             elif key == ord('d'):
