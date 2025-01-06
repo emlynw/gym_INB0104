@@ -420,7 +420,6 @@
       <geom name="robot_base_plate" size="0.16 0.15 0.01" pos="0.14 0.43 1.05" type="box" material="aluminium"/>
       <geom name="right_tabletop" size="0.359 0.48 0.004" pos="0.661 0.54 1.044" quat="1.32679e-06 0 0 1" type="box" material="table_surface"/>
       <geom name="left_tabletop" size="0.359 0.538 0.004" pos="0.661 -0.482 1.044" quat="1.32679e-06 0 0 1" type="box" material="table_surface"/>
-      <site name="origin" pos="0 0 0" size="0.01" rgba="1 0 0 1"/>
     </body>
     <body name="front" pos="2.0 0 0.6" quat="0.536456 0.460733 0.4611 0.536029">
       <camera name="front" pos="0 0 0" fovy="41"/>

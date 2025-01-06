@@ -15,7 +15,7 @@ def mouse_callback(event, x, y, flags, param):
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", render_mode=render_mode, randomize_domain=True, ee_dof=6)
+    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", render_mode=render_mode, randomize_domain=True, ee_dof=4)
     env = TimeLimit(env, max_episode_steps=100)    
     waitkey = 10
     resize_resolution = (480, 480)
@@ -46,7 +46,7 @@ def main():
 
             # Define movement actions for W and S keys (forward/backward)
             key = cv2.waitKey(waitkey) & 0xFF
-            move_action = np.array([0, move_left_right, move_up_down, 0.0, 0.0, 0.0, 0.0])  # Default move
+            move_action = np.array([0, move_left_right, move_up_down, 0.0, 0.0])  # Default move
 
             if key == ord('w'):
                 move_action[0] = max_speed  # Forward
