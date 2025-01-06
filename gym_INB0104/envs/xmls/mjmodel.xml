@@ -604,6 +604,10 @@
     </fixed>
   </tendon>
 
+  <equality>
+    <joint joint1="finger_joint1" joint2="finger_joint2" solimp="0.95 0.99 0.001" solref="0.005 1"/>
+  </equality>
+
   <actuator>
     <general name="actuator1" class="panda" joint="joint1" forcerange="-87 87"/>
     <general name="actuator2" class="panda" joint="joint2" forcerange="-87 87"/>

@@ -9,7 +9,7 @@ def main():
     render_mode = "rgb_array"
     height, width = 720, 720
     env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=height, width=width, render_mode=render_mode, randomize_domain=True, ee_dof=6)
-    env = TimeLimit(env, max_episode_steps=100)    
+    env = TimeLimit(env, max_episode_steps=20)    
     waitkey = 10
     resize_resolution = (height, width)
 

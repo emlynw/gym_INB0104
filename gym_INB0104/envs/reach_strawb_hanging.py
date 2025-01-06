@@ -107,7 +107,9 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
 
     def setup(self):
         self._PANDA_HOME = np.array([0.0, -1.15, -0.12, -2.98, -0.14, 3.35, 0.84], dtype=np.float32)
-        self._GRIPPER_HOME = np.array([0.04, 0.04], dtype=np.float32)
+        self._GRIPPER_HOME = np.array([0.01, 0.01], dtype=np.float32)
+        self._GRIPPER_MIN = 0
+        self._GRIPPER_MAX = 100
         self._PANDA_XYZ = np.array([0.3, 0, 0.7], dtype=np.float32)
         self._CARTESIAN_BOUNDS = np.array([[0.2, -0.6, 0.01], [0.9, 0.6, 0.9]], dtype=np.float32)
         self._ROTATION_BOUNDS= np.array([[-np.pi, -np.pi, -np.pi], [np.pi, np.pi, np.pi]], dtype=np.float32)
@@ -124,9 +126,11 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.prev_grasp_time = 0.0
         self.prev_grasp = -1.0
         self.gripper_dict = {
-            "moving": np.array([1, 0], dtype=np.float32),
-            "grasping": np.array([0, 1], dtype=np.float32),
+            "stopped": np.array([1, 0, 0], dtype=np.float32),
+            "opening": np.array([0, 1, 0], dtype=np.float32),
+            "closing": np.array([0, 0, 1], dtype=np.float32),
         }
+        self.gripper_sleep = 0.5
 
         # Store initial values for randomization
         for camera_name in self.cameras:
@@ -282,6 +286,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
                 self.model.geom_contype[geom_id] = 1
                 self.model.geom_conaffinity[geom_id] = 1
                 self.model.geom_group[geom_id] = 0
+                self.model.geom('floor').group = 0
             front_wall_tex_id = np.random.choice(self.front_wall_tex_ids)
             self.model.mat_texid[self.model.mat('front_wall').id] = front_wall_tex_id
             channel = np.random.randint(0,3)
@@ -376,8 +381,6 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             self.wall_noise()
         if self.cfg.get("apply_floor_noise", False):
             self.floor_noise()
-        if self.cfg.get("apply_skybox_noise", False):
-            self.skybox_noise()
         if self.cfg.get("apply_object_noise", False):
             self.object_noise()
         self._viewer = MujocoRenderer(self.model, self.data,)
@@ -426,8 +429,8 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self._block2_init = self.data.sensor("block2_pos").data
         self._block3_init = self.data.sensor("block3_pos").data
 
-        self.gripper_vec = self.gripper_dict["moving"]
-        self.data.ctrl[self._gripper_ctrl_id] = 255
+        self.gripper_vec = self.gripper_dict["stopped"]
+        self.data.ctrl[self._gripper_ctrl_id] = self._GRIPPER_MAX // 2
         self.grasp = -1.0
         self.prev_grasp_time = 0.0
         self.prev_gripper_state = 0 # 0 for open, 1 for closed
@@ -440,21 +443,25 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         if np.array(action).shape != self.action_space.shape:
             raise ValueError("Action dimension mismatch")
         action = np.clip(action, self.action_space.low, self.action_space.high)
-        # Scale actions
+        # Scale actions (zyx because end effector frame z is along the gripper axis)
         if self.ee_dof == 3:
-            x, y, z, grasp = action
+            z, y, x, grasp = action
         elif self.ee_dof == 4:
-            x, y, z, yaw, grasp = action
+            z, y, x, yaw, grasp = action
             roll, pitch = 0, 0
             drot = np.array([roll, pitch, yaw]) * self.rot_scale
         elif self.ee_dof == 6:
-            x, y, z, roll, pitch, yaw, grasp = action
+            z, y, x, roll, pitch, yaw, grasp = action
             drot = np.array([roll, pitch, yaw]) * self.rot_scale
         dpos = np.array([x, y, z]) * self.pos_scale
         
         # Apply position change
         pos = self.data.sensor("pinch_pos").data
-        npos = np.clip(pos + dpos, *self._CARTESIAN_BOUNDS)
+        current_quat = np.roll(self.data.sensor("pinch_quat").data, -1)
+        current_rotation = Rotation.from_quat(current_quat)
+
+        dpos_world = current_rotation.apply(dpos)
+        npos = np.clip(pos + dpos_world, *self._CARTESIAN_BOUNDS)
         self.data.mocap_pos[0] = npos
 
         if self.ee_dof > 3:
@@ -477,25 +484,21 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             self.data.mocap_quat[0] = np.roll(final_rotation.as_quat(), 1)
 
         # Handle grasping
-        if self.data.time - self.prev_grasp_time < 0.5:
+        if self.data.time - self.prev_grasp_time < self.gripper_sleep:
             self.gripper_blocked = True
             grasp = self.prev_grasp
         else:
-            grasp = np.round(grasp,1)
-            if grasp == self.prev_grasp:
-                self.gripper_blocked = False
+            if grasp >= 0.5:
+                self.data.ctrl[self._gripper_ctrl_id] = max(self.data.ctrl[self._gripper_ctrl_id] - 10, self._GRIPPER_MIN)
+                self.prev_grasp_time = self.data.time
+                self.gripper_vec = self.gripper_dict["closing"]
+            elif grasp <= -0.5:
+                self.data.ctrl[self._gripper_ctrl_id] = min(self.data.ctrl[self._gripper_ctrl_id] + 10, self._GRIPPER_MAX)
+                self.prev_grasp_time = self.data.time
+                self.gripper_vec = self.gripper_dict["opening"]
             else:
-                if -1 <= grasp <= 0:
-                    self.data.ctrl[self._gripper_ctrl_id] = int(255 + (40 - 255) * (grasp + 1))
-                    self.prev_grasp_time = self.data.time
-                    self.prev_grasp = grasp
-                    self.gripper_vec = self.gripper_dict["moving"]
-                elif 0 < grasp <= 1:
-                    self.data.ctrl[self._gripper_ctrl_id] = 0
-                    self.prev_grasp_time = self.data.time
-                    self.prev_grasp = grasp
-                    self.gripper_vec = self.gripper_dict["grasping"]
-        self.grasp = grasp
+                self.gripper_blocked = False
+                self.gripper_vec = self.gripper_dict["stopped"]
 
         for _ in range(self._n_substeps):
             tau = opspace(

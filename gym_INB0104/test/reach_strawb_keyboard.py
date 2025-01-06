@@ -16,18 +16,17 @@ def mouse_callback(event, x, y, flags, param):
 def main():
     render_mode = "rgb_array"
     env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", render_mode=render_mode, randomize_domain=True, ee_dof=6)
-    env = TimeLimit(env, max_episode_steps=500)    
+    env = TimeLimit(env, max_episode_steps=100)    
     waitkey = 10
     resize_resolution = (480, 480)
-    gripper_closed = False
 
     # Define the range for absolute movement control
-    max_speed = 1.0  # Maximum speed in any direction
+    max_speed = 0.5  # Maximum speed in any direction
     rot_speed = 0.8  # Maximum rotation speed
 
     # Set up mouse callback
-    cv2.namedWindow("pixels")
-    cv2.setMouseCallback("pixels", mouse_callback)
+    cv2.namedWindow("wrist2")
+    cv2.setMouseCallback("wrist2", mouse_callback)
     
     while True:
         terminated = False
@@ -37,8 +36,8 @@ def main():
         while not terminated and not truncated:
             # Display the environment
             if render_mode == "rgb_array":
-                pixels = obs["images"]["wrist2"]
-                cv2.imshow("pixels", cv2.resize(cv2.cvtColor(pixels, cv2.COLOR_RGB2BGR), resize_resolution))
+                cv2.imshow("wrist2", cv2.resize(cv2.cvtColor(obs['images']['wrist2'], cv2.COLOR_RGB2BGR), resize_resolution))
+                cv2.imshow("wrist1", cv2.resize(cv2.cvtColor(obs["images"]["wrist1"], cv2.COLOR_RGB2BGR), resize_resolution))
                 cv2.imshow("front", cv2.resize(cv2.cvtColor(obs["images"]["front"], cv2.COLOR_RGB2BGR), resize_resolution))
             
             # Calculate movement based on absolute mouse position within window
@@ -47,7 +46,7 @@ def main():
 
             # Define movement actions for W and S keys (forward/backward)
             key = cv2.waitKey(waitkey) & 0xFF
-            move_action = np.array([0, move_left_right, move_up_down, 0.0, 1.0])  # Default move
+            move_action = np.array([0, move_left_right, move_up_down, 0.0, 0.0, 0.0, 0.0])  # Default move
 
             if key == ord('w'):
                 move_action[0] = max_speed  # Forward
@@ -60,10 +59,9 @@ def main():
 
             # Toggle gripper state with spacebar
             if key == ord(' '):
-                gripper_closed = not gripper_closed
-
-            # Set gripper action
-            move_action[4] = 1.0 if gripper_closed else -1.0
+                move_action[-1] = 1.0
+            elif key == ord('c'):
+                move_action[-1] = -1.0
 
             # Perform the action in the environment
             obs, reward, terminated, truncated, info = env.step(move_action)
