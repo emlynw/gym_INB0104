@@ -486,7 +486,6 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         # Handle grasping
         if self.data.time - self.prev_grasp_time < self.gripper_sleep:
             self.gripper_blocked = True
-            grasp = self.prev_grasp
         else:
             if grasp >= 0.5:
                 self.data.ctrl[self._gripper_ctrl_id] = max(self.data.ctrl[self._gripper_ctrl_id] - 10, self._GRIPPER_MIN)
@@ -553,7 +552,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         obs["state"]["panda/tcp_orientation"] = noisy_tcp_orientation.astype(np.float32)
         # obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
         obs["state"]["panda/gripper_pos"] = 25 * 2 * np.array([self.data.qpos[8]], dtype=np.float32) - 1
-        obs["state"]["panda/gripper_vec"] = np.concatenate([self.gripper_vec, [self.grasp], [int(self.gripper_blocked)]]).astype(np.float32)
+        obs["state"]["panda/gripper_vec"] = np.concatenate([self.gripper_vec, [int(self.gripper_blocked)]]).astype(np.float32)
 
         if not self.image_obs:
             obs["state"]["block_pos"] = self.data.sensor("block_pos").data.astype(np.float32)
