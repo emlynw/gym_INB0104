@@ -16,12 +16,12 @@ def mouse_callback(event, x, y, flags, param):
 def main():
     render_mode = "rgb_array"
     env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", render_mode=render_mode, randomize_domain=True, ee_dof=4)
-    env = TimeLimit(env, max_episode_steps=100)    
+    env = TimeLimit(env, max_episode_steps=200)    
     waitkey = 10
     resize_resolution = (480, 480)
 
     # Define the range for absolute movement control
-    max_speed = 0.5  # Maximum speed in any direction
+    max_speed = 0.1  # Maximum speed in any direction
     rot_speed = 0.8  # Maximum rotation speed
 
     # Set up mouse callback

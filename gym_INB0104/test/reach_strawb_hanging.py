@@ -8,8 +8,8 @@ np.set_printoptions(suppress=True)
 def main():
     render_mode = "rgb_array"
     height, width = 720, 720
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=height, width=width, render_mode=render_mode, randomize_domain=True, ee_dof=6)
-    env = TimeLimit(env, max_episode_steps=20)    
+    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=height, width=width, render_mode=render_mode, randomize_domain=False, ee_dof=6)
+    env = TimeLimit(env, max_episode_steps=40)    
     waitkey = 10
     resize_resolution = (height, width)
 
@@ -32,23 +32,28 @@ def main():
                 cv2.imshow("front", cv2.cvtColor(front, cv2.COLOR_RGB2BGR))
                 cv2.waitKey(waitkey)
 
-            if i < 10:
-                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, -0.2])
-            elif i < 37:
-                action = np.array([0.0, 0.0, 0.5, 0.0, 0.0, 0.0, -0.2])
-            elif i < 45:
-                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
-            elif i < 50:
-                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
-            elif i < 60:
-                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
-            elif i < 70:
-                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
+            # if i < 10:
+            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, -0.2])
+            # elif i < 37:
+            #     action = np.array([0.0, 0.0, 0.5, 0.0, 0.0, 0.0, -0.2])
+            # elif i < 45:
+            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
+            # elif i < 50:
+            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
+            # elif i < 60:
+            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
+            # elif i < 70:
+            #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
+
+            if i < 20:
+                action = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+            else:
+                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
 
             obs, reward, terminated, truncated, info = env.step(action)
             # print(f"i: {i}")
-            # print(f"cartesian pos: {obs['state']['panda/tcp_pos']}")
-            # print(f"cartesian ori: {obs['state']['panda/tcp_orientation']}")
+            print(f"cartesian pos: {obs['state']['panda/tcp_pos']}")
+            print(f"cartesian ori: {obs['state']['panda/tcp_orientation']}")
             # print(f"cartesian vel: {obs['state']['panda/tcp_vel']}")
             # print(f"gripper pos: {obs['state']['panda/gripper_pos']}")
             # print(f"gripper vec: {obs['state']['panda/gripper_vec']}")
