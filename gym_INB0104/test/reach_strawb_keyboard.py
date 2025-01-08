@@ -37,7 +37,9 @@ def main():
             # Display the environment
             if render_mode == "rgb_array":
                 cv2.imshow("wrist2", cv2.resize(cv2.cvtColor(obs['images']['wrist2'], cv2.COLOR_RGB2BGR), resize_resolution))
-                cv2.imshow("wrist1", cv2.resize(cv2.cvtColor(obs["images"]["wrist1"], cv2.COLOR_RGB2BGR), resize_resolution))
+                # Rotate wrist1 by 180 degrees
+                wrist1 = cv2.rotate(obs['images']['wrist1'], cv2.ROTATE_180)
+                cv2.imshow("wrist1", cv2.resize(cv2.cvtColor(wrist1, cv2.COLOR_RGB2BGR), resize_resolution))
                 cv2.imshow("front", cv2.resize(cv2.cvtColor(obs["images"]["front"], cv2.COLOR_RGB2BGR), resize_resolution))
             
             # Calculate movement based on absolute mouse position within window
@@ -53,9 +55,9 @@ def main():
             elif key == ord('s'):
                 move_action[0] = -max_speed   # Backward
             elif key == ord('a'):
-                move_action[3] = -rot_speed
-            elif key == ord('d'):
                 move_action[3] = rot_speed
+            elif key == ord('d'):
+                move_action[3] = -rot_speed
 
             # Toggle gripper state with spacebar
             if key == ord(' '):
