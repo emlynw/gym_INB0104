@@ -34,7 +34,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         randomize_domain=True,
         ee_dof = 6, # 3 for position, 3 for orientation
         control_dt=0.1,
-        physics_dt=0.001,
+        physics_dt=0.002,
         width=480,
         height=480,
         pos_scale=0.02,
@@ -61,7 +61,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
             {
                 "panda/tcp_pos": Box(np.array([0.2, -0.6, 0.01]), np.array([0.9, 0.6, 0.9]), shape=(3,), dtype=np.float32),
                 "panda/tcp_orientation": Box(-1, 1, shape=(4,), dtype=np.float32),  # Quaternion
-                # "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
+                "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
                 "panda/gripper_pos": Box(-1, 1, shape=(1,), dtype=np.float32),
                 "panda/gripper_vec": Box(0.0, 1.0, shape=(4,), dtype=np.float32),
             }
@@ -564,7 +564,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         # Populate noisy observations
         obs["state"]["panda/tcp_pos"] = noisy_tcp_pos.astype(np.float32)
         obs["state"]["panda/tcp_orientation"] = noisy_tcp_orientation.astype(np.float32)
-        # obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
+        obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
         obs["state"]["panda/gripper_pos"] = 25 * 2 * np.array([self.data.qpos[8]], dtype=np.float32) - 1
         obs["state"]["panda/gripper_vec"] = np.concatenate([self.gripper_vec, [int(self.gripper_blocked)]]).astype(np.float32)
 

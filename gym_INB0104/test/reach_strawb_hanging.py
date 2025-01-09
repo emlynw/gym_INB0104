@@ -3,12 +3,13 @@ from gymnasium.wrappers import TimeLimit
 import cv2
 from gym_INB0104 import envs
 import numpy as np
+import time
 np.set_printoptions(suppress=True)
 
 def main():
     render_mode = "rgb_array"
     height, width = 720, 720
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=height, width=width, render_mode=render_mode, randomize_domain=False, ee_dof=6)
+    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", cameras=['wrist1', 'wrist2'], height=height, width=width, render_mode=render_mode, randomize_domain=True, ee_dof=4)
     env = TimeLimit(env, max_episode_steps=40)    
     waitkey = 10
     resize_resolution = (height, width)
@@ -22,15 +23,15 @@ def main():
         while not terminated and not truncated:
             if render_mode == "rgb_array":
                 wrist1 = obs["images"]["wrist1"].copy()
-                wrist2 = obs["images"]["wrist2"].copy()
-                front = obs["images"]["front"].copy()
-                cv2.putText(wrist1, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
-                cv2.imshow("wrist1", cv2.cvtColor(wrist1, cv2.COLOR_RGB2BGR))
-                cv2.putText(wrist2, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
-                cv2.imshow("wrist2", cv2.cvtColor(wrist2, cv2.COLOR_RGB2BGR))
-                cv2.putText(front, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
-                cv2.imshow("front", cv2.cvtColor(front, cv2.COLOR_RGB2BGR))
-                cv2.waitKey(waitkey)
+                # wrist2 = obs["images"]["wrist2"].copy()
+                # front = obs["images"]["front"].copy()
+                # cv2.putText(wrist1, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
+                # cv2.imshow("wrist1", cv2.cvtColor(wrist1, cv2.COLOR_RGB2BGR))
+                # cv2.putText(wrist2, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
+                # cv2.imshow("wrist2", cv2.cvtColor(wrist2, cv2.COLOR_RGB2BGR))
+                # cv2.putText(front, f"{reward:.3f}", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA,)
+                # cv2.imshow("front", cv2.cvtColor(front, cv2.COLOR_RGB2BGR))
+                # cv2.waitKey(waitkey)
 
             # if i < 10:
             #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.5, -0.2])
@@ -46,11 +47,13 @@ def main():
             #     action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2])
 
             if i < 20:
-                action = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+                action = np.array([1.0, 0.0, 0.0, 0.0, 0.0])
             else:
-                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+                action = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
 
+            step_start = time.time()
             obs, reward, terminated, truncated, info = env.step(action)
+            print(f"step time: {time.time() - step_start}")
             # print(f"i: {i}")
             print(f"cartesian pos: {obs['state']['panda/tcp_pos']}")
             print(f"cartesian ori: {obs['state']['panda/tcp_orientation']}")

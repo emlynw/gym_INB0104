@@ -56,7 +56,7 @@ def opspace_4(
     max_ori_error: float = 0.01,
     delta_tau_max: float = 0.5,
     gravity_comp: bool = True,
-    damped: bool = True,
+    damped: bool = False,
     lambda_: float = 0.2,
 ) -> np.ndarray:
     
