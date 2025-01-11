@@ -4,6 +4,7 @@ import cv2
 from gym_INB0104 import envs
 import numpy as np
 np.set_printoptions(suppress=True)
+import torch
 
 import os
 import time
@@ -21,11 +22,11 @@ mouse_x, mouse_y = 0, 0  # Track mouse position
 cfg = get_cfg()
 cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"))
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 2
-cfg.MODEL.DEVICE = "cuda"  # Use GPU if available
-
-# Path to weights
+# cfg.MODEL.RPN.POST_NMS_TOPK_TEST = 1000  # Reduce from the default 2000
+# cfg.MODEL.MASK_ON = False
 cfg.MODEL.WEIGHTS = "/home/emlyn/Downloads/aoc_model.pth"
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.2  # Confidence threshold for predictions
+cfg.MODEL.DEVICE = "cuda"  # Use GPU if available
 
 # Initialize predictor
 predictor = DefaultPredictor(cfg)
@@ -39,11 +40,11 @@ def main():
     render_mode = "rgb_array"
     env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=720, width=720, render_mode=render_mode, randomize_domain=False, ee_dof=4)
     env = TimeLimit(env, max_episode_steps=200)    
-    waitkey = 1
+    waitkey = 1000
     resize_resolution = (480, 480)
 
     # Define the range for absolute movement control
-    max_speed = 0.5  # Maximum speed in any direction
+    max_speed = 0.2  # Maximum speed in any direction
     rot_speed = 0.8  # Maximum rotation speed
 
     # Set up mouse callback
@@ -64,12 +65,17 @@ def main():
                 # Rotate wrist1 by 180 degrees
                 # wrist1 = cv2.rotate(obs['images']['wrist1'], cv2.ROTATE_180)
                 # cv2.imshow("wrist1", cv2.resize(cv2.cvtColor(wrist1, cv2.COLOR_RGB2BGR), resize_resolution))
-                # cv2.imshow("front", cv2.resize(cv2.cvtColor(obs["images"]["front"], cv2.COLOR_RGB2BGR), resize_resolution))
+                cv2.imshow("front", cv2.resize(cv2.cvtColor(obs["images"]["front"], cv2.COLOR_RGB2BGR), resize_resolution))
             
             detection_time = time.time()
-            outputs = predictor(wrist2)
+            with torch.amp.autocast('cuda'):
+                outputs = predictor(wrist2)
+
             predictions = outputs["instances"].to("cpu")
             print("Detection time:", time.time() - detection_time)
+
+            print(f"Boxes: {predictions.pred_boxes}")
+            print(f"mask: {predictions.pred_masks}")
 
             # Visualize predictions
             visualizer = Visualizer(wrist2, metadata=None, scale=1.0, instance_mode=ColorMode.SEGMENTATION)
@@ -80,7 +86,6 @@ def main():
 
             # Show the image
             cv2.imshow("Predictions", predicted_image)
-            cv2.waitKey(1)
             
             # Calculate movement based on absolute mouse position within window
             move_left_right = ((mouse_x / resize_resolution[0]) * 2 - 1) * max_speed
@@ -88,7 +93,7 @@ def main():
 
             # Define movement actions for W and S keys (forward/backward)
             key = cv2.waitKey(waitkey) & 0xFF
-            move_action = np.array([0, move_left_right, move_up_down, 0.0, 1.0])  # Default move
+            move_action = np.array([0, move_left_right, move_up_down, 0.0, 0.0])  # Default move
 
             if key == ord('w'):
                 move_action[0] = max_speed  # Forward
