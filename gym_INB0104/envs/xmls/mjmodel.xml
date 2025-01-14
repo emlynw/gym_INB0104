@@ -430,32 +430,32 @@
     <body name="vine" pos="0.75 0 1.15" quat="0.707388 0 0.706825 0">
       <body name="aB_first">
         <joint name="aJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-        <geom name="aG0" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+        <geom name="aG0" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
         <site name="aS_first" pos="0 0 0" group="3"/>
         <body name="aB_1" pos="0.0555556 0 0">
           <joint name="aJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-          <geom name="aG1" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+          <geom name="aG1" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
           <body name="aB_2" pos="0.0555556 0 0">
             <joint name="aJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-            <geom name="aG2" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+            <geom name="aG2" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
             <body name="aB_3" pos="0.0555556 0 0">
               <joint name="aJ_3" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-              <geom name="aG3" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+              <geom name="aG3" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
               <body name="aB_4" pos="0.0555556 0 0">
                 <joint name="aJ_4" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                <geom name="aG4" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                <geom name="aG4" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                 <body name="aB_5" pos="0.0555556 0 0">
                   <joint name="aJ_5" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                  <geom name="aG5" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                  <geom name="aG5" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                   <body name="aB_6" pos="0.0555556 0 0">
                     <joint name="aJ_6" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                    <geom name="aG6" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                    <geom name="aG6" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                     <body name="aB_7" pos="0.0555556 0 0">
                       <joint name="aJ_7" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                      <geom name="aG7" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                      <geom name="aG7" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                       <body name="aB_last" pos="0.0555556 0 0">
                         <joint name="aJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                        <geom name="aG8" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                        <geom name="aG8" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                         <site name="aS_last" pos="0.0555556 0 0" group="3"/>
                         <body name="block" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
                           <geom name="block" type="mesh" group="3" density="800" mesh="strawberry_collision"/>
@@ -478,32 +478,32 @@
     <body name="vine2" pos="0.72 0.04 1.15" quat="0.707388 0 0.706825 0">
       <body name="bB_first">
         <joint name="bJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-        <geom name="bG0" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+        <geom name="bG0" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
         <site name="bS_first" pos="0 0 0" group="3"/>
         <body name="bB_1" pos="0.0555556 0 0">
           <joint name="bJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-          <geom name="bG1" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+          <geom name="bG1" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
           <body name="bB_2" pos="0.0555556 0 0">
             <joint name="bJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-            <geom name="bG2" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+            <geom name="bG2" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
             <body name="bB_3" pos="0.0555556 0 0">
               <joint name="bJ_3" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-              <geom name="bG3" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+              <geom name="bG3" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
               <body name="bB_4" pos="0.0555556 0 0">
                 <joint name="bJ_4" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                <geom name="bG4" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                <geom name="bG4" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                 <body name="bB_5" pos="0.0555556 0 0">
                   <joint name="bJ_5" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                  <geom name="bG5" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                  <geom name="bG5" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                   <body name="bB_6" pos="0.0555556 0 0">
                     <joint name="bJ_6" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                    <geom name="bG6" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                    <geom name="bG6" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                     <body name="bB_7" pos="0.0555556 0 0">
                       <joint name="bJ_7" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                      <geom name="bG7" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                      <geom name="bG7" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                       <body name="bB_last" pos="0.0555556 0 0">
                         <joint name="bJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                        <geom name="bG8" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                        <geom name="bG8" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                         <site name="bS_last" pos="0.0555556 0 0" group="3"/>
                         <body name="block2" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
                           <geom name="block2" type="mesh" group="3" density="800" mesh="strawberry_collision"/>
@@ -524,32 +524,32 @@
     <body name="vine3" pos="0.7 -0.03 1.15" quat="0.707388 0 0.706825 0">
       <body name="cB_first">
         <joint name="cJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-        <geom name="cG0" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+        <geom name="cG0" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
         <site name="cS_first" pos="0 0 0" group="3"/>
         <body name="cB_1" pos="0.0555556 0 0">
           <joint name="cJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-          <geom name="cG1" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+          <geom name="cG1" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
           <body name="cB_2" pos="0.0555556 0 0">
             <joint name="cJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-            <geom name="cG2" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+            <geom name="cG2" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
             <body name="cB_3" pos="0.0555556 0 0">
               <joint name="cJ_3" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-              <geom name="cG3" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+              <geom name="cG3" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
               <body name="cB_4" pos="0.0555556 0 0">
                 <joint name="cJ_4" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                <geom name="cG4" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                <geom name="cG4" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                 <body name="cB_5" pos="0.0555556 0 0">
                   <joint name="cJ_5" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                  <geom name="cG5" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                  <geom name="cG5" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                   <body name="cB_6" pos="0.0555556 0 0">
                     <joint name="cJ_6" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                    <geom name="cG6" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                    <geom name="cG6" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                     <body name="cB_7" pos="0.0555556 0 0">
                       <joint name="cJ_7" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                      <geom name="cG7" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                      <geom name="cG7" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                       <body name="cB_last" pos="0.0555556 0 0">
                         <joint name="cJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-                        <geom name="cG8" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+                        <geom name="cG8" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                         <site name="cS_last" pos="0.0555556 0 0" group="3"/>
                         <body name="block3" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
                           <geom name="block3" type="mesh" group="3" density="800" mesh="strawberry_collision"/>

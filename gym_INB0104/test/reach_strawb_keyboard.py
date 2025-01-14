@@ -15,13 +15,13 @@ def mouse_callback(event, x, y, flags, param):
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", render_mode=render_mode, randomize_domain=False, ee_dof=4)
-    env = TimeLimit(env, max_episode_steps=200)    
+    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", render_mode=render_mode, randomize_domain=True, ee_dof=4)
+    env = TimeLimit(env, max_episode_steps=500)    
     waitkey = 100
     resize_resolution = (480, 480)
 
     # Define the range for absolute movement control
-    max_speed = 0.1  # Maximum speed in any direction
+    max_speed = 0.2  # Maximum speed in any direction
     rot_speed = 0.8  # Maximum rotation speed
 
     # Set up mouse callback
@@ -32,8 +32,10 @@ def main():
         terminated = False
         truncated = False
         obs, info = env.reset()
+        i=0
         
-        while not terminated and not truncated:
+        while not (terminated or truncated):
+            i+=1
             # Display the environment
             if render_mode == "rgb_array":
                 cv2.imshow("wrist2", cv2.resize(cv2.cvtColor(obs['images']['wrist2'], cv2.COLOR_RGB2BGR), resize_resolution))
@@ -71,6 +73,7 @@ def main():
             # Reset environment on 'R' key press
             if key == ord('r'):
                 print("Resetting environment...")
+                i=0
                 obs, info = env.reset()  # Reset the environment
                 continue  # Start the loop again after reset
 
