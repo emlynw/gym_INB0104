@@ -514,10 +514,11 @@
                         <geom name="bG8" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                         <site name="bS_last" pos="0.0555556 0 0" group="3"/>
                         <body name="block2" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
-                          <geom name="block2" type="mesh" group="3" density="800" mesh="strawberry_collision"/>
-                          <geom name="block2_visual" type="mesh" contype="0" conaffinity="0" rgba="0.5 0.63 0.45 1" mesh="strawberry"/>
-                          <geom name="stem2" size="0.0007 0.02" pos="0 0.056 0" quat="0.707388 -0.706825 0 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-                          <site name="stem2" pos="0.005 0.062 -0.0005" size="0.0012" group="3" rgba="0 0 1 1"/>
+                          <geom name="block2" type="mesh" mesh="strawberry_2_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
+                          <geom name="block2_visual" type="mesh" mesh="strawberry_2" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/> 
+                          <geom name="strawberry_2_leaves2" type="mesh" mesh="strawberry_2_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_2_leaves" contype="0" conaffinity="0"/> 
+                          <geom name="stem2" type="capsule" size="0.0007 0.014" pos="0.0001 0.04 -0.0004" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
+                          <site name="stem2" pos="0.0004 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
                         </body>
                       </body>
                     </body>
@@ -560,10 +561,11 @@
                         <geom name="cG8" size="0.0007 0.0277778" pos="0.0277778 0 0" quat="0.707107 0 -0.707107 0" type="capsule" friction="2.0 0.1 0.05"  rgba="0.208 0.337 0.149 1"/>
                         <site name="cS_last" pos="0.0555556 0 0" group="3"/>
                         <body name="block3" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
-                          <geom name="block3" type="mesh" group="3" density="800" mesh="strawberry_collision"/>
-                          <geom name="block3_visual" type="mesh" contype="0" conaffinity="0" rgba="0.5 0.63 0.45 1" mesh="strawberry"/>
-                          <geom name="stem3" size="0.0007 0.02" pos="0 0.056 0" quat="0.707388 -0.706825 0 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-                          <site name="stem3" pos="0.005 0.062 -0.0005" size="0.0012" group="3" rgba="0 0 1 1"/>
+                          <geom name="block3" type="mesh" mesh="strawberry_2_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
+                          <geom name="block3_visual" type="mesh" mesh="strawberry_2" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/> 
+                          <geom name="strawberry_2_leaves3" type="mesh" mesh="strawberry_2_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_2_leaves" contype="0" conaffinity="0"/> 
+                          <geom name="stem3" type="capsule" size="0.0007 0.014" pos="0.0001 0.04 -0.0004" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
+                          <site name="stem3" pos="0.0004 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
                         </body>
                       </body>
                     </body>
