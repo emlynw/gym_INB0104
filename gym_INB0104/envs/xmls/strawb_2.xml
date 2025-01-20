@@ -23,8 +23,8 @@
       <geom name="strawberry_2_leaves" type="mesh" mesh="strawberry_2_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_2_leaves" contype="0" conaffinity="0"/> 
       <site name="block_center" pos="0 0.02 0" size="0.001" rgba="0 1 0 1" group="3"/>
       <geom name="stem" type="capsule" size="0.0007 0.014" pos="0.0001 0.04 -0.0004" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
-      <site name="stem" pos="0.0004 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
-      <site name="stem_grasp" pos="0.0004 0.038 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
+      <site name="stem" pos="0.0001 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
+      <site name="stem_grasp" pos="0.0001 0.038 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
     </body>
 
   
