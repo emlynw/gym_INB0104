@@ -1,0 +1,36 @@
+<mujoco model="strawb">
+
+  <compiler angle="radian" meshdir="franka_emika_panda/assets" autolimits="true"/>
+
+  <asset>
+    <texture name="strawberry_2_color" type="2d" file="textures/strawberry_2.png"/>
+    <texture name="strawberry_2_leaves" type="2d" file="textures/strawberry_2_leaves.png"/>
+    <material name="strawberry_2_material" shininess="0.1" specular="0.1" reflectance="0.1" texuniform="true"/>
+    <material name="strawberry_2_leaves" texture="strawberry_2_leaves" shininess="0.1" specular="0.1" reflectance="0.5" texuniform="true"/>
+    <mesh name="strawberry_2" file="strawberry_2.obj" scale="0.1 0.1 0.1"/>
+    <mesh name="strawberry_2_leaves" file="strawberry_2_leaves.obj" scale="0.1 0.1 0.1"/>
+    <mesh name="strawberry_2_collision" file="strawberry_2.obj" scale="0.1 0.1 0.1"/>
+  </asset>  
+
+  <worldbody>
+    
+
+    <!-- target object -->
+    <body name="block" pos="0.55 0.02 0.02" euler="0 0 1.57">
+      <freejoint name="block"/>
+      <geom name="block" type="mesh" mesh="strawberry_2_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
+      <geom name="block_visual" type="mesh" mesh="strawberry_2" rgba="0.9 0.2 0.2 1.0" contype="0" conaffinity="0"/> 
+      <geom name="strawberry_2_leaves" type="mesh" mesh="strawberry_2_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_2_leaves" contype="0" conaffinity="0"/> 
+      <site name="block_center" pos="0 0.02 0" size="0.001" rgba="0 1 0 1" group="3"/>
+      <geom name="stem" type="capsule" size="0.0007 0.014" pos="0.0001 0.04 -0.0004" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
+      <site name="stem" pos="0.0004 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
+      <site name="stem_grasp" pos="0.0004 0.038 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
+    </body>
+
+  
+
+  </worldbody>
+
+
+
+</mujoco>

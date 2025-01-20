@@ -5,6 +5,7 @@ from gym_INB0104 import envs
 import numpy as np
 np.set_printoptions(suppress=True)
 import math
+import time
 
 from detection_wrapper import DetectionAreaWrapper
 
@@ -17,20 +18,25 @@ def mouse_callback(event, x, y, flags, param):
         mouse_x, mouse_y = x, y
 
 def main():
+
+    detect_cam = "wrist1"
+    control_cam = "wrist1"
+    rotate_180 = "True"
+
     render_mode = "rgb_array"
     env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=720, width=720, render_mode=render_mode, randomize_domain=False, ee_dof=4)
     env = TimeLimit(env, max_episode_steps=200)    
-    env = DetectionAreaWrapper(env)
-    waitkey = 1000
+    env = DetectionAreaWrapper(env, detect_cam=detect_cam)
+    waitkey = 100
     resize_resolution = (480, 480)
 
     # Define the range for absolute movement control
-    max_speed = 0.2  # Maximum speed in any direction
+    max_speed = 0.5  # Maximum speed in any direction
     rot_speed = 0.8  # Maximum rotation speed
 
     # Set up mouse callback
-    cv2.namedWindow("wrist2")
-    cv2.setMouseCallback("wrist2", mouse_callback)
+    cv2.namedWindow(control_cam)
+    cv2.setMouseCallback(control_cam, mouse_callback)
     
     while True:
         terminated = False
@@ -38,13 +44,14 @@ def main():
         obs, info = env.reset()
         
         while not terminated and not truncated:
+            step_start_time = time.time()
             detection = obs["detection"]  # (found, x_norm, y_norm, area)
             found, x_norm, y_norm, area_frac = detection
             print(f"detection: {detection}")
 
             if render_mode == "rgb_array":
-                wrist2 = obs['images']['wrist2']
-                H, W, _ = wrist2.shape
+                detect_img = obs['images'][detect_cam]
+                H, W, _ = detect_img.shape
 
                 # -----------------------------------------------------
                 # 1) Overlay centroid + circle if detection found
@@ -59,32 +66,32 @@ def main():
                     radius = int(math.sqrt(area_pixels / math.pi))
 
                     # -----------------------------
-                    # Convert wrist2 to a valid OpenCV format
+                    # Convert detect_img to a valid OpenCV format
                     # -----------------------------
                     # 1) Make a copy so that you don't alter the original obs.
-                    wrist2_draw = wrist2.copy()
+                    detect_img_draw = detect_img.copy()
                     
-                    # 2) If wrist2 is float32, convert to uint8
+                    # 2) If detect_img is float32, convert to uint8
                     #    Make sure to clamp to [0,255] before casting.
-                    if wrist2_draw.dtype != np.uint8:
-                        wrist2_draw = np.clip(wrist2_draw, 0, 255).astype(np.uint8)
+                    if detect_img_draw.dtype != np.uint8:
+                        detect_img_draw = np.clip(detect_img_draw, 0, 255).astype(np.uint8)
                     
                     # 3) Convert from RGB to BGR for OpenCV
-                    wrist2_draw = cv2.cvtColor(wrist2_draw, cv2.COLOR_RGB2BGR)
+                    detect_img_draw = cv2.cvtColor(detect_img_draw, cv2.COLOR_RGB2BGR)
 
                     # -----------------------------
                     # Draw the circle(s)
                     # -----------------------------
                     # Draw a circle whose radius approximates the detected mask area
-                    cv2.circle(wrist2_draw, (center_x, center_y), radius, (0, 255, 0), 2)
+                    cv2.circle(detect_img_draw, (center_x, center_y), radius, (0, 255, 0), 2)
                     
                     # Draw a small filled circle at the centroid
-                    cv2.circle(wrist2_draw, (center_x, center_y), 5, (0, 0, 255), -1)
+                    cv2.circle(detect_img_draw, (center_x, center_y), 5, (0, 0, 255), -1)
 
                     # Optionally add text showing the area fraction
                     text = f"Area={area_frac:.3f}"
                     cv2.putText(
-                        wrist2_draw,
+                        detect_img_draw,
                         text,
                         (center_x + 10, center_y + 10),
                         cv2.FONT_HERSHEY_SIMPLEX,
@@ -93,23 +100,27 @@ def main():
                         1
                     )
 
-                    # Now display wrist2_draw
-                    cv2.imshow("wrist2", wrist2_draw)
+                    # Now display detect_img_draw
+                    if rotate_180:
+                        detect_img_draw = cv2.rotate(detect_img_draw, cv2.ROTATE_180)
+                    cv2.imshow(detect_cam, cv2.resize(detect_img_draw, resize_resolution))
 
                 else:
                     # If not found, just display the original image
                     # but still ensure it's a valid format for display
-                    wrist2_draw = wrist2.copy()
-                    if wrist2_draw.dtype != np.uint8:
-                        wrist2_draw = np.clip(wrist2_draw, 0, 255).astype(np.uint8)
-                    wrist2_draw = cv2.cvtColor(wrist2_draw, cv2.COLOR_RGB2BGR)
-                    cv2.imshow("wrist2", wrist2_draw)
+                    detect_img_draw = detect_img.copy()
+                    if detect_img_draw.dtype != np.uint8:
+                        detect_img_draw = np.clip(detect_img_draw, 0, 255).astype(np.uint8)
+                    detect_img_draw = cv2.cvtColor(detect_img_draw, cv2.COLOR_RGB2BGR)
+                    if rotate_180:
+                        detect_img_draw = cv2.rotate(detect_img_draw, cv2.ROTATE_180)
+                    cv2.imshow(detect_cam, cv2.resize(detect_img_draw, resize_resolution))
                                 
                 # Optionally show other cameras resized
-                cv2.imshow(
-                    "front",
-                    cv2.resize(cv2.cvtColor(obs["images"]["front"], cv2.COLOR_RGB2BGR), resize_resolution)
-                )
+                if detect_cam != control_cam:
+                    cv2.imshow(control_cam, cv2.resize(cv2.cvtColor(obs["images"][control_cam], cv2.COLOR_RGB2BGR), resize_resolution))
+
+                cv2.imshow("front", cv2.resize(cv2.cvtColor(obs["images"]["front"], cv2.COLOR_RGB2BGR), resize_resolution))
 
             
             # Calculate movement based on absolute mouse position within window
@@ -136,6 +147,10 @@ def main():
                 move_action[-1] = -1.0
 
             # Perform the action in the environment
+            
+            step_time = time.time()-step_start_time
+            if step_time < waitkey/1000:
+                time.sleep(waitkey/1000 - step_time)
             obs, reward, terminated, truncated, info = env.step(move_action)
 
             # Reset environment on 'R' key press

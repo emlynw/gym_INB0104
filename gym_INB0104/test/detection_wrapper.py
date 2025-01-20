@@ -21,8 +21,10 @@ class DetectionAreaWrapper(gym.ObservationWrapper):
     The predictor is initialized in __init__.
     """
 
-    def __init__(self, env, model_weights_path="/home/emlyn/Downloads/aoc_model.pth"):
+    def __init__(self, env, detect_cam = "wrist1", model_weights_path="/home/emlyn/Downloads/aoc_model.pth"):
         super().__init__(env)
+
+        self.detect_cam = detect_cam
         
         # -----------------------------
         # 1) Initialize Detectron2 predictor here in the wrapper
@@ -60,17 +62,17 @@ class DetectionAreaWrapper(gym.ObservationWrapper):
 
     def observation(self, obs):
         """
-        Runs the Detectron2 model on obs["images"]["wrist2"], finds the class=1
+        Runs the Detectron2 model on obs["images"][detect_camera], finds the class=1
         instance with the LARGEST mask area, and adds detection to obs.
         The (x_norm, y_norm) is the centroid of the mask in [-1,1].
         """
         # Fetch image
-        wrist2 = obs["images"]["wrist2"]
-        H, W, _ = wrist2.shape
+        detect_img = obs["images"][self.detect_cam]
+        H, W, _ = detect_img.shape
 
         # Run prediction (you can disable autocast if you prefer)
         with torch.amp.autocast(device_type='cuda', enabled=True):
-            outputs = self.predictor(wrist2)
+            outputs = self.predictor(detect_img)
         instances = outputs["instances"].to("cpu")
 
         # If no predictions, or no class=1 predictions
@@ -120,49 +122,3 @@ class DetectionAreaWrapper(gym.ObservationWrapper):
 
         obs["detection"] = np.array([1.0, x_norm, y_norm, mask_area_frac], dtype=np.float32)
         return obs
-
-
-def main():
-    # Example usage:
-    import cv2
-    from gymnasium.wrappers import TimeLimit
-
-    render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv",
-                   height=720,
-                   width=720,
-                   render_mode=render_mode,
-                   randomize_domain=False,
-                   ee_dof=4)
-    
-    # Wrap with our detection wrapper
-    env = DetectionAreaWrapper(env, model_weights_path="/home/emlyn/Downloads/aoc_model.pth")
-    env = TimeLimit(env, max_episode_steps=200)
-
-    obs, info = env.reset()
-    done = False
-
-    while not done:
-        # The observation dict now has obs["detection"] = (found, x_norm, y_norm, area)
-        detection = obs["detection"]
-        found, x_norm, y_norm, area = detection
-        print("Detection vector:", detection)
-
-        if render_mode == "rgb_array":
-            wrist2_img = obs["images"]["wrist2"]
-            cv2.imshow("wrist2", cv2.cvtColor(wrist2_img, cv2.COLOR_RGB2BGR))
-            key = cv2.waitKey(1)
-            if key == 27:  # ESC to exit
-                break
-
-        # Dummy action
-        action = np.zeros(env.action_space.shape, dtype=np.float32)
-        obs, reward, done, truncated, info = env.step(action)
-        done = done or truncated
-
-    env.close()
-    cv2.destroyAllWindows()
-
-
-if __name__ == "__main__":
-    main()
