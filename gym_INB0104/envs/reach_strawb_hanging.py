@@ -54,12 +54,21 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.rot_scale = rot_scale
         self.cameras = cameras
 
+        self._PANDA_HOME = np.array([0.0, -1.6, 0.0, -2.54, -0.05, 2.49, 0.822], dtype=np.float32)
+        self._GRIPPER_HOME = np.array([0.01, 0.01], dtype=np.float32)
+        self._GRIPPER_MIN = 0
+        self._GRIPPER_MAX = 100
+        self._PANDA_XYZ = np.array([0.4, 0, 0.7], dtype=np.float32)
+        self._CARTESIAN_BOUNDS = np.array([[0.05, -0.35, 0.01], [0.8, 0.35, 1.0]], dtype=np.float32)
+        self._ROTATION_BOUNDS= np.array([[-np.pi/2, -np.pi/2, -np.pi/2], [np.pi/2, np.pi/2, np.pi/2]], dtype=np.float32)
+        self.default_obj_pos = np.array([0.6, 0, 0.8])
+
         config_path = Path(__file__).parent.parent / "configs" / "strawb_hanging.yaml"
         self.cfg = load_config(config_path)
 
         state_space = Dict(
             {
-                "panda/tcp_pos": Box(np.array([0.2, -0.6, 0.01]), np.array([0.9, 0.6, 0.9]), shape=(3,), dtype=np.float32),
+                "panda/tcp_pos": Box(self._CARTESIAN_BOUNDS[0], self._CARTESIAN_BOUNDS[1], shape=(3,), dtype=np.float32),
                 "panda/tcp_orientation": Box(-1, 1, shape=(4,), dtype=np.float32),  # Quaternion
                 "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
                 "panda/gripper_pos": Box(-1, 1, shape=(1,), dtype=np.float32),
@@ -106,15 +115,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
         self.setup()
 
     def setup(self):
-        self._PANDA_HOME = np.array([0.0, -0.95, -0.0, -2.63, -0.11, 3.21, 0.87], dtype=np.float32)
-        self._GRIPPER_HOME = np.array([0.01, 0.01], dtype=np.float32)
-        self._GRIPPER_MIN = 0
-        self._GRIPPER_MAX = 100
-        self._PANDA_XYZ = np.array([0.4, 0, 0.7], dtype=np.float32)
-        self._CARTESIAN_BOUNDS = np.array([[0.2, -0.6, 0.01], [0.9, 0.6, 0.9]], dtype=np.float32)
-        self._ROTATION_BOUNDS= np.array([[-np.pi, -np.pi, -np.pi], [np.pi, np.pi, np.pi]], dtype=np.float32)
 
-        self.default_obj_pos = np.array([0.6, 0, 0.8])
         self._panda_dof_ids = np.array([self.model.joint(f"joint{i}").id for i in range(1, 8)])
         self._panda_ctrl_ids = np.array([self.model.actuator(f"actuator{i}").id for i in range(1, 8)])
         self._gripper_ctrl_id = self.model.actuator("fingers_actuator").id
@@ -172,7 +173,7 @@ class ReachIKDeltaStrawbHangingEnv(MujocoEnv, utils.EzPickle):
 
         self.initial_vine_rotation = Rotation.from_quat(np.roll(self.model.body_quat[self.model.body("vine").id], -1))
 
-        self.initial_position = np.array([0.4, 0.0, 0.7])
+        self.initial_position = np.array([0.15, 0.0, 0.8])
         # Add this line to set the initial orientation
         self.initial_orientation = [0.725, 0.0, 0.688, 0.0]
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)

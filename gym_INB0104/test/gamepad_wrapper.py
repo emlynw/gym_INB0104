@@ -27,9 +27,9 @@ class GamepadExpert:
         self.translation_speeds = translation_speeds
         self.rotation_speeds    = rotation_speeds
 
-        # Start in the middle of the range, or wherever you prefer
-        self.trans_idx = len(self.translation_speeds) // 2
-        self.rot_idx   = len(self.rotation_speeds)    // 2
+        # Start on fastest
+        self.trans_idx = len(self.translation_speeds)-1
+        self.rot_idx   = len(self.rotation_speeds)-1
 
         self.dead_zone = dead_zone
 
