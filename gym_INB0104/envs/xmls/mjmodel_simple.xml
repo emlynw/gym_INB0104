@@ -385,6 +385,9 @@
         </body>
       </body>
     </body>
+    <body name="front" pos="2.0 0 0.6" quat="0.536456 0.460733 0.4611 0.536029">
+      <camera name="front" pos="0 0 0" fovy="41"/>
+    </body>
     <body name="light0" pos="0.3 0 1.6">
       <site name="light0" pos="0 0 0" size="0.02" rgba="1 1 1 1"/>
       <light pos="0 0 0" dir="0 0 -1" ambient="0.1 0.1 0.1" diffuse="0.2 0.2 0.2"/>
