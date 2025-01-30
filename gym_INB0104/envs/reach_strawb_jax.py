@@ -13,6 +13,13 @@ from pathlib import Path
 from scipy.spatial.transform import Rotation
 import yaml
 from pathlib import Path
+# Add these imports at the top
+import jax
+import jax.numpy as jnp
+from jax import jit
+from functools import partial
+from gym_INB0104.controllers import opspace_jax as jax_controller
+jax.config.update("jax_enable_x64", True)
 import time
 
 def load_config(config_path):
@@ -24,7 +31,7 @@ DEFAULT_CAMERA_CONFIG = {
     "distance": 4.0,
     }
 
-class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
+class ReachStrawbJaxEnv(MujocoEnv, utils.EzPickle):
     metadata = { 
         "render_modes": ["human", "rgb_array", "depth_array"], 
     }
@@ -113,6 +120,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             dtype=np.float32,
         )
         self._viewer = MujocoRenderer(self.model, self.data,)
+        
         self.setup()
 
     def setup(self):
@@ -323,6 +331,28 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.data.mocap_quat[0] = self.data.sensor("pinch_quat").data.copy()
         mujoco.mj_step(self.model, self.data)
 
+    def _get_jax_params(self):
+        """Extract and convert MuJoCo parameters to JAX arrays"""
+        # Get Jacobians
+        J_v = np.zeros((3, self.model.nv), dtype=np.float64)
+        J_w = np.zeros((3, self.model.nv), dtype=np.float64)
+        mujoco.mj_jacSite(self.model, self.data, J_v, J_w, self._pinch_site_id)
+        J_v, J_w = J_v[:, self._panda_dof_ids], J_w[:, self._panda_dof_ids]
+
+        return {
+            'site_xpos': jnp.array(self.data.site_xpos[self._pinch_site_id]),
+            'site_xmat': jnp.array(self.data.site_xmat[self._pinch_site_id]),
+            'q': jnp.array(self.data.qpos[self._panda_dof_ids]),
+            'dq': jnp.array(self.data.qvel[self._panda_dof_ids]),
+            'J_v': jnp.array(J_v),
+            'J_w': jnp.array(J_w),
+            'qfrc_bias': jnp.array(self.data.qfrc_bias[self._panda_dof_ids]),
+            'qpos_actuator': jnp.array(self.data.qfrc_actuator[self._panda_dof_ids]),
+            'pos_des': jnp.array(self.data.mocap_pos[0]),
+            'ori_des': jnp.array(self.data.mocap_quat[0]),
+            'joint_des': jnp.array(self._PANDA_HOME)
+        }
+
 
     def reset_model(self):
         self.reset_arm_and_gripper()
@@ -340,17 +370,23 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             self.data.mocap_quat[0] = self.initial_orientation
 
         for _ in range(2*self._n_substeps):
-            tau = opspace(
-                model=self.model,
-                data=self.data,
-                site_id=self._pinch_site_id,
-                dof_ids=self._panda_dof_ids,
-                pos=self.data.mocap_pos[0],
-                ori=self.data.mocap_quat[0],
-                joint=self._PANDA_HOME,
-                gravity_comp=True,
+
+            jax_params = self._get_jax_params()
+            # Call JIT-compiled JAX controller
+            tau = jax_controller.opspace_jax(
+                **jax_params,
+                pos_gains=jnp.array([1500.0, 1500.0, 1500.0]),
+                ori_gains=jnp.array([200.0, 200.0, 200.0]),
+                joint_upper_limits=jnp.array([2.8, 1.7, 2.8, -0.08, 2.8, 3.74, 2.8]),
+                joint_lower_limits=jnp.array([-2.8, -1.7, -2.8, -3.0, -2.8, -0.010, -2.8]),
+                translational_damping=89.0,
+                rotational_damping=7.0,
+                nullspace_stiffness=0.2,
+                joint1_nullspace_stiffness=100.0,
+                gravity_comp=True
             )
-            self.data.ctrl[self._panda_ctrl_ids] = tau
+            # Convert back to numpy array for MuJoCo
+            self.data.ctrl[self._panda_ctrl_ids] = np.array(tau)
             mujoco.mj_step(self.model, self.data)
         
         self._block_init = self.data.sensor("block_pos").data
@@ -441,19 +477,26 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
 
         controller_start_time = time.time()
         for _ in range(self._n_substeps):
-            tau = opspace(
-                model=self.model,
-                data=self.data,
-                site_id=self._pinch_site_id,
-                dof_ids=self._panda_dof_ids,
-                pos=self.data.mocap_pos[0],
-                ori=self.data.mocap_quat[0],
-                joint=self._PANDA_HOME,
-                gravity_comp=True,
+
+            jax_params = self._get_jax_params()
+
+
+            tau = jax_controller.opspace_jax(
+                **jax_params,
+                pos_gains=jnp.array([1500.0, 1500.0, 1500.0]),
+                ori_gains=jnp.array([200.0, 200.0, 200.0]),
+                joint_upper_limits=jnp.array([2.8, 1.7, 2.8, -0.08, 2.8, 3.74, 2.8]),
+                joint_lower_limits=jnp.array([-2.8, -1.7, -2.8, -3.0, -2.8, -0.010, -2.8]),
+                translational_damping=89.0,
+                rotational_damping=7.0,
+                nullspace_stiffness=0.2,
+                joint1_nullspace_stiffness=100.0,
+                gravity_comp=True
             )
-            self.data.ctrl[self._panda_ctrl_ids] = tau
+            self.data.ctrl[self._panda_ctrl_ids] = np.array(tau)
             mujoco.mj_step(self.model, self.data)
-        print(f"controller time: {time.time()-controller_start_time}")
+
+        print(f"controller time: {time.time() - controller_start_time}")
 
         # Observation
         obs = self._get_obs()

@@ -4,6 +4,8 @@ register(id="gym_INB0104/ReachDeltaEnv-v0", entry_point="gym_INB0104.envs:ReachD
 register(id="gym_INB0104/ReachIKDeltaEnv-v0", entry_point="gym_INB0104.envs:ReachIKDeltaEnv" , max_episode_steps=1000)
 register(id="gym_INB0104/ReachIKDeltaStrawbHangingEnv-v0", entry_point="gym_INB0104.envs:ReachIKDeltaStrawbHangingEnv" , max_episode_steps=1000)
 register(id="gym_INB0104/ReachStrawbEnv-v0", entry_point="gym_INB0104.envs:ReachStrawbEnv" , max_episode_steps=1000)
+register(id="gym_INB0104/ReachStrawbJaxEnv-v0", entry_point="gym_INB0104.envs:ReachStrawbJaxEnv" , max_episode_steps=1000)
+
 register(id="gym_INB0104/ReachIKDeltaStrawbTableEnv-v0", entry_point="gym_INB0104.envs:ReachIKDeltaStrawbTableEnv" , max_episode_steps=1000)
 register(id="gym_INB0104/ReachIKAbsEnv-v0", entry_point="gym_INB0104.envs:ReachIKAbsEnv" , max_episode_steps=1000)
 register(id="gym_INB0104/push_ik_abs-v0", entry_point="gym_INB0104.envs:push_ik_abs" , max_episode_steps=1000)
