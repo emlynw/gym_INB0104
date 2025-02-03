@@ -439,7 +439,6 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
                 self.prev_grasp = grasp
                 self.gripper_vec = self.gripper_dict["stopped"]
 
-        controller_start_time = time.time()
         for _ in range(self._n_substeps):
             tau = opspace(
                 model=self.model,
@@ -453,7 +452,6 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             )
             self.data.ctrl[self._panda_ctrl_ids] = tau
             mujoco.mj_step(self.model, self.data)
-        print(f"controller time: {time.time()-controller_start_time}")
 
         # Observation
         obs = self._get_obs()

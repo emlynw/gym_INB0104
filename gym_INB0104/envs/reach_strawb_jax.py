@@ -375,15 +375,6 @@ class ReachStrawbJaxEnv(MujocoEnv, utils.EzPickle):
             # Call JIT-compiled JAX controller
             tau = jax_controller.opspace_jax(
                 **jax_params,
-                pos_gains=jnp.array([1500.0, 1500.0, 1500.0]),
-                ori_gains=jnp.array([200.0, 200.0, 200.0]),
-                joint_upper_limits=jnp.array([2.8, 1.7, 2.8, -0.08, 2.8, 3.74, 2.8]),
-                joint_lower_limits=jnp.array([-2.8, -1.7, -2.8, -3.0, -2.8, -0.010, -2.8]),
-                translational_damping=89.0,
-                rotational_damping=7.0,
-                nullspace_stiffness=0.2,
-                joint1_nullspace_stiffness=100.0,
-                gravity_comp=True
             )
             # Convert back to numpy array for MuJoCo
             self.data.ctrl[self._panda_ctrl_ids] = np.array(tau)
@@ -483,15 +474,6 @@ class ReachStrawbJaxEnv(MujocoEnv, utils.EzPickle):
 
             tau = jax_controller.opspace_jax(
                 **jax_params,
-                pos_gains=jnp.array([1500.0, 1500.0, 1500.0]),
-                ori_gains=jnp.array([200.0, 200.0, 200.0]),
-                joint_upper_limits=jnp.array([2.8, 1.7, 2.8, -0.08, 2.8, 3.74, 2.8]),
-                joint_lower_limits=jnp.array([-2.8, -1.7, -2.8, -3.0, -2.8, -0.010, -2.8]),
-                translational_damping=89.0,
-                rotational_damping=7.0,
-                nullspace_stiffness=0.2,
-                joint1_nullspace_stiffness=100.0,
-                gravity_comp=True
             )
             self.data.ctrl[self._panda_ctrl_ids] = np.array(tau)
             mujoco.mj_step(self.model, self.data)

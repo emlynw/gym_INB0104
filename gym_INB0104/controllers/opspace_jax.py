@@ -119,7 +119,6 @@ def opspace_jax(
     max_pos_error=0.01,
     max_ori_error=0.01,
     delta_tau_max=0.5,
-    gravity_comp=True,
     damped=False,
     lambda_=0.2,
 ):
@@ -162,7 +161,6 @@ def opspace_jax(
     mask_lower = (q <= joint_lower_limits) & (tau < 0)
     tau = jnp.where(mask_upper | mask_lower, 0.0, tau)
 
-    if gravity_comp:
-        tau += qfrc_bias
+    tau += qfrc_bias
 
     return saturate_torque_rate(tau, qpos_actuator, delta_tau_max)
