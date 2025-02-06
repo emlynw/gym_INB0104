@@ -56,12 +56,12 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.cameras = cameras
 
         self._PANDA_HOME = np.array([0.0, -1.6, 0.0, -2.54, -0.05, 2.49, 0.822], dtype=np.float32)
-        self._GRIPPER_HOME = np.array([0.0141, 0.0141], dtype=np.float32)
+        self._GRIPPER_HOME = np.array([0.01, 0.01], dtype=np.float32)
         self._GRIPPER_MIN = 0
-        self._GRIPPER_MAX = 45
+        self._GRIPPER_MAX = 100
         self._PANDA_XYZ = np.array([0.4, 0, 0.7], dtype=np.float32)
-        self._CARTESIAN_BOUNDS = np.array([[0.05, -0.2, 0.7], [0.55, 0.2, 0.95]], dtype=np.float32)
-        self._ROTATION_BOUNDS = np.array([[-np.pi/3, -np.pi/10, -np.pi/10],[np.pi/3, np.pi/10, np.pi/10]], dtype=np.float32)
+        self._CARTESIAN_BOUNDS = np.array([[0.05, -0.35, 0.01], [0.8, 0.35, 1.0]], dtype=np.float32)
+        self._ROTATION_BOUNDS= np.array([[-np.pi/2, -np.pi/2, -np.pi/2], [np.pi/2, np.pi/2, np.pi/2]], dtype=np.float32)
         self.default_obj_pos = np.array([0.6, 0, 0.8])
 
         config_path = Path(__file__).parent.parent / "configs" / "strawb_hanging.yaml"
@@ -69,9 +69,11 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
 
         state_space = Dict(
             {
-                "tcp_pose": Box(-np.inf, np.inf, shape=(7,), dtype=np.float32),
-                "tcp_vel": Box(-np.inf, np.inf, shape=(6,), dtype=np.float32),
-                "gripper_pos": Box(-1, 1, shape=(1,), dtype=np.float32),
+                "panda/tcp_pos": Box(self._CARTESIAN_BOUNDS[0], self._CARTESIAN_BOUNDS[1], shape=(3,), dtype=np.float32),
+                "panda/tcp_orientation": Box(-1, 1, shape=(4,), dtype=np.float32),  # Quaternion
+                "panda/tcp_vel": Box(-np.inf, np.inf, shape=(3,), dtype=np.float32),
+                "panda/gripper_pos": Box(-1, 1, shape=(1,), dtype=np.float32),
+                "panda/gripper_vec": Box(0.0, 1.0, shape=(4,), dtype=np.float32),
             }
         )
         if not image_obs:
@@ -130,7 +132,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             "opening": np.array([0, 1, 0], dtype=np.float32),
             "closing": np.array([0, 0, 1], dtype=np.float32),
         }
-        self.gripper_sleep = 0.6
+        self.gripper_sleep = 0.5
 
         # Store initial values for randomization
         for camera_name in self.cameras:
@@ -160,7 +162,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
 
         self.initial_vine_rotation = Rotation.from_quat(np.roll(self.model.body_quat[self.model.body("vine").id], -1))
 
-        self.initial_position = np.array([0.1, 0.0, 0.8], dtype=np.float32)
+        self.initial_position = np.array([0.15, 0.0, 0.8])
         # Add this line to set the initial orientation
         self.initial_orientation = [0.725, 0.0, 0.688, 0.0]
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)
@@ -361,6 +363,8 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self._block2_init = self.data.sensor("block2_pos").data
         self._block3_init = self.data.sensor("block3_pos").data
 
+        self.gripper_vec = self.gripper_dict["stopped"]
+        self.data.ctrl[self._gripper_ctrl_id] = self._GRIPPER_MAX // 2
         self.grasp = -1.0
         self.prev_grasp_time = 0.0
         self.prev_gripper_state = 0 # 0 for open, 1 for closed
@@ -413,24 +417,30 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             # Set the final orientation
             self.data.mocap_quat[0] = np.roll(final_rotation.as_quat(), 1)
 
-
         # Handle grasping
-        if (grasp >= 0.5) and (2*self.data.qpos[8]/self._GRIPPER_HOME[0]> 0.85) and (self.data.time - self.prev_grasp_time > self.gripper_sleep):  # close gripper
-            self.data.ctrl[self._gripper_ctrl_id] = 0.0
-            self.prev_grasp_time = self.data.time
-            target_sim_time = self.data.time + self.gripper_sleep
-            moving_gripper = True
-        elif (grasp <= -0.5) and (2*self.data.qpos[8]/self._GRIPPER_HOME[0] < 0.85) and (time.time() - self.prev_grasp_time > self.gripper_sleep):  # open gripper
-            self.data.ctrl[self._gripper_ctrl_id] = self._GRIPPER_MAX
-            self.prev_grasp_time = self.data.time
-            target_sim_time = self.data.time + self.gripper_sleep
-            moving_gripper = True
+        if self.data.time - self.prev_grasp_time < self.gripper_sleep:
+            self.gripper_blocked = True
         else:
-            moving_gripper = False
+            if grasp >= 0.5:
+                if self.prev_grasp >= 0.5:
+                    pass
+                else:
+                    self.data.ctrl[self._gripper_ctrl_id] = 0.0
+                    self.prev_grasp_time = self.data.time
+                    self.prev_grasp = grasp
+                    self.gripper_vec = self.gripper_dict["closing"]
+            elif grasp <= -0.5:
+                self.data.ctrl[self._gripper_ctrl_id] = min(self.data.ctrl[self._gripper_ctrl_id] + 17, self._GRIPPER_MAX)
+                self.prev_grasp_time = self.data.time
+                self.prev_grasp = grasp
+                self.gripper_vec = self.gripper_dict["closing"]
+            else:
+                self.gripper_blocked = False
+                self.prev_grasp = grasp
+                self.gripper_vec = self.gripper_dict["stopped"]
 
-        if moving_gripper:
-            while self.data.time < target_sim_time:
-                tau = opspace(
+        for _ in range(self._n_substeps):
+            tau = opspace(
                 model=self.model,
                 data=self.data,
                 site_id=self._pinch_site_id,
@@ -440,22 +450,8 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
                 joint=self._PANDA_HOME,
                 gravity_comp=True,
             )
-                self.data.ctrl[self._panda_ctrl_ids] = tau
-                mujoco.mj_step(self.model, self.data)
-        else:
-            for _ in range(self._n_substeps):
-                tau = opspace(
-                    model=self.model,
-                    data=self.data,
-                    site_id=self._pinch_site_id,
-                    dof_ids=self._panda_dof_ids,
-                    pos=self.data.mocap_pos[0],
-                    ori=self.data.mocap_quat[0],
-                    joint=self._PANDA_HOME,
-                    gravity_comp=True,
-                )
-                self.data.ctrl[self._panda_ctrl_ids] = tau
-                mujoco.mj_step(self.model, self.data)
+            self.data.ctrl[self._panda_ctrl_ids] = tau
+            mujoco.mj_step(self.model, self.data)
 
         # Observation
         obs = self._get_obs()
@@ -475,44 +471,31 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
                 self._viewer.render(render_mode="rgb_array", camera_id=cam_id)
             )
         return rendered_frames
-    
-    def _get_vel(self):
-        """
-        Compute the Cartesian speed (linear and angular velocity) of the end-effector.
-        
-        Returns:
-            cartesian_speed: A (6,) numpy array where the first 3 elements are the
-                            linear velocities and the last 3 elements are the angular velocities.
-        """
-        dq = self.data.qvel[self._panda_dof_ids]
-        J_v = np.zeros((3, self.model.nv), dtype=np.float64)
-        J_w = np.zeros((3, self.model.nv), dtype=np.float64)
-        mujoco.mj_jacSite(self.model, self.data, J_v, J_w, self._pinch_site_id)
-        J_v, J_w = J_v[:, self._panda_dof_ids], J_w[:, self._panda_dof_ids]
-        J = np.vstack((J_v, J_w))
-        dx = J @ dq
-        return dx
 
     def _get_obs(self):
         obs = {"state": {}}
         
         # Original position and orientation observations
-        tcp_pose = np.concatenate([self.data.sensor("pinch_pos").data, 
-                                  np.roll(self.data.sensor("pinch_quat").data, -1)])
+        tcp_pos = self.data.sensor("pinch_pos").data
+        tcp_orientation = np.roll(self.data.sensor("pinch_quat").data, -1)
         # Define noise parameters
         position_noise_std = self.cfg.get("ee_pos_noise", 0.01)  # e.g., 1 cm standard deviation
         orientation_noise_std = self.cfg.get("ee_ori_noise", 0.005)  # e.g., small rotations in quaternion
         # Add Gaussian noise to position and orientation
         if self.randomize_domain:
-            tcp_pose[:3] = tcp_pose[:3] + np.random.normal(0, position_noise_std, size=3)
-            tcp_pose[3:] = tcp_pose[3:] + np.random.normal(0, orientation_noise_std, size=4)
-            tcp_pose[3:] /= np.linalg.norm(tcp_pose[3:])
+            noisy_tcp_pos = tcp_pos + np.random.normal(0, position_noise_std, size=tcp_pos.shape)
+            noisy_tcp_orientation = tcp_orientation + np.random.normal(0, orientation_noise_std, size=tcp_orientation.shape)
+            noisy_tcp_orientation /= np.linalg.norm(noisy_tcp_orientation)
+        else:
+            noisy_tcp_pos = tcp_pos
+            noisy_tcp_orientation = tcp_orientation
         
         # Populate noisy observations
-        obs["state"]["tcp_pose"] = tcp_pose.astype(np.float32)
-        obs["state"]["tcp_vel"] = self._get_vel()
-        obs["state"]["gripper_pos"] = 2*self.data.qpos[8]/self._GRIPPER_HOME[0]
-        # obs["state"]["gripper_vec"] = np.concatenate([self.gripper_vec, [int(self.gripper_blocked)]]).astype(np.float32)
+        obs["state"]["panda/tcp_pos"] = noisy_tcp_pos.astype(np.float32)
+        obs["state"]["panda/tcp_orientation"] = noisy_tcp_orientation.astype(np.float32)
+        obs["state"]["panda/tcp_vel"] = self.data.sensor("pinch_vel").data.astype(np.float32)
+        obs["state"]["panda/gripper_pos"] = 25 * 2 * np.array([self.data.qpos[8]], dtype=np.float32) - 1
+        obs["state"]["panda/gripper_vec"] = np.concatenate([self.gripper_vec, [int(self.gripper_blocked)]]).astype(np.float32)
 
         if not self.image_obs:
             obs["state"]["block_pos"] = self.data.sensor("block_pos").data.astype(np.float32)
