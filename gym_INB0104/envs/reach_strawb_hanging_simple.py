@@ -38,9 +38,10 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         physics_dt=0.002,
         width=480,
         height=480,
-        pos_scale=0.02,
+        pos_scale=0.01,
         rot_scale=0.05,
         cameras=["wrist1", "wrist2", "front"],
+        reward_type="dense",
         render_mode="rgb_array",
         **kwargs,
     ):
@@ -54,15 +55,16 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.pos_scale = pos_scale
         self.rot_scale = rot_scale
         self.cameras = cameras
+        self.reward_type = reward_type
 
         self._PANDA_HOME = np.array([0.0, -1.6, 0.0, -2.54, -0.05, 2.49, 0.822], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.0141, 0.0141], dtype=np.float32)
         self._GRIPPER_MIN = 0
         self._GRIPPER_MAX = 45
-        self._PANDA_XYZ = np.array([0.4, 0, 0.7], dtype=np.float32)
+        self._PANDA_XYZ = np.array([0.1, 0, 0.8], dtype=np.float32)
         self._CARTESIAN_BOUNDS = np.array([[0.05, -0.2, 0.7], [0.55, 0.2, 0.95]], dtype=np.float32)
         self._ROTATION_BOUNDS = np.array([[-np.pi/3, -np.pi/10, -np.pi/10],[np.pi/3, np.pi/10, np.pi/10]], dtype=np.float32)
-        self.default_obj_pos = np.array([0.6, 0, 0.8])
+        self.default_obj_pos = np.array([0.25, 0, 1.1])
 
         config_path = Path(__file__).parent.parent / "configs" / "strawb_hanging.yaml"
         self.cfg = load_config(config_path)
@@ -168,6 +170,10 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.init_headlight_diffuse = self.model.vis.headlight.diffuse.copy()
         self.init_headlight_ambient = self.model.vis.headlight.ambient.copy()
         self.init_headlight_specular = self.model.vis.headlight.specular.copy()
+
+        self.model.body_pos[self.model.body("vine").id] = self.default_obj_pos
+        self.model.body_pos[self.model.body("vine2").id] = self.default_obj_pos + np.array([0.05, 0.03, 0.0])
+        self.model.body_pos[self.model.body("vine3").id] = self.default_obj_pos - np.array([0.05, 0.03, 0.0])
 
     def lighting_noise(self):
 
@@ -464,9 +470,13 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
 
         # Reward
         reward, info = self._compute_reward(action)
+        if self.reward_type == "sparse" and info['success'] == True:
+            terminated = True
+        else:
+            terminated = False
         self.prev_gripper_state = self.gripper_state
 
-        return obs, reward, False, False, info 
+        return obs, reward, terminated, False, info 
     
     def render(self):
         rendered_frames = []
@@ -545,18 +555,33 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         r_smooth = -np.linalg.norm(action - self.prev_action) 
         self.prev_action = action
 
-        rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_block2': r_block2, 'r_block3': r_block3, 'r_energy': r_energy, 'r_smooth': r_smooth}
-        reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_block2': 1.0, 'r_block3': 1.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
+        # Check if gripper pads are in contact with the object
+        right_finger_contact = False
+        left_finger_contact = False
+        success = False
+        for i in range(self.data.ncon):
+            geom1_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom1)
+            geom2_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom2)
 
-        rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
-        reward = np.clip(sum(rewards.values()), -1e4, 1e4)
-            
-        # Success if
-        if box_target < 0.01:
-            success = True
-        else:
-            success = False
+            if geom1_name == "right_finger" or geom2_name == "right_finger":
+                if geom1_name == "stem" or geom2_name == "stem":
+                    right_finger_contact = True
+            if geom1_name =="left_finger" or geom2_name =="left_finger":
+                if geom1_name == "stem" or geom2_name == "stem":
+                    left_finger_contact = True
+            if right_finger_contact and left_finger_contact:
+                success=True
+                break  
         
-        info = rewards
+        info = {}
+        if self.reward_type == "dense":
+            rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_block2': r_block2, 'r_block3': r_block3, 'r_energy': r_energy, 'r_smooth': r_smooth}
+            reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_block2': 1.0, 'r_block3': 1.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
+            rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
+            reward = np.clip(sum(rewards.values()), -1e4, 1e4)
+            info = rewards
+        elif self.reward_type == "sparse":
+            reward = float(success)
+
         info['success'] = success
         return reward, info

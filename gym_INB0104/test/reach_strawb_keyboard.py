@@ -4,6 +4,7 @@ import cv2
 from gym_INB0104 import envs
 import numpy as np
 np.set_printoptions(suppress=True)
+import time
 
 # Global variables to capture mouse movement
 mouse_x, mouse_y = 0, 0  # Track mouse position
@@ -15,13 +16,13 @@ def mouse_callback(event, x, y, flags, param):
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, ee_dof=4)
+    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, reward_type="sparse", ee_dof=4)
     env = TimeLimit(env, max_episode_steps=500)    
     waitkey = 100
     resize_resolution = (480, 480)
 
     # Define the range for absolute movement control
-    max_speed = 0.2  # Maximum speed in any direction
+    max_speed = 0.1  # Maximum speed in any direction
     rot_speed = 0.8  # Maximum rotation speed
 
     # Set up mouse callback
@@ -35,6 +36,7 @@ def main():
         i=0
         
         while not (terminated or truncated):
+            step_start_time = time.time()
             i+=1
             # Display the environment
             if render_mode == "rgb_array":
@@ -68,6 +70,9 @@ def main():
                 move_action[-1] = -1.0
 
             # Perform the action in the environment
+            step_time = time.time()-step_start_time
+            if step_time < waitkey/1000:
+                time.sleep(waitkey/1000 - step_time)
             obs, reward, terminated, truncated, info = env.step(move_action)
 
             # Reset environment on 'R' key press
