@@ -521,7 +521,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         # Populate noisy observations
         obs["state"]["tcp_pose"] = tcp_pose.astype(np.float32)
         obs["state"]["tcp_vel"] = self._get_vel()
-        obs["state"]["gripper_pos"] = 2*self.data.qpos[8]/self._GRIPPER_HOME[0]
+        obs["state"]["gripper_pos"] = np.array(2*self.data.qpos[8]/self._GRIPPER_HOME[0])
         # obs["state"]["gripper_vec"] = np.concatenate([self.gripper_vec, [int(self.gripper_blocked)]]).astype(np.float32)
 
         if not self.image_obs:
