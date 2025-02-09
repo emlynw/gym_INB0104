@@ -540,7 +540,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
     def _compute_reward(self, action):
         block_pos = self.data.sensor("block_pos").data
         tcp_pos = self.data.sensor("long_pinch_pos").data
-        box_target = 1 - np.tanh(5 * np.linalg.norm(block_pos - self._block_success))
+        # box_target = 1 - np.tanh(5 * np.linalg.norm(block_pos - self._block_success))
         gripper_box = 1 - np.tanh(5 * np.linalg.norm(block_pos - tcp_pos))
 
         block2_pos = self.data.sensor("block2_pos").data
@@ -571,12 +571,13 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
                     left_finger_contact = True
             if right_finger_contact and left_finger_contact:
                 success=True
-                break  
+                break 
+        r_grasp = float(success) 
         
         info = {}
         if self.reward_type == "dense":
-            rewards = {'box_target': box_target, 'gripper_box': gripper_box, 'r_block2': r_block2, 'r_block3': r_block3, 'r_energy': r_energy, 'r_smooth': r_smooth}
-            reward_scales = {'box_target': 8.0, 'gripper_box': 4.0, 'r_block2': 1.0, 'r_block3': 1.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
+            rewards = {'r_grasp': r_grasp, 'gripper_box': gripper_box, 'r_block2': r_block2, 'r_block3': r_block3, 'r_energy': r_energy, 'r_smooth': r_smooth}
+            reward_scales = {'r_grasp': 8.0, 'gripper_box': 4.0, 'r_block2': 1.0, 'r_block3': 1.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
             rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
             reward = np.clip(sum(rewards.values()), -1e4, 1e4)
             info = rewards

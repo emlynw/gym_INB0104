@@ -16,7 +16,7 @@ def mouse_callback(event, x, y, flags, param):
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, reward_type="sparse", ee_dof=4)
+    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, reward_type="dense", ee_dof=4)
     env = TimeLimit(env, max_episode_steps=500)    
     waitkey = 100
     resize_resolution = (480, 480)
@@ -74,6 +74,7 @@ def main():
             if step_time < waitkey/1000:
                 time.sleep(waitkey/1000 - step_time)
             obs, reward, terminated, truncated, info = env.step(move_action)
+            print(reward)
 
             # Reset environment on 'R' key press
             if key == ord('r'):
