@@ -74,6 +74,7 @@ def main():
             if step_time < waitkey/1000:
                 time.sleep(waitkey/1000 - step_time)
             obs, reward, terminated, truncated, info = env.step(move_action)
+            print(obs['state'])
             print(reward)
 
             # Reset environment on 'R' key press
