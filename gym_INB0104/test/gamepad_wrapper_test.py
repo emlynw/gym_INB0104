@@ -5,14 +5,15 @@ from gym_INB0104 import envs
 import numpy as np
 from gamepad_wrapper import GamepadIntervention
 from serl_launcher.wrappers.serl_obs_wrappers import SERLObsWrapper
+import time
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", render_mode=render_mode, randomize_domain=True, ee_dof=6)
+    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, ee_dof=6)
     env = SERLObsWrapper(env)
     env = GamepadIntervention(env)
-    env = TimeLimit(env, max_episode_steps=10)    
-    waitkey = 100
+    env = TimeLimit(env, max_episode_steps=200)    
+    waitkey = 10
     cameras = ['wrist1', 'wrist2', 'front']
     resize_resolution = (480, 480)
 
@@ -25,21 +26,22 @@ def main():
         rotate = True
         
         while not terminated and not truncated:
+            step_start_time = time.time()
             for camera in cameras:
                 cv2.imshow(camera, cv2.resize(cv2.cvtColor(obs[camera], cv2.COLOR_RGB2BGR), resize_resolution))
                 cv2.waitKey(waitkey)
     
             action = np.zeros_like(env.action_space.sample())
-            print(f"action: {action}")
             if "intervene_action" in info:
-                print(f"i action: {info['intervene_action']}")
                 action = info['intervene_action']
 
-            print(F"action: {action}")
 
-            
             obs, reward, terminated, truncated, info = env.step(action)
+            step_time = time.time()-step_start_time
+            if step_time < 0.1:
+                time.sleep(0.1 - step_time)
             i+=1
+            print(time.time()-step_start_time)
         
 if __name__ == "__main__":
     main()

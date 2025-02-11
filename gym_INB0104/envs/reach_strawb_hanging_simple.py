@@ -38,7 +38,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         physics_dt=0.002,
         width=480,
         height=480,
-        pos_scale=0.01,
+        pos_scale=0.001,
         rot_scale=0.05,
         cameras=["wrist1", "wrist2", "front"],
         reward_type="dense",

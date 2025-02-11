@@ -49,7 +49,7 @@ def opspace_4(
     joint_upper_limits: Union[Tuple[float, float, float, float, float, float, float], np.ndarray] = (2.75, 1.58, 2.75, -0.15, 2.75, 3.66, 2.75),
     joint_lower_limits: Union[Tuple[float, float, float, float, float, float, float], np.ndarray] = (-2.75, -1.58, -2.75, -2.99, -2.75, -0.11, -2.75),
     translational_damping: float = 89.0,
-    rotational_damping: float = 7.0,
+    rotational_damping: float = 6.0,
     nullspace_stiffness: float = 1.414,
     joint1_nullspace_stiffness: float = 80.0,
     max_pos_error: float = 0.01,
