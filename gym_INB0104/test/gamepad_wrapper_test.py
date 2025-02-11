@@ -9,7 +9,7 @@ import time
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, ee_dof=6)
+    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, reward_type="sparse", ee_dof=6)
     env = SERLObsWrapper(env)
     env = GamepadIntervention(env)
     env = TimeLimit(env, max_episode_steps=200)    
@@ -37,11 +37,11 @@ def main():
 
 
             obs, reward, terminated, truncated, info = env.step(action)
+            print(reward)
             step_time = time.time()-step_start_time
             if step_time < 0.1:
                 time.sleep(0.1 - step_time)
             i+=1
-            print(time.time()-step_start_time)
-        
+
 if __name__ == "__main__":
     main()

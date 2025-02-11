@@ -38,8 +38,8 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         physics_dt=0.002,
         width=480,
         height=480,
-        pos_scale=0.001,
-        rot_scale=0.05,
+        pos_scale=0.005,
+        rot_scale=0.25,
         cameras=["wrist1", "wrist2", "front"],
         reward_type="dense",
         render_mode="rgb_array",
@@ -449,19 +449,22 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
                 self.data.ctrl[self._panda_ctrl_ids] = tau
                 mujoco.mj_step(self.model, self.data)
         else:
-            for _ in range(self._n_substeps):
-                tau = opspace(
-                    model=self.model,
-                    data=self.data,
-                    site_id=self._pinch_site_id,
-                    dof_ids=self._panda_dof_ids,
-                    pos=self.data.mocap_pos[0],
-                    ori=self.data.mocap_quat[0],
-                    joint=self._PANDA_HOME,
-                    gravity_comp=True,
-                )
-                self.data.ctrl[self._panda_ctrl_ids] = tau
-                mujoco.mj_step(self.model, self.data)
+            for i in range(self._n_substeps):
+                if i < self._n_substeps/5:
+                    continue
+                else:
+                    tau = opspace(
+                        model=self.model,
+                        data=self.data,
+                        site_id=self._pinch_site_id,
+                        dof_ids=self._panda_dof_ids,
+                        pos=self.data.mocap_pos[0],
+                        ori=self.data.mocap_quat[0],
+                        joint=self._PANDA_HOME,
+                        gravity_comp=True,
+                    )
+                    self.data.ctrl[self._panda_ctrl_ids] = tau
+                    mujoco.mj_step(self.model, self.data)
 
         # Observation
         obs = self._get_obs()
