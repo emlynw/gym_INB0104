@@ -63,7 +63,7 @@
 
     <!-- Target Strawb Vine -->
     <body name="vine" pos="0.76 0.0 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.25" offset="0 0 0" initial="ball" prefix="a">
+      <composite type="cable" curve="s" count="5 1 1" size="0.1" offset="0 0 0" initial="ball" prefix="a">
         <joint kind="main" damping="0.002"/>
         <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
       </composite>
@@ -71,7 +71,7 @@
 
     <!-- Distractor strawb vine 1 -->
     <body name="vine2" pos="0.72 0.04 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.25" offset="0 0 0" initial="ball" prefix="b">
+      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="b">
         <joint kind="main" damping="0.002"/>
         <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
       </composite>
@@ -79,7 +79,7 @@
 
     <!-- Distractor strawb vine 2 -->
     <body name="vine3" pos="0.7 -0.03 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.25" offset="0 0 0" initial="ball" prefix="c">
+      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="c">
         <joint kind="main" damping="0.002"/>
         <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
       </composite>

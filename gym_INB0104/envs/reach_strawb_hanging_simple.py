@@ -39,7 +39,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         width=480,
         height=480,
         pos_scale=0.01,
-        rot_scale=0.2,
+        rot_scale=0.5,
         cameras=["wrist1", "wrist2", "front"],
         reward_type="dense",
         render_mode="rgb_array",
@@ -64,7 +64,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self._PANDA_XYZ = np.array([0.1, 0, 0.8], dtype=np.float32)
         self._CARTESIAN_BOUNDS = np.array([[0.05, -0.2, 0.7], [0.55, 0.2, 0.95]], dtype=np.float32)
         self._ROTATION_BOUNDS = np.array([[-np.pi/3, -np.pi/10, -np.pi/10],[np.pi/3, np.pi/10, np.pi/10]], dtype=np.float32)
-        self.default_obj_pos = np.array([0.25, 0, 1.1])
+        self.default_obj_pos = np.array([0.35, 0, 1.1])
 
         config_path = Path(__file__).parent.parent / "configs" / "strawb_hanging.yaml"
         self.cfg = load_config(config_path)
@@ -172,8 +172,8 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.init_headlight_specular = self.model.vis.headlight.specular.copy()
 
         self.model.body_pos[self.model.body("vine").id] = self.default_obj_pos
-        self.model.body_pos[self.model.body("vine2").id] = self.default_obj_pos + np.array([0.05, 0.03, 0.0])
-        self.model.body_pos[self.model.body("vine3").id] = self.default_obj_pos - np.array([0.05, 0.03, 0.0])
+        self.model.body_pos[self.model.body("vine2").id] = self.default_obj_pos + np.array([-0.05, 0.03, 0.0])
+        self.model.body_pos[self.model.body("vine3").id] = self.default_obj_pos + np.array([-0.05, -0.03, 0.0])
 
     def lighting_noise(self):
 
@@ -322,6 +322,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
     def reset_arm_and_gripper(self):
         self.data.qpos[self._panda_dof_ids] = self._PANDA_HOME
         self.data.qpos[7:9] = self._GRIPPER_HOME
+        self.data.ctrl[self._gripper_ctrl_id] = self._GRIPPER_MAX
         mujoco.mj_forward(self.model, self.data)
         self.data.mocap_pos[0] = self.data.sensor("pinch_pos").data.copy()
         self.data.mocap_quat[0] = self.data.sensor("pinch_quat").data.copy()
@@ -341,9 +342,9 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
 
         if not self.randomize_domain:
             self.data.mocap_pos[0] = self.initial_position
-            self.data.mocap_quat[0] = self.initial_orientation
+            self.data.mocap_quat[0] = np.roll(self.initial_orientation, 1)
 
-        for _ in range(2*self._n_substeps):
+        for _ in range(10*self._n_substeps):
             tau = opspace(
                 model=self.model,
                 data=self.data,

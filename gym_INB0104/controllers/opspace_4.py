@@ -50,8 +50,9 @@ def opspace_4(
     joint_lower_limits: Union[Tuple[float, float, float, float, float, float, float], np.ndarray] = (-2.75, -1.58, -2.75, -2.99, -2.75, -0.11, -2.75),
     translational_damping: float = 89.0,
     rotational_damping: float = 6.0,
-    nullspace_stiffness: float = 1.414,
-    joint1_nullspace_stiffness: float = 80.0,
+    nullspace_stiffness: float = 0.5,
+    nullspace_damping: float = 1.414,
+    joint1_nullspace_stiffness: float = 50.0,
     max_pos_error: float = 0.01,
     max_ori_error: float = 0.03,
     delta_tau_max: float = 1.0,
@@ -104,7 +105,7 @@ def opspace_4(
     q_error[0] *= joint1_nullspace_stiffness
     dq_error = dq
     dq_error[0] *= 2 * np.sqrt(joint1_nullspace_stiffness)
-    tau_nullspace = nullspace_stiffness * q_error - 2 * np.sqrt(nullspace_stiffness) * dq_error
+    tau_nullspace = nullspace_stiffness * q_error - nullspace_damping * dq_error
 
     if damped:
         jacobian_transpose_pinv = pseudo_inverse(J.T, damped=True, lambda_=lambda_)
