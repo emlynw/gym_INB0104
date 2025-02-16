@@ -10,10 +10,10 @@ np.set_printoptions(suppress=True)
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=False, reward_type="sparse", ee_dof=6)
+    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, reward_type="sparse", ee_dof=6)
     # env = SERLObsWrapper(env)
     env = GamepadIntervention(env)
-    env = TimeLimit(env, max_episode_steps=500)    
+    env = TimeLimit(env, max_episode_steps=150)    
     waitkey = 10
     cameras = ['wrist1', 'wrist2', 'front']
     resize_resolution = (480, 480)
