@@ -541,7 +541,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         J_v, J_w = J_v[:, self._panda_dof_ids], J_w[:, self._panda_dof_ids]
         J = np.vstack((J_v, J_w))
         dx = J @ dq
-        return dx
+        return dx.astype(np.float32)
 
     def _get_obs(self):
         obs = {"state": {}}
