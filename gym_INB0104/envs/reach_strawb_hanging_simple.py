@@ -64,7 +64,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self._PANDA_XYZ = np.array([0.1, 0, 0.8], dtype=np.float32)
         self._CARTESIAN_BOUNDS = np.array([[0.05, -0.2, 0.7], [0.55, 0.2, 0.95]], dtype=np.float32)
         self._ROTATION_BOUNDS = np.array([[-np.pi/3, -np.pi/10, -np.pi/10],[np.pi/3, np.pi/10, np.pi/10]], dtype=np.float32)
-        self.default_obj_pos = np.array([0.35, 0, 1.1])
+        self.default_obj_pos = np.array([0.42, 0, 1.08])
 
         config_path = Path(__file__).parent.parent / "configs" / "strawb_hanging.yaml"
         self.cfg = load_config(config_path)
@@ -223,7 +223,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
 
     def initial_state_noise(self):
         ee_noise_low = self.cfg.get("ee_noise_low", [0.0, 0.0, 0.0])
-        ee_noise_high = self.cfg.get("ee_noise_high", [0.12, 0.2, 0.1])
+        ee_noise_high = self.cfg.get("ee_noise_high", [0.0, 0.0, 0.0])
         ee_noise = np.random.uniform(low=ee_noise_low, high=ee_noise_high, size=3)
         self.data.mocap_pos[0] = self._PANDA_XYZ + ee_noise
 
@@ -330,51 +330,88 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
 
 
     def reset_model(self):
-        self.reset_arm_and_gripper()
-        if self.randomize_domain:
-            self.domain_randomization()
+        # Some random resets were getting mujoco Nan warnings that's why the loop
+        attempt = 0
+        while True:
+            attempt += 1
+            self.reset_arm_and_gripper()
+            if self.randomize_domain:
+                self.domain_randomization()
 
-        self.data.qvel[:] = 0
-        self.data.qacc[:] = 0
-        self.data.qfrc_applied[:] = 0
-        self.data.xfrc_applied[:] = 0
-        mujoco.mj_forward(self.model, self.data)
+            self.data.qvel[:] = 0
+            self.data.qacc[:] = 0
+            self.data.qfrc_applied[:] = 0
+            self.data.xfrc_applied[:] = 0
+            mujoco.mj_forward(self.model, self.data)
 
-        if not self.randomize_domain:
-            self.data.mocap_pos[0] = self.initial_position
-            self.data.mocap_quat[0] = np.roll(self.initial_orientation, 1)
+            if not self.randomize_domain:
+                self.data.mocap_pos[0] = self.initial_position
+                self.data.mocap_quat[0] = np.roll(self.initial_orientation, 1)
 
-        for _ in range(10*self._n_substeps):
-            tau = opspace(
-                model=self.model,
-                data=self.data,
-                site_id=self._pinch_site_id,
-                dof_ids=self._panda_dof_ids,
-                pos=self.data.mocap_pos[0],
-                ori=self.data.mocap_quat[0],
-                joint=self._PANDA_HOME,
-                gravity_comp=True,
-            )
-            self.data.ctrl[self._panda_ctrl_ids] = tau
-            mujoco.mj_step(self.model, self.data)
-        
-        self._block_init = self.data.sensor("block_pos").data
-        self._x_success = self._block_init[0] - 0.1
-        self._z_success = self._block_init[2] + 0.05
-        self._block_success = self._block_init.copy()
-        self._block_success[0] = self._x_success
-        self._block_success[2] = self._z_success
+            desired_pos = self.data.mocap_pos[0].copy()
+            desired_quat = self.data.mocap_quat[0].copy()
 
-        self._block2_init = self.data.sensor("block2_pos").data
-        self._block3_init = self.data.sensor("block3_pos").data
+            for _ in range(10*self._n_substeps):
+                tau = opspace(
+                    model=self.model,
+                    data=self.data,
+                    site_id=self._pinch_site_id,
+                    dof_ids=self._panda_dof_ids,
+                    pos=self.data.mocap_pos[0],
+                    ori=self.data.mocap_quat[0],
+                    joint=self._PANDA_HOME,
+                    gravity_comp=True,
+                )
+                self.data.ctrl[self._panda_ctrl_ids] = tau
+                mujoco.mj_step(self.model, self.data)
+            
+            self._block_init = self.data.sensor("block_pos").data
+            self._x_success = self._block_init[0] - 0.1
+            self._z_success = self._block_init[2] + 0.05
+            self._block_success = self._block_init.copy()
+            self._block_success[0] = self._x_success
+            self._block_success[2] = self._z_success
 
-        self.grasp = -1.0
-        self.prev_grasp_time = 0.0
-        self.prev_gripper_state = 0 # 0 for open, 1 for closed
-        self.gripper_state = 0
-        self.gripper_blocked = False
+            self._block2_init = self.data.sensor("block2_pos").data
+            self._block3_init = self.data.sensor("block3_pos").data
 
-        return self._get_obs()
+            self.grasp = -1.0
+            self.prev_grasp_time = 0.0
+            self.prev_gripper_state = 0 # 0 for open, 1 for closed
+            self.gripper_state = 0
+            self.gripper_blocked = False
+
+             # Get the current end-effector pose from sensors.
+            current_pos = self.data.sensor("pinch_pos").data.copy()
+            current_quat = self.data.sensor("pinch_quat").data.copy()
+
+            # Check that sensor readings are finite.
+            if (np.any(np.isnan(current_pos)) or np.any(np.isnan(current_quat)) or
+                np.any(np.isinf(current_pos)) or np.any(np.isinf(current_quat))):
+                continue
+
+            # Compute the difference in position.
+            pos_diff = np.linalg.norm(current_pos - desired_pos)
+            # Compute orientation difference using the dot-product of unit quaternions.
+            current_quat_norm = current_quat / np.linalg.norm(current_quat)
+            desired_quat_norm = desired_quat / np.linalg.norm(desired_quat)
+            dot = np.abs(np.dot(current_quat_norm, desired_quat_norm))
+            dot = np.clip(dot, -1.0, 1.0)
+            orient_diff = 2 * np.arccos(dot)
+
+            pos_threshold = 0.1    
+            orient_threshold = 0.2    
+
+            if pos_diff < pos_threshold and orient_diff < orient_threshold:
+                return self._get_obs()
+            else:
+                print(
+                    f"Reset attempt {attempt+1}: pose error too high "
+                    f"(pos_diff: {pos_diff:.4f}, orient_diff: {orient_diff:.4f}), retrying reset."
+                )
+                if attempt > 100:
+                    raise RuntimeError("Failed to achieve valid reset after multiple attempts")
+
 
     def step(self, action):
         if np.array(action).shape != self.action_space.shape:
@@ -391,7 +428,6 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             z, y, x, roll, pitch, yaw, grasp = action
             drot = np.array([roll, pitch, yaw]) * self.rot_scale
         dpos = np.array([x, y, z]) * self.pos_scale
-        
         # Apply position change
         pos = self.data.sensor("pinch_pos").data
         current_quat = np.roll(self.data.sensor("pinch_quat").data, -1)
