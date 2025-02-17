@@ -85,6 +85,34 @@
       </composite>
     </body>
 
+    <body name="vine4" pos="0.7 -0.03 0.85" euler="0 1.57 0">
+      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="d">
+        <joint kind="main" damping="0.002"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+      </composite>
+    </body>
+
+    <body name="vine5" pos="0.7 -0.03 0.85" euler="0 1.57 0">
+      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="e">
+        <joint kind="main" damping="0.002"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+      </composite>
+    </body>
+
+    <body name="vine6" pos="0.7 -0.03 0.85" euler="0 1.57 0">
+      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="f">
+        <joint kind="main" damping="0.002"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+      </composite>
+    </body>
+
+    <body name="vine7" pos="0.7 -0.03 0.85" euler="0 1.57 0">
+      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="g">
+        <joint kind="main" damping="0.002"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+      </composite>
+    </body>
+
   </worldbody>
 
   <sensor>

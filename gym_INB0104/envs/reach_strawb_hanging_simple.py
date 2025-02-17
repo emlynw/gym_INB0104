@@ -171,9 +171,10 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.init_headlight_ambient = self.model.vis.headlight.ambient.copy()
         self.init_headlight_specular = self.model.vis.headlight.specular.copy()
 
+        self.num_green = 6
         self.model.body_pos[self.model.body("vine").id] = self.default_obj_pos
-        self.model.body_pos[self.model.body("vine2").id] = self.default_obj_pos + np.array([-0.05, 0.03, 0.0])
-        self.model.body_pos[self.model.body("vine3").id] = self.default_obj_pos + np.array([-0.05, -0.03, 0.0])
+        for i in range(2, self.num_green+2):
+            self.model.body_pos[self.model.body(f"vine{i}").id] = self.default_obj_pos + np.array([-0.05, 0.0, 0.0])
 
     def lighting_noise(self):
 
@@ -274,29 +275,49 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         new_quat = new_rotation.as_quat()
         self.model.body_quat[self.model.body("vine").id] = [new_quat[3], new_quat[0], new_quat[1], new_quat[2]]
 
-        # Distractor 1 pos
-        distract1_pos_noise_low = self.cfg.get("distract1_pos_noise_low", [0.0, 0.0, 0.0])
-        distract1_pos_noise_high = self.cfg.get("distract1_pos_noise_high", [0.0, 0.0, 0.0])
-        distract1_pos_noise = np.random.uniform(low=distract1_pos_noise_low, high=distract1_pos_noise_high, size=3)
-        self.model.body_pos[self.model.body("vine2").id] = target_pos + distract1_pos_noise
-        # Distractor 1 orientation
-        random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
-        z_rotation = Rotation.from_euler('z', random_z_angle)
-        new_rotation = z_rotation * self.initial_vine_rotation
-        new_quat = new_rotation.as_quat()
-        self.model.body_quat[self.model.body("vine2").id] = [new_quat[3], new_quat[0], new_quat[1], new_quat[2]]
+        distract_pos_noise_low = self.cfg.get("distract_pos_noise_low", [0.0, 0.0, 0.0])
+        distract_pos_noise_high = self.cfg.get("distract_pos_noise_high", [0.0, 0.0, 0.0])
 
-        # Distractor 2 pos
-        distract2_pos_noise_low = self.cfg.get("distract2_pos_noise_low", [0.0, 0.0, 0.0])
-        distract2_pos_noise_high = self.cfg.get("distract2_pos_noise_high", [0.0, 0.0, 0.0])
-        distract2_pos_noise = np.random.uniform(low=distract2_pos_noise_low, high=distract2_pos_noise_high, size=3)
-        self.model.body_pos[self.model.body("vine3").id] = target_pos + distract2_pos_noise
-        # Distractor 2 orientation
-        random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)  # Random angle in radians
-        z_rotation = Rotation.from_euler('z', random_z_angle)
-        new_rotation = z_rotation * self.initial_vine_rotation
-        new_quat = new_rotation.as_quat()
-        self.model.body_quat[self.model.body("vine3").id] = [new_quat[3], new_quat[0], new_quat[1], new_quat[2]]
+        distractor_indices = list(range(2, self.num_green + 2))
+        active_count = np.random.randint(1, len(distractor_indices) + 1)
+        active_indices = np.random.choice(distractor_indices, size=active_count, replace=False)
+
+        for i in distractor_indices:
+            print(f"index: {i}")
+            # Randomize the distractor vine's position.
+            distract_pos_noise = np.random.uniform(low=distract_pos_noise_low,
+                                                    high=distract_pos_noise_high,
+                                                    size=3)
+            vine_body = self.model.body(f"vine{i}")
+            self.model.body_pos[vine_body.id] = target_pos + distract_pos_noise
+
+            # Randomize its orientation.
+            random_z_angle = np.random.uniform(low=-np.pi, high=np.pi)
+            z_rotation = Rotation.from_euler('z', random_z_angle)
+            new_rotation = z_rotation * self.initial_vine_rotation
+            new_quat = new_rotation.as_quat()
+            self.model.body_quat[vine_body.id] = [new_quat[3], new_quat[0], new_quat[1], new_quat[2]]
+
+            # Now, find the corresponding block body (assumed to be named "block{i}").
+            block_body = self.model.body(f"block{i}")
+            geom_start = self.model.body_geomadr[block_body.id]
+            geom_count = self.model.body_geomnum[block_body.id]
+            # If this vine is NOT active, disable its collisions.
+            if i not in active_indices:
+                for j in range(geom_count):
+                    geom_id = geom_start + j
+                    self.model.geom_group[geom_id] = 3  # Or any group used to flag disabled objects
+                    self.model.geom_contype[geom_id] = 0
+                    self.model.geom_conaffinity[geom_id] = 0
+            else:
+                # Otherwise, ensure default collision settings are in place.
+                for j in range(geom_count):
+                    geom_id = geom_start + j
+                    geom_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
+                    if geom_name != f"block{i}":
+                        self.model.geom_group[geom_id] = 0  # Assuming 0 is the default group
+                    self.model.geom_contype[geom_id] = 1
+                    self.model.geom_conaffinity[geom_id] = 1
 
         self.data.qvel[:] = 0
         self.data.qacc[:] = 0
