@@ -283,7 +283,6 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         active_indices = np.random.choice(distractor_indices, size=active_count, replace=False)
 
         for i in distractor_indices:
-            print(f"index: {i}")
             # Randomize the distractor vine's position.
             distract_pos_noise = np.random.uniform(low=distract_pos_noise_low,
                                                     high=distract_pos_noise_high,
