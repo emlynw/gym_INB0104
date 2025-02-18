@@ -710,5 +710,9 @@
     <framequat objtype="geom" objname="block" name="block_quat"/>
     <framepos objtype="body" objname="block2" name="block2_pos"/>
     <framepos objtype="body" objname="block3" name="block3_pos"/>
+    <framepos objtype="body" objname="block4" name="block4_pos"/>
+    <framepos objtype="body" objname="block5" name="block5_pos"/>
+    <framepos objtype="body" objname="block6" name="block6_pos"/>
+    <framepos objtype="body" objname="block7" name="block7_pos"/>
   </sensor>
 </mujoco>

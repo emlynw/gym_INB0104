@@ -281,6 +281,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         distractor_indices = list(range(2, self.num_green + 2))
         active_count = np.random.randint(1, len(distractor_indices) + 1)
         active_indices = np.random.choice(distractor_indices, size=active_count, replace=False)
+        self.active_indices = active_indices
 
         for i in distractor_indices:
             # Randomize the distractor vine's position.
@@ -419,8 +420,11 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             self._block_success[0] = self._x_success
             self._block_success[2] = self._z_success
 
-            self._block2_init = self.data.sensor("block2_pos").data
-            self._block3_init = self.data.sensor("block3_pos").data
+            self.distractor_displacements = []
+            for i in self.active_indices:
+                self.distractor_displacements.append(self.data.sensor(f"block{i}_pos").data)
+            self.distractor_displacements = np.array(self.distractor_displacements)
+            self.distractor_displacements_2 = self.distractor_displacements.copy()
 
             self.grasp = -1.0
             self.prev_grasp_time = 0.0
@@ -630,11 +634,11 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         # box_target = 1 - np.tanh(5 * np.linalg.norm(block_pos - self._block_success))
         gripper_box = 1 - np.tanh(5 * np.linalg.norm(block_pos - tcp_pos))
 
-        block2_pos = self.data.sensor("block2_pos").data
-        r_block2 = 1- np.tanh(5*np.linalg.norm(block2_pos - self._block2_init))
+        for i, v in enumerate(self.active_indices):
+            self.distractor_displacements_2[i] = self.data.sensor(f"block{i}_pos").data
 
-        block3_pos = self.data.sensor("block3_pos").data
-        r_block3 = 1 - np.tanh(5*np.linalg.norm(block3_pos - self._block3_init))
+        total_distances = np.linalg.norm(self.distractor_displacements_2-self.distractor_displacements)
+        r_distract = 1- np.tanh(np.sum(total_distances))
 
         r_energy = -np.linalg.norm(action)
 
@@ -663,8 +667,8 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         
         info = {}
         if self.reward_type == "dense":
-            rewards = {'r_grasp': r_grasp, 'gripper_box': gripper_box, 'r_block2': r_block2, 'r_block3': r_block3, 'r_energy': r_energy, 'r_smooth': r_smooth}
-            reward_scales = {'r_grasp': 8.0, 'gripper_box': 4.0, 'r_block2': 1.0, 'r_block3': 1.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
+            rewards = {'r_grasp': r_grasp, 'gripper_box': gripper_box, 'r_distract': r_distract, 'r_energy': r_energy, 'r_smooth': r_smooth}
+            reward_scales = {'r_grasp': 8.0, 'gripper_box': 4.0, 'r_distract': 1.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
             rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
             reward = np.clip(sum(rewards.values()), -1e4, 1e4)
             info = rewards
