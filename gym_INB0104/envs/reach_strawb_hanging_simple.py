@@ -635,10 +635,10 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         gripper_box = 1 - np.tanh(5 * np.linalg.norm(block_pos - tcp_pos))
 
         for i, v in enumerate(self.active_indices):
-            self.distractor_displacements_2[i] = self.data.sensor(f"block{i}_pos").data
+            self.distractor_displacements_2[i] = self.data.sensor(f"block{v}_pos").data
 
         total_distances = np.linalg.norm(self.distractor_displacements_2-self.distractor_displacements)
-        r_distract = 1- np.tanh(np.sum(total_distances))
+        r_distract = 1- np.tanh(5*np.sum(total_distances))
 
         r_energy = -np.linalg.norm(action)
 

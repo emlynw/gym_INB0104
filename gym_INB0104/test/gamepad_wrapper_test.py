@@ -10,7 +10,7 @@ np.set_printoptions(suppress=True)
 
 def main():
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, reward_type="sparse", ee_dof=6)
+    env = gym.make("gym_INB0104/ReachStrawbEnv", render_mode=render_mode, randomize_domain=True, reward_type="dense", ee_dof=6)
     # env = SERLObsWrapper(env)
     env = GamepadIntervention(env)
     env = TimeLimit(env, max_episode_steps=500)    
@@ -48,7 +48,7 @@ def main():
 
 
             obs, reward, terminated, truncated, info = env.step(action)
-            print(obs['state']['tcp_pose'])
+            print(info['r_distract'])
             step_time = time.time()-step_start_time
             if step_time < 0.05:
                 time.sleep(0.05 - step_time)
