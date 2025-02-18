@@ -322,6 +322,33 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.data.qacc[:] = 0
         mujoco.mj_forward(self.model, self.data)
 
+    def is_descendant(model, child_id, parent_id):
+        # Returns True if the child is the parent or is in its subtree.
+        while child_id != -1:
+            if child_id == parent_id:
+                return True
+            child_id = model.body_parent[child_id]
+        return False
+    
+    def hide_subbodies(self, body_name):
+        # Get the body id for "vine"
+        vine_id = self.model.body_name2id(body_name)
+        # Loop through all bodies
+        for body_id in range(self.model.nbody):
+            # Check if this body is vine or a descendant of vine.
+            if self.is_descendant(self.model, body_id, vine_id):
+                # For each geom attached to this body:
+                geom_start = self.model.body_geomadr[body_id]
+                geom_count = self.model.body_geomnum[body_id]
+                for j in range(geom_count):
+                    geom_id = geom_start + j
+                    # Only hide visual geoms. For example, if contype==0 then it's visual.
+                    if self.model.geom_contype[geom_id] == 0:
+                        # Copy the current rgba, set the alpha channel to 0.
+                        rgba = self.model.geom_rgba[geom_id].copy()
+                        rgba[3] = 0.0
+                        self.model.geom_rgba[geom_id] = rgba
+
     def domain_randomization(self):
         if self.cfg.get("apply_lighting_noise", False):
             self.lighting_noise()

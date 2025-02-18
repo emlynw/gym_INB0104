@@ -24,14 +24,14 @@ def main():
     rotate_180 = "True"
 
     render_mode = "rgb_array"
-    env = gym.make("gym_INB0104/ReachIKDeltaStrawbHangingEnv", height=720, width=720, render_mode=render_mode, randomize_domain=False, ee_dof=4)
+    env = gym.make("gym_INB0104/ReachStrawbEnv", height=720, width=720, render_mode=render_mode, randomize_domain=False, ee_dof=4)
     env = TimeLimit(env, max_episode_steps=200)    
     env = DetectionAreaWrapper(env, detect_cam=detect_cam)
-    waitkey = 100
+    waitkey = 10
     resize_resolution = (480, 480)
 
     # Define the range for absolute movement control
-    max_speed = 0.5  # Maximum speed in any direction
+    max_speed = 1.0  # Maximum speed in any direction
     rot_speed = 0.8  # Maximum rotation speed
 
     # Set up mouse callback
