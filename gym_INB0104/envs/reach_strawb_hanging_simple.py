@@ -62,9 +62,9 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self._GRIPPER_MIN = 0
         self._GRIPPER_MAX = 45
         self._PANDA_XYZ = np.array([0.1, 0, 0.8], dtype=np.float32)
-        self._CARTESIAN_BOUNDS = np.array([[0.05, -0.2, 0.7], [0.55, 0.2, 0.95]], dtype=np.float32)
+        self._CARTESIAN_BOUNDS = np.array([[0.05, -0.2, 0.6], [0.55, 0.2, 0.95]], dtype=np.float32)
         self._ROTATION_BOUNDS = np.array([[-np.pi/3, -np.pi/10, -np.pi/10],[np.pi/3, np.pi/10, np.pi/10]], dtype=np.float32)
-        self.default_obj_pos = np.array([0.42, 0, 1.08])
+        self.default_obj_pos = np.array([0.42, 0, 0.95])
         self.gripper_sleep = 0.6
         # If gripper_pause, new obs after gripper_sleep time when gripper action complete
         self.gripper_pause = False
@@ -164,7 +164,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
 
         self.initial_vine_rotation = Rotation.from_quat(np.roll(self.model.body_quat[self.model.body("vine").id], -1))
 
-        self.initial_position = np.array([0.1, 0.0, 0.8], dtype=np.float32)
+        self.initial_position = np.array([0.1, 0.0, 0.75], dtype=np.float32)
         # Add this line to set the initial orientation
         self.initial_orientation = [0.725, 0.0, 0.688, 0.0]
         self.initial_rotation = Rotation.from_quat(self.initial_orientation)

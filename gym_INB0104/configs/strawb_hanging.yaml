@@ -21,7 +21,7 @@ apply_skybox_noise: true
 wall_color_noise_range: [-0.1, 0.1]
 apply_object_noise: true
 target_pos_noise_low: [-0.02, -0.1, -0.1]
-target_pos_noise_high: [0.08, 0.1, 0.08]
+target_pos_noise_high: [0.08, 0.1, 0.2]
 distract_pos_noise_low: [-0.1, -0.05, -0.03]
 distract_pos_noise_high: [0.05, 0.05, 0.03]
 apply_initial_ee_noise: true
