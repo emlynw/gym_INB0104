@@ -52,7 +52,7 @@ def opspace_4(
     rotational_damping: float = 6.0,
     nullspace_stiffness: float = 0.5,
     nullspace_damping: float = 1.414,
-    joint1_nullspace_stiffness: float = 50.0,
+    joint1_nullspace_stiffness: float = 10.0,
     max_pos_error: float = 0.01,
     max_ori_error: float = 0.03,
     delta_tau_max: float = 1.0,

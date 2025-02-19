@@ -39,7 +39,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         width=480,
         height=480,
         pos_scale=0.008,
-        rot_scale=0.2,
+        rot_scale=0.5,
         cameras=["wrist1", "wrist2", "front"],
         reward_type="dense",
         render_mode="rgb_array",
@@ -65,6 +65,9 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self._CARTESIAN_BOUNDS = np.array([[0.05, -0.2, 0.7], [0.55, 0.2, 0.95]], dtype=np.float32)
         self._ROTATION_BOUNDS = np.array([[-np.pi/3, -np.pi/10, -np.pi/10],[np.pi/3, np.pi/10, np.pi/10]], dtype=np.float32)
         self.default_obj_pos = np.array([0.42, 0, 1.08])
+        self.gripper_sleep = 0.6
+        # If gripper_pause, new obs after gripper_sleep time when gripper action complete
+        self.gripper_pause = False
 
         config_path = Path(__file__).parent.parent / "configs" / "strawb_hanging.yaml"
         self.cfg = load_config(config_path)
@@ -132,7 +135,6 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             "opening": np.array([0, 1, 0], dtype=np.float32),
             "closing": np.array([0, 0, 1], dtype=np.float32),
         }
-        self.gripper_sleep = 0.6
 
         # Store initial values for randomization
         for camera_name in self.cameras:
@@ -175,6 +177,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.model.body_pos[self.model.body("vine").id] = self.default_obj_pos
         for i in range(2, self.num_green+2):
             self.model.body_pos[self.model.body(f"vine{i}").id] = self.default_obj_pos + np.array([-0.05, 0.0, 0.0])
+        self.active_indices = np.array(list(range(2, self.num_green + 2)))
 
     def lighting_noise(self):
 
@@ -522,7 +525,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         else:
             moving_gripper = False
 
-        if moving_gripper:
+        if self.gripper_pause and moving_gripper:
             while self.data.time < target_sim_time:
                 tau = opspace(
                 model=self.model,
