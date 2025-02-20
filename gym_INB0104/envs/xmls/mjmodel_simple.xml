@@ -5,7 +5,7 @@
     <flag multiccd="enable"/>
   </option>
 
-  <size memory="50M"/>
+  <size memory="60M"/>
 
   <visual>
     <global azimuth="120" elevation="-20"/>
@@ -396,6 +396,9 @@
     <body name="front" pos="-0.151 -3.348 0.778" xyaxes="1.0 0 0 0 0 1.000">
       <camera name="front" pos="0 0 0" fovy="41"/>
     </body>
+    <!-- <body name="front" pos="2.0 0 0.6" quat="0.536456 0.460733 0.4611 0.536029">
+      <camera name="front" pos="0 0 0" fovy="41"/>
+    </body> -->
     <body name="side" pos="-0.151 -3.348 0.778" xyaxes="0.998 -0.056 -0.000 -0.001 -0.017 1.000"> 
       <camera name="side" pos="0 0 0" fovy="41"/>
     </body>
@@ -405,53 +408,45 @@
     <body name="target" pos="0.15 0 0.5" quat="1 0 0 0" mocap="true">
       <geom name="target" size="0.03 0.03 0.03" type="box" contype="0" conaffinity="0" rgba="0.6 0.3 0.3 0"/>
     </body>
-    <body name="front bar" pos="0.5 0 1.0" euler="1.57 0 0">
+    <!-- <body name="front bar" pos="0.5 0 1.0" euler="1.57 0 0">
       <geom type="capsule" size="0.01 1.0"/>
     </body>
     <body name="back bar" pos="-0.5 0 1.0" euler="1.57 0 0">
       <geom type="capsule" size="0.01 1.0"/>
-    </body>
+    </body> -->
 
-    <body name="vine" pos="0.45 0 0.9" quat="0.707388 0 0.706825 0">
+    <body name="vine" pos="0.45 -0.03 0.9" quat="0.707388 0 0.706825 0">
       <body name="aB_first">
-        <joint name="aJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-        <geom name="aG0" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-              type="capsule" rgba="0.208 0.337 0.149 1"
-              solref="0.01 1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
+        <joint name="aJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+        <geom name="aG0" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
         <site name="aS_first" pos="0 0 0" group="3"/>
-        <body name="aB_1" pos="0.05 0 0">
-          <joint name="aJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-          <geom name="aG1" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-                type="capsule" rgba="0.208 0.337 0.149 1"
-                solref="0.01 1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>   
-          <body name="aB_2" pos="0.05 0 0">
-            <joint name="aJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-            <geom name="aG2" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-                  type="capsule" rgba="0.208 0.337 0.149 1"
-                  solref="0.01 1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>   
-            <body name="aB_last" pos="0.05 0 0">
-              <joint name="aJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-              <geom name="aG3" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-                    type="capsule" rgba="0.208 0.337 0.149 1"
-                    solref="0.01 1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
-              <site name="aS_last" pos="0.05 0 0" group="3"/>      
-              <body name="stem" pos="0.112 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
-                <geom name="stem" type="capsule" size="0.0007 0.014" pos="0.0002 0.049 -0.00055" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
+        <body name="aB_1" pos="0.03 0 0">
+          <joint name="aJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+          <geom name="aG1" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+          <body name="aB_2" pos="0.03 0 0">
+            <joint name="aJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+            <geom name="aG2" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+            <body name="aB_last" pos="0.03 0 0">
+              <joint name="aJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+              <geom name="aG3" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+              <site name="aS_last" pos="0.03 0 0" group="3"/>      
+              <body name="stem" pos="0.091 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
+                <geom name="stem" type="capsule" size="0.0007 0.012" pos="0.0002 0.049 -0.00055" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
                 <site name="stem" pos="0.0001 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
                 <site name="stem_grasp" pos="0.0001 0.041 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
-                <body name="block" pos="0.0 -0.001 0.0">
+                <body name="block" pos="0.0 0.001 0.0">
                   <site type="box" pos="0 0.015 0" size="0.015 0.02 0.015" group="3" rgba="0 1 0 0.2"/>
-                  <geom name="block" type="mesh" mesh="strawberry_collision" density="800" group="3"/>
+                  <geom name="block" type="mesh" mesh="strawberry_collision" density="400" group="3"/>
                   <geom name="block_visual" type="mesh" mesh="strawberry" material="strawberry_material" contype="0" conaffinity="0"/>
                   <geom name="leaves" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/>
                 </body>
-                <body name="block_big" pos="0 -0.0102 0">
-                  <geom name="block_big" type="mesh" mesh="strawberry_collision_big" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block_big" pos="0 -0.0082 0">
+                  <geom name="block_big" type="mesh" mesh="strawberry_collision_big" density="400" group="3"/>
                   <geom name="block_visual_big" type="mesh" mesh="strawberry_big" material="strawberry_material" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves_big" type="mesh" mesh="strawberry_leaves_big" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
-                <body name="block_small" pos="0 0.005 0">
-                  <geom name="block_small" type="mesh" mesh="strawberry_collision_small" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block_small" pos="0 0.007 0">
+                  <geom name="block_small" type="mesh" mesh="strawberry_collision_small" density="400" group="3"/>
                   <geom name="block_visual_small" type="mesh" mesh="strawberry_small" material="strawberry_material" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves_small" type="mesh" mesh="strawberry_leaves_small" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
@@ -461,46 +456,38 @@
         </body>
       </body>
     </body>
-    <body name="vine2" pos="0.41 0.03 0.9" quat="0.707388 0 0.706825 0">
+    <body name="vine2" pos="0.41 -0.03 0.9" quat="0.707388 0 0.706825 0">
       <body name="bB_first">
-        <joint name="bJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-        <geom name="bG0" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-              type="capsule" rgba="0.208 0.337 0.149 1"
-              solref="0.01 0.1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
+        <joint name="bJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+        <geom name="bG0" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
         <site name="bS_first" pos="0 0 0" group="3"/>
-        <body name="bB_1" pos="0.05 0 0">
-          <joint name="bJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-          <geom name="bG1" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-                type="capsule" rgba="0.208 0.337 0.149 1"
-                solref="0.01 0.1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
-          <body name="bB_2" pos="0.05 0 0">
-            <joint name="bJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-            <geom name="bG2" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-                  type="capsule" rgba="0.208 0.337 0.149 1"
-                  solref="0.01 0.1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
-            <body name="bB_last" pos="0.05 0 0">
-              <joint name="bJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-              <geom name="bG3" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-                    type="capsule" rgba="0.208 0.337 0.149 1" 
-                    solref="0.01 0.1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
-              <site name="bS_last" pos="0.05 0 0" group="3"/>
-              <body name="stem2" pos="0.112 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
+        <body name="bB_1" pos="0.03 0 0">
+          <joint name="bJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+          <geom name="bG1" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+          <body name="bB_2" pos="0.03 0 0">
+            <joint name="bJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+            <geom name="bG2" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+            <body name="bB_last" pos="0.03 0 0">
+              <joint name="bJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+              <geom name="bG3" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+              <site name="bS_last" pos="0.03 0 0" group="3"/>
+              <body name="stem2" pos="0.091 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
                 <geom name="stem2" type="capsule" size="0.0007 0.014" pos="0.0002 0.049 -0.00055" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
                 <site name="stem2" pos="0.0001 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
                 <site name="stem2_grasp" pos="0.0001 0.041 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
-                <body name="block2" pos="0.0 -0.001 0.0">
+                <body name="block2" pos="0.0 0.001 0.0">
                   <!-- <site type="box" pos="0 0.015 0" size="0.015 0.02 0.015" group="3" rgba="0 1 0 0.2"/> -->
-                  <geom name="block2" type="mesh" mesh="strawberry_collision" density="800" group="3"/>
+                  <geom name="block2" type="mesh" mesh="strawberry_collision" density="400" group="3"/>
                   <geom name="block2_visual" type="mesh" mesh="strawberry" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/>
                   <geom name="leaves2" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/>
                 </body>
-                <body name="block2_big" pos="0 -0.0102 0">
-                  <geom name="block2_big" type="mesh" mesh="strawberry_collision_big" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block2_big" pos="0 -0.0082 0">
+                  <geom name="block2_big" type="mesh" mesh="strawberry_collision_big" density="400" group="3"/>
                   <geom name="block2_visual_big" type="mesh" mesh="strawberry_big" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves2_big" type="mesh" mesh="strawberry_leaves_big" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
-                <body name="block2_small" pos="0 0.005 0">
-                  <geom name="block2_small" type="mesh" mesh="strawberry_collision_small" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block2_small" pos="0 0.007 0">
+                  <geom name="block2_small" type="mesh" mesh="strawberry_collision_small" density="400" group="3"/>
                   <geom name="block2_visual_small" type="mesh" mesh="strawberry_small" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves2_small" type="mesh" mesh="strawberry_leaves_small" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
@@ -513,44 +500,36 @@
 
     <body name="vine3" pos="0.41 -0.03 0.9" quat="0.707388 0 0.706825 0">
       <body name="cB_first">
-        <joint name="cJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-        <geom name="cG0" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-              type="capsule" rgba="0.208 0.337 0.149 1" 
-              solref="0.01 0.1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
+        <joint name="cJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+        <geom name="cG0" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
         <site name="cS_first" pos="0 0 0" group="3"/>
-        <body name="cB_1" pos="0.05 0 0">
-          <joint name="cJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-          <geom name="cG1" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-                type="capsule" rgba="0.208 0.337 0.149 1" 
-                solref="0.01 0.1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
-          <body name="cB_2" pos="0.05 0 0">
-            <joint name="cJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-            <geom name="cG2" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-                  type="capsule" rgba="0.208 0.337 0.149 1" 
-                  solref="0.01 0.1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
-            <body name="cB_last" pos="0.05 0 0">
-              <joint name="cJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.005"/>
-              <geom name="cG3" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" 
-                    type="capsule" rgba="0.208 0.337 0.149 1" 
-                    solref="0.01 0.1" solimp="0.9 0.95 0.001" friction="1.0 0.5 0.1" mass="0.0005"/>
-              <site name="cS_last" pos="0.05 0 0" group="3"/>
-              <body name="stem3" pos="0.112 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
+        <body name="cB_1" pos="0.03 0 0">
+          <joint name="cJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+          <geom name="cG1" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+          <body name="cB_2" pos="0.03 0 0">
+            <joint name="cJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+            <geom name="cG2" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+            <body name="cB_last" pos="0.03 0 0">
+              <joint name="cJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+              <geom name="cG3" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+              <site name="cS_last" pos="0.03 0 0" group="3"/>
+              <body name="stem3" pos="0.091 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
                 <geom name="stem3" type="capsule" size="0.0007 0.014" pos="0.0002 0.049 -0.00055" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
                 <site name="stem3" pos="0.0001 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
                 <site name="stem3_grasp" pos="0.0001 0.041 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
-                <body name="block3" pos="0.0 -0.001 0.0">
+                <body name="block3" pos="0.0 0.001 0.0">
                   <!-- <site type="box" pos="0 0.015 0" size="0.015 0.02 0.015" group="3" rgba="0 1 0 0.2"/> -->
-                  <geom name="block3" type="mesh" mesh="strawberry_collision" density="800" group="3"/>
+                  <geom name="block3" type="mesh" mesh="strawberry_collision" density="400" group="3"/>
                   <geom name="block3_visual" type="mesh" mesh="strawberry" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/>
                   <geom name="leaves3" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/>
                 </body>
-                <body name="block3_big" pos="0 -0.0102 0">
-                  <geom name="block3_big" type="mesh" mesh="strawberry_collision_big" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block3_big" pos="0 -0.0082 0">
+                  <geom name="block3_big" type="mesh" mesh="strawberry_collision_big" density="400" group="3"/>
                   <geom name="block3_visual_big" type="mesh" mesh="strawberry_big" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves3_big" type="mesh" mesh="strawberry_leaves_big" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
-                <body name="block3_small" pos="0 0.005 0">
-                  <geom name="block3_small" type="mesh" mesh="strawberry_collision_small" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block3_small" pos="0 0.007 0">
+                  <geom name="block3_small" type="mesh" mesh="strawberry_collision_small" density="400" group="3"/>
                   <geom name="block3_visual_small" type="mesh" mesh="strawberry_small" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves3_small" type="mesh" mesh="strawberry_leaves_small" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
@@ -563,36 +542,36 @@
 
     <body name="vine4" pos="0.41 -0.03 0.9" quat="0.707388 0 0.706825 0">
       <body name="dB_first">
-        <joint name="dJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-        <geom name="dG0" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+        <joint name="dJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+        <geom name="dG0" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
         <site name="dS_first" pos="0 0 0" group="3"/>
-        <body name="dB_1" pos="0.05 0 0">
-          <joint name="dJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-          <geom name="dG1" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-          <body name="dB_2" pos="0.05 0 0">
-            <joint name="dJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-            <geom name="dG2" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-            <body name="dB_last" pos="0.05 0 0">
-              <joint name="dJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-              <geom name="dG3" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-              <site name="dS_last" pos="0.05 0 0" group="3"/>
-              <body name="stem4" pos="0.112 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
+        <body name="dB_1" pos="0.03 0 0">
+          <joint name="dJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+          <geom name="dG1" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+          <body name="dB_2" pos="0.03 0 0">
+            <joint name="dJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+            <geom name="dG2" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+            <body name="dB_last" pos="0.03 0 0">
+              <joint name="dJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+              <geom name="dG3" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+              <site name="dS_last" pos="0.03 0 0" group="3"/>
+              <body name="stem4" pos="0.091 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
                 <geom name="stem4" type="capsule" size="0.0007 0.014" pos="0.0002 0.049 -0.00055" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
                 <site name="stem4" pos="0.0001 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
                 <site name="stem4_grasp" pos="0.0001 0.041 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
-                <body name="block4" pos="0.0 -0.001 0.0">
+                <body name="block4" pos="0.0 0.001 0.0">
                   <!-- <site type="box" pos="0 0.015 0" size="0.015 0.02 0.015" group="3" rgba="0 1 0 0.2"/> -->
-                  <geom name="block4" type="mesh" mesh="strawberry_collision" density="800" group="3"/>
+                  <geom name="block4" type="mesh" mesh="strawberry_collision" density="400" group="3"/>
                   <geom name="block4_visual" type="mesh" mesh="strawberry" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/>
                   <geom name="leaves4" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/>
                 </body>
-                <body name="block4_big" pos="0 -0.0102 0">
-                  <geom name="block4_big" type="mesh" mesh="strawberry_collision_big" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block4_big" pos="0 -0.0082 0">
+                  <geom name="block4_big" type="mesh" mesh="strawberry_collision_big" density="400" group="3"/>
                   <geom name="block4_visual_big" type="mesh" mesh="strawberry_big" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves4_big" type="mesh" mesh="strawberry_leaves_big" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
-                <body name="block4_small" pos="0 0.005 0">
-                  <geom name="block4_small" type="mesh" mesh="strawberry_collision_small" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block4_small" pos="0 0.007 0">
+                  <geom name="block4_small" type="mesh" mesh="strawberry_collision_small" density="400" group="3"/>
                   <geom name="block4_visual_small" type="mesh" mesh="strawberry_small" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves4_small" type="mesh" mesh="strawberry_leaves_small" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
@@ -605,36 +584,36 @@
 
     <body name="vine5" pos="0.41 -0.03 0.9" quat="0.707388 0 0.706825 0">
       <body name="eB_first">
-        <joint name="eJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-        <geom name="eG0" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+        <joint name="eJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+        <geom name="eG0" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
         <site name="eS_first" pos="0 0 0" group="3"/>
-        <body name="eB_1" pos="0.05 0 0">
-          <joint name="eJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-          <geom name="eG1" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-          <body name="eB_2" pos="0.05 0 0">
-            <joint name="eJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-            <geom name="eG2" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-            <body name="eB_last" pos="0.05 0 0">
-              <joint name="eJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-              <geom name="eG3" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-              <site name="eS_last" pos="0.05 0 0" group="3"/>
-              <body name="stem5" pos="0.112 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
+        <body name="eB_1" pos="0.03 0 0">
+          <joint name="eJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+          <geom name="eG1" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+          <body name="eB_2" pos="0.03 0 0">
+            <joint name="eJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+            <geom name="eG2" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+            <body name="eB_last" pos="0.03 0 0">
+              <joint name="eJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+              <geom name="eG3" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+              <site name="eS_last" pos="0.03 0 0" group="3"/>
+              <body name="stem5" pos="0.091 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
                 <geom name="stem5" type="capsule" size="0.0007 0.014" pos="0.0002 0.049 -0.00055" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
                 <site name="stem5" pos="0.0001 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
                 <site name="stem5_grasp" pos="0.0001 0.041 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
-                <body name="block5" pos="0.0 -0.001 0.0">
+                <body name="block5" pos="0.0 0.001 0.0">
                   <!-- <site type="box" pos="0 0.015 0" size="0.015 0.02 0.015" group="3" rgba="0 1 0 0.2"/> -->
-                  <geom name="block5" type="mesh" mesh="strawberry_collision" density="800" group="3"/>
+                  <geom name="block5" type="mesh" mesh="strawberry_collision" density="400" group="3"/>
                   <geom name="block5_visual" type="mesh" mesh="strawberry" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/>
                   <geom name="leaves5" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/>
                 </body>
-                <body name="block5_big" pos="0 -0.0102 0">
-                  <geom name="block5_big" type="mesh" mesh="strawberry_collision_big" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block5_big" pos="0 -0.0082 0">
+                  <geom name="block5_big" type="mesh" mesh="strawberry_collision_big" density="400" group="3"/>
                   <geom name="block5_visual_big" type="mesh" mesh="strawberry_big" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves5_big" type="mesh" mesh="strawberry_leaves_big" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
-                <body name="block5_small" pos="0 0.005 0">
-                  <geom name="block5_small" type="mesh" mesh="strawberry_collision_small" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block5_small" pos="0 0.007 0">
+                  <geom name="block5_small" type="mesh" mesh="strawberry_collision_small" density="400" group="3"/>
                   <geom name="block5_visual_small" type="mesh" mesh="strawberry_small" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves5_small" type="mesh" mesh="strawberry_leaves_small" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
@@ -647,36 +626,36 @@
 
     <body name="vine6" pos="0.41 -0.03 0.9" quat="0.707388 0 0.706825 0">
       <body name="fB_first">
-        <joint name="fJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-        <geom name="fG0" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+        <joint name="fJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+        <geom name="fG0" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
         <site name="fS_first" pos="0 0 0" group="3"/>
-        <body name="fB_1" pos="0.05 0 0">
-          <joint name="fJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-          <geom name="fG1" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-          <body name="fB_2" pos="0.05 0 0">
-            <joint name="fJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-            <geom name="fG2" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-            <body name="fB_last" pos="0.05 0 0">
-              <joint name="fJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-              <geom name="fG3" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-              <site name="fS_last" pos="0.05 0 0" group="3"/>
-              <body name="stem6" pos="0.112 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
+        <body name="fB_1" pos="0.03 0 0">
+          <joint name="fJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+          <geom name="fG1" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+          <body name="fB_2" pos="0.03 0 0">
+            <joint name="fJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+            <geom name="fG2" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+            <body name="fB_last" pos="0.03 0 0">
+              <joint name="fJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+              <geom name="fG3" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+              <site name="fS_last" pos="0.03 0 0" group="3"/>
+              <body name="stem6" pos="0.091 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
                 <geom name="stem6" type="capsule" size="0.0007 0.014" pos="0.0002 0.049 -0.00055" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
                 <site name="stem6" pos="0.0001 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
                 <site name="stem6_grasp" pos="0.0001 0.041 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
-                <body name="block6" pos="0.0 -0.001 0.0">
+                <body name="block6" pos="0.0 0.001 0.0">
                   <!-- <site type="box" pos="0 0.015 0" size="0.015 0.02 0.015" group="3" rgba="0 1 0 0.2"/> -->
-                  <geom name="block6" type="mesh" mesh="strawberry_collision" density="800" group="3"/>
+                  <geom name="block6" type="mesh" mesh="strawberry_collision" density="400" group="3"/>
                   <geom name="block6_visual" type="mesh" mesh="strawberry" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/>
                   <geom name="leaves6" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/>
                 </body>
-                <body name="block6_big" pos="0 -0.0102 0">
-                  <geom name="block6_big" type="mesh" mesh="strawberry_collision_big" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block6_big" pos="0 -0.0082 0">
+                  <geom name="block6_big" type="mesh" mesh="strawberry_collision_big" density="400" group="3"/>
                   <geom name="block6_visual_big" type="mesh" mesh="strawberry_big" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves6_big" type="mesh" mesh="strawberry_leaves_big" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
-                <body name="block6_small" pos="0 0.005 0">
-                  <geom name="block6_small" type="mesh" mesh="strawberry_collision_small" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block6_small" pos="0 0.007 0">
+                  <geom name="block6_small" type="mesh" mesh="strawberry_collision_small" density="400" group="3"/>
                   <geom name="block6_visual_small" type="mesh" mesh="strawberry_small" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves6_small" type="mesh" mesh="strawberry_leaves_small" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
@@ -689,36 +668,36 @@
 
     <body name="vine7" pos="0.41 -0.03 0.9" quat="0.707388 0 0.706825 0">
       <body name="gB_first">
-        <joint name="gJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-        <geom name="gG0" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
+        <joint name="gJ_first" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+        <geom name="gG0" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
         <site name="gS_first" pos="0 0 0" group="3"/>
-        <body name="gB_1" pos="0.05 0 0">
-          <joint name="gJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-          <geom name="gG1" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-          <body name="gB_2" pos="0.05 0 0">
-            <joint name="gJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-            <geom name="gG2" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-            <body name="gB_last" pos="0.05 0 0">
-              <joint name="gJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.002"/>
-              <geom name="gG3" size="0.0007 0.025" pos="0.025 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="0.208 0.337 0.149 1"/>
-              <site name="gS_last" pos="0.05 0 0" group="3"/>
-              <body name="stem7" pos="0.112 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
+        <body name="gB_1" pos="0.03 0 0">
+          <joint name="gJ_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+          <geom name="gG1" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+          <body name="gB_2" pos="0.03 0 0">
+            <joint name="gJ_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+            <geom name="gG2" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+            <body name="gB_last" pos="0.03 0 0">
+              <joint name="gJ_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.0004"/>
+              <geom name="gG3" size="0.0007 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" solref="0.01 0.1" mass="0.0001" rgba="0.208 0.337 0.149 1"/>
+              <site name="gS_last" pos="0.03 0 0" group="3"/>
+              <body name="stem7" pos="0.091 -0.00024 0.00052" quat="0.707388 0 0 0.706825">
                 <geom name="stem7" type="capsule" size="0.0007 0.014" pos="0.0002 0.049 -0.00055" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
                 <site name="stem7" pos="0.0001 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
                 <site name="stem7_grasp" pos="0.0001 0.041 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
-                <body name="block7" pos="0.0 -0.001 0.0">
+                <body name="block7" pos="0.0 0.001 0.0">
                   <!-- <site type="box" pos="0 0.015 0" size="0.015 0.02 0.015" group="3" rgba="0 1 0 0.2"/> -->
-                  <geom name="block7" type="mesh" mesh="strawberry_collision" density="800" group="3"/>
+                  <geom name="block7" type="mesh" mesh="strawberry_collision" density="400" group="3"/>
                   <geom name="block7_visual" type="mesh" mesh="strawberry" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/>
                   <geom name="leaves7" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/>
                 </body>
-                <body name="block7_big" pos="0 -0.0102 0">
-                  <geom name="block7_big" type="mesh" mesh="strawberry_collision_big" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block7_big" pos="0 -0.0082 0">
+                  <geom name="block7_big" type="mesh" mesh="strawberry_collision_big" density="400" group="3"/>
                   <geom name="block7_visual_big" type="mesh" mesh="strawberry_big" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves7_big" type="mesh" mesh="strawberry_leaves_big" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
-                <body name="block7_small" pos="0 0.005 0">
-                  <geom name="block7_small" type="mesh" mesh="strawberry_collision_small" density="800" group="3" contype="0" conaffinity="0"/>
+                <body name="block7_small" pos="0 0.007 0">
+                  <geom name="block7_small" type="mesh" mesh="strawberry_collision_small" density="400" group="3"/>
                   <geom name="block7_visual_small" type="mesh" mesh="strawberry_small" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0" group="3"/>
                   <geom name="leaves7_small" type="mesh" mesh="strawberry_leaves_small" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0" group="3"/>
                 </body>
@@ -757,7 +736,7 @@
     <general name="actuator5" class="panda" joint="joint5" forcerange="-12 12"/>
     <general name="actuator6" class="panda" joint="joint6" forcerange="-12 12"/>
     <general name="actuator7" class="panda" joint="joint7" forcerange="-12 12"/>
-    <general name="fingers_actuator" class="panda"  joint="finger_joint1" ctrlrange="0 255" forcerange="-100 100" biastype="affine" gainprm="0.0156863" biasprm="0 -100 -10"/>
+    <general name="fingers_actuator" class="panda"  joint="finger_joint1" ctrlrange="0 255" forcerange="-200 200" biastype="affine" gainprm="0.0156863" biasprm="0 -100 -10"/>
   </actuator>
 
   <sensor>

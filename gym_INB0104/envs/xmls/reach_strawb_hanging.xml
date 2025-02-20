@@ -3,19 +3,17 @@
   <include file="strawb_hanging.xml" pos="1.0 0 0"/>
 
   <option viscosity="0.0009"/>
+  <size memory="50M"/>
+
 
   <asset>
     <texture name="strawberry_color" type="2d" file="textures/strawberry.png"/>
-    <texture name="strawberry_2_color" type="2d" file="textures/strawberry_2.png"/>
-    <texture name="strawberry_2_leaves" type="2d" file="textures/strawberry_2_leaves.png"/>
-    <material name="strawberry_2_material" rgba="0.55 0.1 0.1 1" shininess="0.01" specular="0.01" reflectance="0.05" texuniform="true"/>
-    <material name="strawberry_2_leaves" texture="strawberry_2_leaves" shininess="0.1" specular="0.1" reflectance="0.5" texuniform="true"/>
-    <material name="strawberry_material" texture="strawberry_color" shininess="0.1" specular="0.1" reflectance="0.5" texuniform="true"/>
-    <mesh name="strawberry" file="strawberry_new.obj" scale="0.006 0.006 0.006"/>
-    <mesh name="strawberry_collision" file="strawberry_collision.obj" scale="0.006 0.006 0.006"/>
-    <mesh name="strawberry_2" file="strawberry_2.obj" scale="0.1 0.1 0.1"/>
-    <mesh name="strawberry_2_leaves" file="strawberry_2_leaves.obj" scale="0.1 0.1 0.1"/>
-    <mesh name="strawberry_2_collision" file="strawberry_2.obj" scale="0.1 0.1 0.1"/>
+    <texture name="strawberry_leaves" type="2d" file="textures/strawberry_leaves.png"/>
+    <material name="strawberry_material" rgba="0.55 0.1 0.1 1" shininess="0.01" specular="0.01" reflectance="0.05" texuniform="true"/>
+    <material name="strawberry_leaves" texture="strawberry_leaves" shininess="0.1" specular="0.1" reflectance="0.5" texuniform="true"/>
+    <mesh name="strawberry" file="strawberry.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="strawberry_leaves" file="strawberry_leaves.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="strawberry_collision" file="strawberry_collision.obj" scale="0.12 0.12 0.12"/>
   </asset>  
 
   <worldbody>
@@ -27,9 +25,9 @@
     <!-- target object -->
     <body name="block" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
       <freejoint name="block"/>
-      <geom name="block" type="mesh" mesh="strawberry_2_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
-      <geom name="block_visual" type="mesh" mesh="strawberry_2" material="strawberry_2_material" contype="0" conaffinity="0"/> 
-      <geom name="strawberry_2_leaves" type="mesh" mesh="strawberry_2_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_2_leaves" contype="0" conaffinity="0"/> 
+      <geom name="block" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
+      <geom name="block_visual" type="mesh" mesh="strawberry" material="strawberry_material" contype="0" conaffinity="0"/> 
+      <geom name="strawberry_leaves" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/> 
       <site name="block_center" pos="0 0.02 0" size="0.001" rgba="0 1 0 1" group="3"/>
       <geom name="stem" type="capsule" size="0.0007 0.014" pos="0.0001 0.04 -0.0004" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
       <site name="stem" pos="0.0004 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
@@ -39,9 +37,9 @@
     <!-- Distractor 1 -->
     <body name="block2" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
       <freejoint name="block2"/>
-      <geom name="block2" type="mesh" mesh="strawberry_2_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
-      <geom name="block2_visual" type="mesh" mesh="strawberry_2" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/> 
-      <geom name="strawberry_2_leaves2" type="mesh" mesh="strawberry_2_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_2_leaves" contype="0" conaffinity="0"/> 
+      <geom name="block2" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
+      <geom name="block2_visual" type="mesh" mesh="strawberry" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/> 
+      <geom name="strawberry_leaves2" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/> 
       <geom name="stem2" type="capsule" size="0.0007 0.014" pos="0.0001 0.04 -0.0004" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
       <site name="stem2" pos="0.0004 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
     </body>
@@ -49,9 +47,9 @@
     <!-- Distractor 2 -->
     <body name="block3" pos="0.11 0 0" quat="0.707388 0 0 0.706825">
       <freejoint name="block3"/>
-      <geom name="block3" type="mesh" mesh="strawberry_2_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
-      <geom name="block3_visual" type="mesh" mesh="strawberry_2" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/> 
-      <geom name="strawberry_2_leaves3" type="mesh" mesh="strawberry_2_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_2_leaves" contype="0" conaffinity="0"/> 
+      <geom name="block3" type="mesh" mesh="strawberry_collision" density="800" solref="0.02 1.0" friction="0.9 0.5 1.2" group="3"/> 
+      <geom name="block3_visual" type="mesh" mesh="strawberry" rgba="0.5 0.63 0.45 1" contype="0" conaffinity="0"/> 
+      <geom name="strawberry_leaves3" type="mesh" mesh="strawberry_leaves" rgba="0.9 0.9 0.9 1.0" material="strawberry_leaves" contype="0" conaffinity="0"/> 
       <geom name="stem3" type="capsule" size="0.0007 0.014" pos="0.0001 0.04 -0.0004" euler="-1.57 0.0 0.0" rgba="0.208 0.337 0.149 1"/>
       <site name="stem3" pos="0.0004 0.054 -0.0004" size="0.0012" rgba="0 0 1 1" group="3"/>
     </body>
@@ -63,53 +61,53 @@
 
     <!-- Target Strawb Vine -->
     <body name="vine" pos="0.76 0.0 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.1" offset="0 0 0" initial="ball" prefix="a">
-        <joint kind="main" damping="0.002"/>
-        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+      <composite type="cable" curve="s" count="5 1 1" size="0.12" offset="0 0 0" initial="ball" prefix="a">
+        <joint kind="main" damping="0.001"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1" solref="0.01 0.1" solimp="0.9 0.95 0.001" friction="1.0 0.005 0.0001" mass="0.0001"/>
       </composite>
     </body>
 
     <!-- Distractor strawb vine 1 -->
     <body name="vine2" pos="0.72 0.04 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="b">
+      <composite type="cable" curve="s" count="5 1 1" size="0.12" offset="0 0 0" initial="ball" prefix="b">
         <joint kind="main" damping="0.002"/>
-        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1" solref="0.01 0.1" solimp="0.9 0.95 0.001" mass="0.0001"/>
       </composite>
     </body>
 
     <!-- Distractor strawb vine 2 -->
     <body name="vine3" pos="0.7 -0.03 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="c">
+      <composite type="cable" curve="s" count="5 1 1" size="0.12" offset="0 0 0" initial="ball" prefix="c">
         <joint kind="main" damping="0.002"/>
-        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1" solref="0.01 0.1" solimp="0.9 0.95 0.001" mass="0.0001"/>
       </composite>
     </body>
 
     <body name="vine4" pos="0.7 -0.03 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="d">
+      <composite type="cable" curve="s" count="5 1 1" size="0.12" offset="0 0 0" initial="ball" prefix="d">
         <joint kind="main" damping="0.002"/>
-        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1" solref="0.01 0.1" solimp="0.9 0.95 0.001" mass="0.0001"/>
       </composite>
     </body>
 
     <body name="vine5" pos="0.7 -0.03 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="e">
+      <composite type="cable" curve="s" count="5 1 1" size="0.12" offset="0 0 0" initial="ball" prefix="e">
         <joint kind="main" damping="0.002"/>
-        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1" solref="0.01 0.1" solimp="0.9 0.95 0.001" mass="0.0001"/>
       </composite>
     </body>
 
     <body name="vine6" pos="0.7 -0.03 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="f">
+      <composite type="cable" curve="s" count="5 1 1" size="0.12" offset="0 0 0" initial="ball" prefix="f">
         <joint kind="main" damping="0.002"/>
-        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1" solref="0.01 0.1" solimp="0.9 0.95 0.001" mass="0.0001"/>
       </composite>
     </body>
 
     <body name="vine7" pos="0.7 -0.03 0.85" euler="0 1.57 0">
-      <composite type="cable" curve="s" count="5 1 1" size="0.2" offset="0 0 0" initial="ball" prefix="g">
+      <composite type="cable" curve="s" count="5 1 1" size="0.12" offset="0 0 0" initial="ball" prefix="g">
         <joint kind="main" damping="0.002"/>
-        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1"/>
+        <geom type="capsule" size=".0007" rgba="0.208 0.337 0.149 1" solref="0.01 0.1" solimp="0.9 0.95 0.001" mass="0.0001"/>
       </composite>
     </body>
 

@@ -48,7 +48,7 @@ def main():
 
 
             obs, reward, terminated, truncated, info = env.step(action)
-            print(obs['state']['tcp_pose'])
+            print(reward)
             step_time = time.time()-step_start_time
             if step_time < 0.05:
                 time.sleep(0.05 - step_time)

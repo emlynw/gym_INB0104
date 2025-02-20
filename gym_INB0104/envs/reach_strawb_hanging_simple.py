@@ -64,7 +64,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self._PANDA_XYZ = np.array([0.1, 0, 0.8], dtype=np.float32)
         self._CARTESIAN_BOUNDS = np.array([[0.05, -0.2, 0.6], [0.55, 0.2, 0.95]], dtype=np.float32)
         self._ROTATION_BOUNDS = np.array([[-np.pi/3, -np.pi/10, -np.pi/10],[np.pi/3, np.pi/10, np.pi/10]], dtype=np.float32)
-        self.default_obj_pos = np.array([0.42, 0, 0.95])
+        self.default_obj_pos = np.array([0.42, 0, 0.85])
         self.gripper_sleep = 0.6
         # If gripper_pause, new obs after gripper_sleep time when gripper action complete
         self.gripper_pause = False
@@ -278,6 +278,34 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         new_quat = new_rotation.as_quat()
         self.model.body_quat[self.model.body("vine").id] = [new_quat[3], new_quat[0], new_quat[1], new_quat[2]]
 
+        target_names = ["block", "block_big", "block_small"]
+        sub_geom_ids = {}
+        for name in target_names:
+            sub_body = self.model.body(name)
+            geom_start = self.model.body_geomadr[sub_body.id]
+            geom_count = self.model.body_geomnum[sub_body.id]
+            sub_geom_ids[name] = list(range(geom_start, geom_start + geom_count))
+
+
+        active_sub = np.random.choice(target_names)
+        for name in target_names:
+            for geom_id in sub_geom_ids[name]:
+                geom_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
+                if name == active_sub:
+                    if geom_name == active_sub:
+                        active_geom_name = geom_name
+                        self.model.geom_group[geom_id] = 3
+                        self.model.geom_contype[geom_id] = 1
+                        self.model.geom_conaffinity[geom_id] = 1
+                    else:
+                        self.model.geom_group[geom_id] = 0
+                        self.model.geom_contype[geom_id] = 0
+                        self.model.geom_conaffinity[geom_id] = 0
+                else:
+                    self.model.geom_group[geom_id] = 3
+                    self.model.geom_contype[geom_id] = 0
+                    self.model.geom_conaffinity[geom_id] = 0
+
         distract_pos_noise_low = self.cfg.get("distract_pos_noise_low", [0.0, 0.0, 0.0])
         distract_pos_noise_high = self.cfg.get("distract_pos_noise_high", [0.0, 0.0, 0.0])
 
@@ -301,26 +329,43 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             new_quat = new_rotation.as_quat()
             self.model.body_quat[vine_body.id] = [new_quat[3], new_quat[0], new_quat[1], new_quat[2]]
 
-            # Now, find the corresponding block body (assumed to be named "block{i}").
-            block_body = self.model.body(f"block{i}")
-            geom_start = self.model.body_geomadr[block_body.id]
-            geom_count = self.model.body_geomnum[block_body.id]
+            # change strawb size
+            sub_names = [f"block{i}", f"block{i}_big", f"block{i}_small"]
+            sub_geom_ids = {}
+            # Gather geom id lists for each sub-body.
+            for name in sub_names:
+                sub_body = self.model.body(name)
+                geom_start = self.model.body_geomadr[sub_body.id]
+                geom_count = self.model.body_geomnum[sub_body.id]
+                sub_geom_ids[name] = list(range(geom_start, geom_start + geom_count))
+
             # If this vine is NOT active, disable its collisions.
             if i not in active_indices:
-                for j in range(geom_count):
-                    geom_id = geom_start + j
-                    self.model.geom_group[geom_id] = 3  # Or any group used to flag disabled objects
-                    self.model.geom_contype[geom_id] = 0
-                    self.model.geom_conaffinity[geom_id] = 0
+                for name in sub_names:
+                    for geom_id in sub_geom_ids[name]:
+                        self.model.geom_group[geom_id] = 3
+                        self.model.geom_contype[geom_id] = 0
+                        self.model.geom_conaffinity[geom_id] = 0
             else:
                 # Otherwise, ensure default collision settings are in place.
-                for j in range(geom_count):
-                    geom_id = geom_start + j
-                    geom_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
-                    if geom_name != f"block{i}":
-                        self.model.geom_group[geom_id] = 0  # Assuming 0 is the default group
-                    self.model.geom_contype[geom_id] = 1
-                    self.model.geom_conaffinity[geom_id] = 1
+                active_sub = np.random.choice(sub_names)
+                for name in sub_names:
+                    for geom_id in sub_geom_ids[name]:
+                        geom_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, geom_id)
+                        if name == active_sub:
+                            if geom_name == name:
+                                self.model.geom_group[geom_id] = 3
+                                self.model.geom_contype[geom_id] = 1
+                                self.model.geom_conaffinity[geom_id] = 1
+                            else:
+                                self.model.geom_group[geom_id] = 0
+                                self.model.geom_contype[geom_id] = 0
+                                self.model.geom_conaffinity[geom_id] = 0
+                        else:
+                            self.model.geom_group[geom_id] = 3
+                            self.model.geom_contype[geom_id] = 0
+                            self.model.geom_conaffinity[geom_id] = 0
+
 
         self.data.qvel[:] = 0
         self.data.qacc[:] = 0
