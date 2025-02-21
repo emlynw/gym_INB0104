@@ -42,6 +42,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         rot_scale=0.5,
         cameras=["wrist1", "wrist2", "front"],
         reward_type="dense",
+        gripper_pause = False,
         render_mode="rgb_array",
         **kwargs,
     ):
@@ -56,6 +57,8 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.rot_scale = rot_scale
         self.cameras = cameras
         self.reward_type = reward_type
+        # If gripper_pause, new obs after gripper_sleep time when gripper action complete
+        self.gripper_pause = gripper_pause
 
         self._PANDA_HOME = np.array([0.0, -1.6, 0.0, -2.54, -0.05, 2.49, 0.822], dtype=np.float32)
         self._GRIPPER_HOME = np.array([0.0141, 0.0141], dtype=np.float32)
@@ -66,8 +69,6 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self._ROTATION_BOUNDS = np.array([[-np.pi/3, -np.pi/6, -np.pi/10],[np.pi/3, np.pi/6, np.pi/10]], dtype=np.float32)
         self.default_obj_pos = np.array([0.42, 0, 0.85])
         self.gripper_sleep = 0.6
-        # If gripper_pause, new obs after gripper_sleep time when gripper action complete
-        self.gripper_pause = False
 
         config_path = Path(__file__).parent.parent / "configs" / "strawb_hanging.yaml"
         self.cfg = load_config(config_path)
@@ -575,6 +576,7 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         # print(np.array([2*self.data.qpos[8]/self._GRIPPER_HOME[0]], dtype=np.float32))
 
         # Handle grasping
+        moving_gripper = False
         if self.data.time - self.prev_grasp_time < self.gripper_sleep:
             self.gripper_blocked = True
             grasp = self.prev_grasp
