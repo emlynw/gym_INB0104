@@ -408,12 +408,12 @@
     <body name="target" pos="0.15 0 0.5" quat="1 0 0 0" mocap="true">
       <geom name="target" size="0.03 0.03 0.03" type="box" contype="0" conaffinity="0" rgba="0.6 0.3 0.3 0"/>
     </body>
-    <body name="front bar" pos="0.5 0 1.0" euler="1.57 0 0">
+    <!-- <body name="front bar" pos="0.5 0 1.0" euler="1.57 0 0">
       <geom type="capsule" size="0.01 1.0"/>
     </body>
     <body name="back bar" pos="-0.5 0 1.0" euler="1.57 0 0">
       <geom type="capsule" size="0.01 1.0"/>
-    </body>
+    </body> -->
 
     <body name="vine" pos="0.45 -0.03 0.9" quat="0.707388 0 0.706825 0">
       <body name="aB_first">
