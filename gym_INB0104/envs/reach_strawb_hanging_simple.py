@@ -731,7 +731,6 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             geom2_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom2)
 
             if geom1_name == "right_finger_inner" or geom2_name == "right_finger_inner":
-                print(f"geom 1: {geom1_name}, geom 2: {geom2_name}")
                 if geom1_name == "stem" or geom2_name == "stem":
                     right_finger_contact_good = True
                 elif geom1_name == "aG3" or geom2_name == "aG3" or geom1_name == "left_finger_inner" or geom2_name == "left_finger_inner":
