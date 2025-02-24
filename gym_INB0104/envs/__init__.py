@@ -1,6 +1,7 @@
 from gym_INB0104.envs.reach_ik_delta import ReachIKDeltaEnv
 from gym_INB0104.envs.reach_strawb_hanging import ReachIKDeltaStrawbHangingEnv
 from gym_INB0104.envs.reach_strawb_hanging_simple import ReachStrawbEnv
+from gym_INB0104.envs.reach_multi_strawb import ReachMultiStrawbEnv
 # from gym_INB0104.envs.reach_strawb_jax import ReachStrawbJaxEnv
 from gym_INB0104.envs.reach_strawb_table import ReachIKDeltaStrawbTableEnv
 from gym_INB0104.envs.reach_delta import ReachDeltaEnv
