@@ -266,6 +266,21 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             self.model.geom('floor').group = 0
         self._viewer.model.tex_adr[0] = self.model.tex_adr[skybox_tex_id]
 
+    def get_subtree_bodies(self, model, root_id):
+        """
+        Return a list of all bodies in the subtree rooted at `root_id`, 
+        including `root_id` itself.
+        """
+        subtree = []
+        stack = [root_id]
+        while stack:
+            current = stack.pop()
+            subtree.append(current)
+            # Find all bodies whose parent is `current`
+            for b_id in range(model.nbody):
+                if model.body_parentid[b_id] == current:
+                    stack.append(b_id)
+        return subtree
 
     def object_noise(self):
         # Target pos
@@ -288,7 +303,6 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
             geom_start = self.model.body_geomadr[sub_body.id]
             geom_count = self.model.body_geomnum[sub_body.id]
             sub_geom_ids[name] = list(range(geom_start, geom_start + geom_count))
-
 
         active_sub = np.random.choice(target_names)
         for name in target_names:
@@ -373,33 +387,6 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         self.data.qvel[:] = 0
         self.data.qacc[:] = 0
         mujoco.mj_forward(self.model, self.data)
-
-    def is_descendant(model, child_id, parent_id):
-        # Returns True if the child is the parent or is in its subtree.
-        while child_id != -1:
-            if child_id == parent_id:
-                return True
-            child_id = model.body_parent[child_id]
-        return False
-    
-    def hide_subbodies(self, body_name):
-        # Get the body id for "vine"
-        vine_id = self.model.body_name2id(body_name)
-        # Loop through all bodies
-        for body_id in range(self.model.nbody):
-            # Check if this body is vine or a descendant of vine.
-            if self.is_descendant(self.model, body_id, vine_id):
-                # For each geom attached to this body:
-                geom_start = self.model.body_geomadr[body_id]
-                geom_count = self.model.body_geomnum[body_id]
-                for j in range(geom_count):
-                    geom_id = geom_start + j
-                    # Only hide visual geoms. For example, if contype==0 then it's visual.
-                    if self.model.geom_contype[geom_id] == 0:
-                        # Copy the current rgba, set the alpha channel to 0.
-                        rgba = self.model.geom_rgba[geom_id].copy()
-                        rgba[3] = 0.0
-                        self.model.geom_rgba[geom_id] = rgba
 
     def domain_randomization(self):
         if self.cfg.get("apply_lighting_noise", False):
@@ -726,35 +713,53 @@ class ReachStrawbEnv(MujocoEnv, utils.EzPickle):
         total_distances = np.linalg.norm(self.distractor_displacements_2-self.distractor_displacements)
         r_distract = 1- np.tanh(5*np.sum(total_distances))
 
-        r_energy = -np.linalg.norm(action)
+        r_energy = -np.linalg.norm(action[:-1])
 
         # Smoothness reward
-        r_smooth = -np.linalg.norm(action - self.prev_action) 
+        r_smooth = -np.linalg.norm(action[:-1] - self.prev_action[:-1]) 
         self.prev_action = action
 
         # Check if gripper pads are in contact with the object
-        right_finger_contact = False
-        left_finger_contact = False
+        right_finger_contact_good = False
+        left_finger_contact_good = False
+        right_finger_contact_bad = False
+        left_finger_contact_bad = False
         success = False
+        bad_grasp = False
         for i in range(self.data.ncon):
             geom1_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom1)
             geom2_name = mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_GEOM, self.data.contact[i].geom2)
 
-            if geom1_name == "right_finger" or geom2_name == "right_finger":
+            if geom1_name == "right_finger_inner" or geom2_name == "right_finger_inner":
+                print(f"geom 1: {geom1_name}, geom 2: {geom2_name}")
                 if geom1_name == "stem" or geom2_name == "stem":
-                    right_finger_contact = True
-            if geom1_name =="left_finger" or geom2_name =="left_finger":
+                    right_finger_contact_good = True
+                elif geom1_name == "aG3" or geom2_name == "aG3" or geom1_name == "left_finger_inner" or geom2_name == "left_finger_inner":
+                    pass
+                else:
+                    right_finger_contact_good = False
+                    right_finger_contact_bad = True
+            if geom1_name =="left_finger_inner" or geom2_name =="left_finger_inner":
                 if geom1_name == "stem" or geom2_name == "stem":
-                    left_finger_contact = True
-            if right_finger_contact and left_finger_contact:
+                    left_finger_contact_good = True
+                elif geom1_name == "aG3" or geom2_name == "aG3" or geom1_name == "right_finger_inner" or geom2_name == "right_finger_inner":
+                    pass
+                else:
+                    left_finger_contact_good = False
+                    left_finger_contact_bad = True
+            if right_finger_contact_good and left_finger_contact_good:
                 success=True
-                break 
+            if right_finger_contact_bad and left_finger_contact_bad:
+                bad_grasp = True
+            
+            
         r_grasp = float(success) 
+        r_bad_grasp = -float(bad_grasp)
         
         info = {}
         if self.reward_type == "dense":
-            rewards = {'r_grasp': r_grasp, 'gripper_box': gripper_box, 'r_distract': r_distract, 'r_energy': r_energy, 'r_smooth': r_smooth}
-            reward_scales = {'r_grasp': 8.0, 'gripper_box': 4.0, 'r_distract': 1.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
+            rewards = {'r_grasp': r_grasp, 'gripper_box': gripper_box, 'r_distract': r_distract, 'r_bad_grasp': r_bad_grasp, 'r_energy': r_energy, 'r_smooth': r_smooth}
+            reward_scales = {'r_grasp': 8.0, 'gripper_box': 4.0, 'r_distract': 1.0, 'r_bad_grasp': 2.0, 'r_energy': 2.0 , 'r_smooth': 1.0}
             rewards = {k: v * reward_scales[k] for k, v in rewards.items()}
             reward = np.clip(sum(rewards.values()), -1e4, 1e4)
             info = rewards
